@@ -1,0 +1,338 @@
+Cheat sheet for GDAL/OGR command-line geodata tools
+
+Vector operations
+Get vector information
+
+ogrinfo -so input.shp layer-name
+Or, for all layers
+
+ogrinfo -al -so input.shp
+Print vector extent
+
+ogrinfo input.shp layer-name | grep Extent
+List vector drivers
+
+ogr2ogr --formats
+Convert between vector formats
+
+ogr2ogr -f "GeoJSON" output.json input.shp
+Print count of features with attributes matching a given pattern
+
+ogrinfo input.shp layer-name | grep "Search Pattern" | sort | uniq -c
+Read from a zip file
+
+This assumes that archive.zip is in the current directory. This example just extracts the file, but any ogr2ogr operation should work. It's also possible to write to existing zip files.
+
+ogr2ogr -f 'GeoJSON' dest.geojson /vsizip/archive.zip/zipped_dir/in.geojson
+Clip vectors by bounding box
+
+ogr2ogr -f "ESRI Shapefile" output.shp input.shp -clipsrc <x_min> <y_min> <x_max> <y_max>
+Clip one vector by another
+
+ogr2ogr -clipsrc clipping_polygon.shp output.shp input.shp
+Reproject vector:
+
+ogr2ogr output.shp -t_srs "EPSG:4326" input.shp
+Add an index to a shapefile
+
+Add an index on an attribute:
+
+ogrinfo example.shp -sql "CREATE INDEX ON example USING fieldname"
+Add a spatial index:
+
+ogrinfo example.shp -sql "CREATE SPATIAL INDEX ON example"
+Merge features in a vector file by attribute ("dissolve")
+
+ogr2ogr -f "ESRI Shapefile" dissolved.shp input.shp -dialect sqlite -sql "select ST_union(Geometry),common_attribute from input GROUP BY common_attribute"
+Merge features ("dissolve") using a buffer to avoid slivers
+
+ogr2ogr -f "ESRI Shapefile" dissolved.shp input.shp -dialect sqlite \
+-sql "select ST_union(ST_buffer(Geometry,0.001)),common_attribute from input GROUP BY common_attribute"
+Merge vector files:
+
+ogr2ogr merged.shp input1.shp
+ogr2ogr -update -append merged.shp input2.shp -nln merged
+Extract from a vector file based on query
+
+To extract features with STATENAME 'New York','New Hampshire', etc. from states.shp
+
+ogr2ogr -where 'STATENAME like "New%"' states_subset.shp states.shp
+To extract type 'pond' from water.shp
+
+ogr2ogr -where "type = pond" ponds.shp water.shp
+Subset & filter all shapefiles in a directory
+
+Assumes that filename and name of layer of interest are the same...
+
+basename -s.shp *.shp | xargs -n1 -I % ogr2ogr %-subset.shp %.shp -sql "SELECT field-one, field-two FROM '%' WHERE field-one='value-of-interest'"
+Extract data from a PostGis database to a GeoJSON file
+
+ogr2ogr -f "GeoJSON" file.geojson PG:"host=localhost dbname=database user=user password=password" \
+-sql "SELECT * from table_name"
+Extract data from an ESRI REST API
+
+Services that use ESRI maps are sometimes powered by a REST server that can provide data in OGR can consume. Finding the correct end point can be tricky and may take some false starts.
+
+ogr2ogr -f GeoJSON output.geojson "http:/example.com/arcgis/rest/services/SERVICE/LAYER/MapServer/0/query?f=json&returnGeometry=true&etc=..." OGRGeoJSON
+Get the difference between two vector files
+
+Given two files that both have an id field, this will produce a vector file with the part of file1.shp that doesn't intersect with file2.shp:
+
+ogr2ogr diff.shp file1.shp -dialect sqlite \
+-sql "SELECT ST_Difference(a.Geometry, b.Geometry) AS Geometry, a.id \
+FROM file1 a LEFT JOIN 'file2.shp'.file2 b USING (id) WHERE a.Geometry != b.Geometry"
+This assumes that file2.shp and file2.shp are both in the current directory.
+
+Spatial join:
+
+A spatial join transfers properties from one vector layer to another based on a spatial relationship between the features. Fields from the join layer can be aggregated in the output.
+
+Given a set of points (trees.shp) and a set of polygons (parks.shp) in the same directory, create a polygon layer with the geometries from parks.shp and summaries of some columns in trees.shp:
+
+ogr2ogr -f 'ESRI Shapefile' output.shp parks.shp -dialect sqlite \
+-sql "SELECT p.Geometry, p.id id, SUM(t.field1) field1_sum, AVG(t.field2) field2_avg
+FROM parks p, 'trees.shp'.trees t WHERE ST_Contains(p.Geometry, t.Geometry) GROUP BY p.id"
+Note that features that from parks.shp that don't overlap with trees.shp won't be in the new file.
+
+Raster operations
+Get raster information
+
+gdalinfo input.tif
+List raster drivers
+
+gdal_translate --formats
+Force creation of world file (requires libgeotiff)
+
+listgeo -tfw  mappy.tif
+Report PROJ.4 projection info, including bounding box (requires libgeotiff)
+
+listgeo -proj4 mappy.tif
+Convert between raster formats
+
+gdal_translate -of "GTiff" input.grd output.tif
+Convert 16-bit bands (Int16 or UInt16) to Byte type
+(Useful for Landsat 8 imagery...)
+
+gdal_translate -of "GTiff" -co "COMPRESS=LZW" -scale 0 65535 0 255 -ot Byte input_uint16.tif output_byte.tif
+You can change '0' and '65535' to your image's actual min/max values to preserve more color variation or to apply the scaling to other band types - find that number with:
+
+gdalinfo -mm input.tif | grep Min/Max
+Convert a directory of raster files of the same format to another raster format
+
+basename -s.img *.img | xargs -n1 -I % gdal_translate -of "GTiff" %.img %.tif
+Reproject raster:
+
+gdalwarp -t_srs "EPSG:102003" input.tif output.tif
+Be sure to add -r bilinear if reprojecting elevation data to prevent funky banding artifacts.
+
+Georeference an unprojected image with known bounding coordinates:
+
+gdal_translate -of GTiff -a_ullr <top_left_lon> <top_left_lat> <bottom_right_lon> <bottom_right_lat> \
+-a_srs EPSG:4269 input.png output.tif
+Clip raster by bounding box
+
+gdalwarp -te <x_min> <y_min> <x_max> <y_max> input.tif clipped_output.tif
+Clip raster to SHP / NoData for pixels beyond polygon boundary
+
+gdalwarp -dstnodata <nodata_value> -cutline input_polygon.shp input.tif clipped_output.tif
+Crop raster dimensions to vector bounding box
+
+gdalwarp -cutline cropper.shp -crop_to_cutline input.tif cropped_output.tif
+Merge rasters
+
+gdal_merge.py -o merged.tif input1.tif input2.tif
+Alternatively,
+
+gdalwarp input1.tif input2.tif merged.tif
+Or, to preserve nodata values:
+
+gdalwarp input1.tif input2.tif merged.tif -srcnodata <nodata_value> -dstnodata <merged_nodata_value>
+Stack grayscale bands into a georeferenced RGB
+
+Where LC81690372014137LGN00 is a Landsat 8 ID and B4, B3 and B2 correspond to R,G,B bands respectively:
+
+gdal_merge.py -co "PHOTOMETRIC=RGB" -separate LC81690372014137LGN00_B{4,3,2}.tif -o LC81690372014137LGN00_rgb.tif
+Fix an RGB TIF whose bands don't know they're RGB
+
+gdal_merge.py -co "PHOTOMETRIC=RGB" input.tif -o output_rgb.tif
+Export a raster for Google Earth
+
+gdal_translate -of KMLSUPEROVERLAY input.tif output.kmz -co FORMAT=JPEG
+Raster calculation (map algebra)
+
+Average two rasters:
+
+gdal_calc.py -A input1.tif -B input2.tif --outfile=output.tif --calc="(A+B)/2"
+Add two rasters:
+
+gdal_calc.py -A input1.tif -B input2.tif --outfile=output.tif --calc="A+B"
+etc.
+
+Create a hillshade from a DEM
+
+gdaldem hillshade -of PNG input.tif hillshade.png
+Change light direction:
+
+gdaldem hillshade -of PNG -az 135 input.tif hillshade_az135.png 
+Use correct vertical scaling in meters if input is projected in degrees
+
+gdaldem hillshade -s 111120 -of PNG input_WGS1984.tif hillshade.png
+Apply color ramp to a DEM
+First, create a color-ramp.txt file:
+(Height, Red, Green, Blue)
+
+	0 110 220 110
+	900 240 250 160
+	1300 230 220 170
+	1900 220 220 220
+	2500 250 250 250
+Then apply those colors to a DEM:
+
+gdaldem color-relief input.tif color_ramp.txt color-relief.tif
+Create slope-shading from a DEM
+First, make a slope raster from DEM:
+
+	gdaldem slope input.tif slope.tif 
+Second, create a color-slope.txt file:
+(Slope angle, Red, Green, Blue)
+
+0 255 255 255
+90 0 0 0  
+Finally, color the slope raster based on angles in color-slope.txt:
+
+gdaldem color-relief slope.tif color-slope.txt slopeshade.tif
+Resample (resize) raster
+
+gdalwarp -ts <width> <height> -r cubic dem.tif resampled_dem.tif
+Entering 0 for either width or height guesses based on current dimensions.
+
+Alternatively,
+
+gdal_translate -outsize 10% 10% -r cubic dem.tif resampled_dem.tif
+For both of these, -r cubic specifies cubic interpolation: when resampling continuous data (like a DEM), the default nearest neighbor interpolation can result in "stair step" artifacts.
+
+Burn vector into raster
+
+gdal_rasterize -b 1 -i -burn -32678 -l layername input.shp input.tif
+Extract polygons from raster
+
+gdal_polygonize.py input.tif -f "GeoJSON" output.json
+Create contours from DEM
+
+gdal_contour -a elev -i 50 input_dem.tif output_contours.shp
+Get values for a specific location in a raster
+
+gdallocationinfo -xml -wgs84 input.tif <lon> <lat>  
+Convert GRIB band to .tif
+
+Assumes data for entire globe in WGS84. Be sure to specify band, or you may end up with a nonsense RGB image composed of the first three.
+
+gdal_translate input.grib -a_ullr -180 -90 180 90 -a_srs EPSG:4326 -b 1 output_band1.tif
+Other
+Convert KML points to CSV (simple)
+
+ogr2ogr -f CSV output.csv input.kmz -lco GEOMETRY=AS_XY
+Convert KML to CSV (WKT)
+First list layers in the KML file
+
+ogrinfo -so input.kml
+Convert the desired KML layer to CSV
+
+ogr2ogr -f CSV output.csv input.kml -sql "select *,OGR_GEOM_WKT from some_kml_layer"
+CSV points to SHP
+
+Given input.csv:
+
+lon,lat,value
+-81,31,13
+-80,32,14
+-81,33,15
+Create a shapefile, using Spatialite functions to generate the point:
+
+ogr2ogr output.shp input.csv -dialect sqlite \
+-sql "SELECT MakePoint(CAST(lon as REAL), CAST(lat as REAL), 4326) Geometry, * FROM input"
+Note the 4326, which refers to a spatial reference (in this case EPSG:4326). Use the correct code for your data.
+
+MODIS operations
+
+First, download relevant .hdf tiles from the MODIS ftp site: ftp://ladsftp.nascom.nasa.gov/; use the MODIS sinusoidal grid for reference.
+
+List MODIS Subdatasets in a given HDF (conf. the MODIS products table)
+
+gdalinfo longFileName.hdf | grep SUBDATASET
+Make TIFs from each file in list; replace 'MOD12Q1:Land_Cover_Type_1' with desired Subdataset name
+
+mkdir output
+find . '*.hdf' -exec gdalwarp -of GTiff 'HDF4_EOS:EOS_GRID:"{}":MOD12Q1:Land_Cover_Type_1' output/{}.tif \;
+Merge all .tifs in output directory into single file
+
+gdal_merge.py -o output/Merged_Landcover.tif output/*.tif
+BASH functions
+Size Functions
+This size function echos the pixel dimensions of a given file in the format expected by gdalwarp.
+
+function gdal_size() {
+	SIZE=$(gdalinfo $1 |\
+		grep 'Size is ' |\
+		cut -d\   -f3-4 |\
+		sed 's/,//g')
+	echo -n "$SIZE"
+}
+This can be used to easily resample one raster to the dimensions of another:
+
+gdalwarp -ts $(gdal_size bigraster.tif) -r cubicspline smallraster.tif resampled_smallraster.tif
+Extent Functions
+These extent functions echo the extent of the given file in the order/format expected by gdal_translate -projwin. (Originally from Linfiniti).
+
+function gdal_extent() {
+	if [ -z "$1" ]; then 
+		echo "Missing arguments. Syntax:"
+		echo "  gdal_extent <input_raster>"
+    	return
+	fi
+	EXTENT=$(gdalinfo $1 |\
+		grep "Upper Left\|Lower Right" |\
+		sed "s/Upper Left  //g;s/Lower Right //g;s/).*//g" |\
+		tr "\n" " " |\
+		sed 's/ *$//g' |\
+		tr -d "[(,]")
+	echo -n "$EXTENT"
+}
+
+function ogr_extent() {
+	if [ -z "$1" ]; then 
+		echo "Missing arguments. Syntax:"
+		echo "  ogr_extent <input_vector>"
+    	return
+	fi
+	EXTENT=$(ogrinfo -al -so $1 |\
+		grep Extent |\
+		sed 's/Extent: //g' |\
+		sed 's/(//g' |\
+		sed 's/)//g' |\
+		sed 's/ - /, /g')
+	EXTENT=`echo $EXTENT | awk -F ',' '{print $1 " " $4 " " $3 " " $2}'`
+	echo -n "$EXTENT"
+}
+
+function ogr_layer_extent() {
+	if [ -z "$2" ]; then 
+		echo "Missing arguments. Syntax:"
+		echo "  ogr_extent <input_vector> <layer_name>"
+    	return
+	fi
+	EXTENT=$(ogrinfo -so $1 $2 |\
+		grep Extent |\
+		sed 's/Extent: //g' |\
+		sed 's/(//g' |\
+		sed 's/)//g' |\
+		sed 's/ - /, /g')
+	EXTENT=`echo $EXTENT | awk -F ',' '{print $1 " " $4 " " $3 " " $2}'`
+	echo -n "$EXTENT"
+}
+Extents can be passed directly into a gdal_translate command like so:
+
+gdal_translate -projwin $(ogr_extent boundingbox.shp) input.tif clipped_output.tif
+or
+
+gdal_translate -projwin $(gdal_extent target_crop.tif) input.tif clipped_output.tif

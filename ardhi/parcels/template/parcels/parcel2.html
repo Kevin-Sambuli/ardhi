@@ -1,0 +1,69 @@
+{% load leaflet_tags %}
+
+<html>
+<head>
+    {% load leaflet_tags %}
+    {% leaflet_js plugins="ALL" %}
+    {% leaflet_css plugins="ALL" %}
+
+    <style>
+        {#.leaflet-container { height: 80%; width: 90%; padding-left: 0.5%; padding-right: 0.5%}#}
+        .leaflet-container { /* all maps */
+            width: 800px;
+            height: 500px;
+        }
+
+        #specialbigmap {
+            height: 800px;
+        }
+
+        /* Resize the "display_raw" textbox */
+        .django-leaflet-raw-textarea {
+            width: 100%;
+        }
+    </style>
+
+    <script>
+        var dataurl = '{% url "data" %}';
+
+        window.addEventListener("map:init", function (event) {
+            var map = event.detail.map;
+            // Download GeoJSON data with Ajax
+            fetch(dataurl)
+                .then(function (resp) {
+                    return resp.json();
+                })
+                .then(function (data)
+                 {
+                    L.geoJSON(data,
+                        {
+                            onEachFeature : function(feature, layer)
+                            {
+                                var popupContent =  '<h4 class = "text-primary">Parcels</h4>' +
+                                '<div class="container"><table class="table table-striped">' +
+                                '<thead><tr><th>Properties</th><th>Value</th></tr></thead>' +
+                                '<tbody><tr><td> Name </td><td>'+ feature.properties.owner +'</td></tr>' +
+                                '<tr><td>lr </td><td>' + feature.properties.lr_no +'</td></tr>' +
+                                '<tr><td> area </td><td>' + feature.properties.area_ha + '</td></tr>' +
+                                '<tr><td> perimeter </td><td>' + feature.properties.perimeter + '</td></tr>' +
+                                '<tr><td> id </td><td>' + feature.properties.id + '</td></tr>';
+                                layer.bindPopup(popupContent)
+	                        },
+                        }).addTo(map);
+                });
+        });
+    </script>
+
+</head>
+<body style="align-content: center">
+    <h1>Runda Block 99 Parcels</h1>
+    {% leaflet_map "main" %}
+    <br>
+    <hr>
+    <div style="padding-left: 10px">
+        <p style="font-weight: bold; font-size: 14px;">
+            Click to return to the <a href=" {% url 'login' %}" style="font-weight: bold">Login</a>
+        </p>
+    </div>
+</body>
+</html>
