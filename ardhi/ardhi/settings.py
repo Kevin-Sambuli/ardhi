@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from pathlib import Path
+# from pathlib import Path
 import os
 import environ
 from django.contrib import staticfiles
@@ -22,21 +22,14 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = 'django-insecure-w#w0w5wix&dswzd01j-(*uy(%%u^f8)ywl(c$4r%f!!+b=7nep'
-
 # SECURITY WARNING: don't run with debug turned on in production!
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(env_file='.env')
 SECRET_KEY = os.environ.get("SECRET_KEY")
-# DEBUG = env('DEBUG')
-
+DEBUG = env('DEBUG')
 
 # Application definition
-DEBUG = True
-
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
-# ALLOWED_HOSTS = []
 
 # Application definition
 if DEBUG:
@@ -81,8 +74,7 @@ SIGNUP_FORM_CLASS = 'accounts.forms.RegistrationForm'
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
     # 'accounts.backends.CaseInsensitiveModelBackend',
-    )
-
+)
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -116,35 +108,34 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = 'ardhi.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
+# docker database
+DATABASES = {
+    'default': {
+        'ENGINE': env("PG_ENGINE"),
+        'NAME': env("PG_NAME"),
+        'USER': env("PG_USER"),
+        'PASSWORD': env("PG_PASS"),
+        'HOST': env("PG_DB_HOST"),
+        'PORT': env("PG_PORT"),
+    }
+}
+
+# local database
 # DATABASES = {
 #     'default': {
 #         'ENGINE': env("PG_ENGINE"),
 #         'NAME': env("PG_NAME"),
-#         'USER': env("PG_USER"),
+#         'USER': env("PG_USER_LOCAL"),
 #         'PASSWORD': env("PG_PASS"),
 #         'HOST': env("PG_DB_HOST"),
 #         'PORT': env("PG_PORT"),
-#     }
+#     },
 # }
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'Ardhi',
-        'USER': 'postgres',
-        'HOST': 'localhost',
-        'PASSWORD': 'kevoh',
-        'PORT': '5432'
-    },
-}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -164,7 +155,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -177,7 +167,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
@@ -282,7 +271,6 @@ SERIALIZATION_MODULES = {
 #         'token': 'auth.serializers.StreamTokenSerializer',
 #     }
 # }
-
 
 
 # REDIS_HOST = 'localhost'

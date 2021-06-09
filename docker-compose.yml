@@ -2,11 +2,10 @@ version: "3.9"
 
 services:
   land_app:
-    build: .
+    build: ./ardhi
     container_name: ardhi_app
     # command: gunicorn land_app.wsgi:application --bind 0.0.0.0:8000
-    command: python3 manage.py runserver 0.0.0.0:8000
-
+    command: python manage.py runserver 0.0.0.0:8000
     #changes are made to source code
     volumes:
       - .:/home/app/web
@@ -15,7 +14,7 @@ services:
     ports:
       - 8000:8000
     expose:
-     - 8000
+      - 8000
     environment:
       - DEBUG=${DEBUG}
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
@@ -31,21 +30,50 @@ services:
   postgres-db:
     restart: "on-failure"
     image: kartoza/postgis:12.0
-    container_name: PostGIS
+    container_name: postgis_db
     ports:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql
+#    environment:
+#      - POSTGRES_USER=${PG_USER}
+#      - POSTGRES_PASS=${PG_PASS}
+#      - POSTGRES_DB=${PG_NAME}
     environment:
-      - POSTGRES_USER=${PG_USER}
-      - POSTGRES_PASS=${PG_PASS}
-      - POSTGRES_DB=${PG_NAME}
+      # If you need to create multiple database you can add coma separated databases eg gis,data
+      - POSTGRES_DB=ardhi
+      - POSTGRES_USER=kevoh
+      - POSTGRES_PASS=kevoh1995
+      - ALLOW_IP_RANGE=0.0.0.0/0
+      # Add extensions you need to be enabled by default in the DB. Default are the five specified below
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting,
     networks:
       - land_app
 
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_CONFIG_SERVER_MODE="False"
+    volumes:
+      - pgadmin:/root/.pgadmin
+    ports:
+      - 5050:80
+    depends_on:
+      - postgres-db
+    networks:
+      - land_app
+  #      - postgres-db
+  #    links:
+  #      - land_app
+  #      - postgres-db
+
   redis:
     restart: always
-    container_name: redis_app
+    container_name: redis
     image: "redis:alpine"
     ports:
       - "6379:6379"
@@ -54,13 +82,16 @@ services:
 
   celery:
     restart: always
-    container_name: celery_app
-    build: .
+    container_name: celery
+    build: ./ardhi
     command: celery -A app worker -l INFO
     volumes:
       - .:/home/app/web
     environment:
       - DEBUG=${DEBUG}
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASS=${PG_PASS}
+      - POSTGRES_DB=${PG_NAME}
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
       - CELERY_BROKER=${CELERY_BROKER}
       - CELERY_BACKEND=${CELERY_BACKEND}
@@ -78,131 +109,73 @@ services:
       - static_volume:/home/app/web/static
       - media_volume:/home/app/web/media
     build:
-      context: ./nginx
+      context: ./ardhi/nginx
       dockerfile: Dockerfile
-    container_name: Nginx
+    container_name: nginx
     ports:
       - 1337:80
     networks:
       - land_app
 
+
+
 networks:
   land_app:
     driver: bridge
 
-# nginx-proxy:
-#   container_name: nginx-proxy
-#   build: nginx
-#   restart: always
-#   ports:
-#     - 443:443
-#     - 80:80
-#   volumes:
-#     - static_volume:/home/app/web/static
-#     - media_volume:/home/app/web/media
-#     - certs:/etc/nginx/certs
-#     - html:/usr/share/nginx/html
-#     - vhost:/etc/nginx/vhost.d
-#     - /var/run/docker.sock:/tmp/docker.sock:ro
-#   depends_on:
-#     - land_app
-# nginx-proxy-letsencrypt:
-#   image: jrcs/letsencrypt-nginx-proxy-companion
-#   env_file:
-#     - .env.staging.proxy-companion
-#   volumes:
-#     - /var/run/docker.sock:/var/run/docker.sock:ro
-#     - certs:/etc/nginx/certs
-#     - html:/usr/share/nginx/html
-#     - vhost:/etc/nginx/vhost.d
-#   depends_on:
-#     - nginx-proxy
-
 volumes:
   postgres_data:
+  pgadmin:
+  #  geoserver_data:
   static_volume:
   media_volume:
   redisdata:
   data:
-  # certs:
-  # html:
-  # vhost:
 
 
-#    qgis-server:
-#      # Should use version with utf-8 locale support:
-#      image: qgis-server:latest
-#      volumes:
-#        - REPLACE_WITH_FULL_PATH/data:/data:ro
-#      environment:
-#        - LANG=en_EN.UTF-8
-#        - QGIS_PROJECT_FILE=/data/osm.qgs
-#        - QGIS_SERVER_LOG_LEVEL=0  # INFO (log all requests)
-#        - DEBUG=1                  # display env before spawning QGIS Server
-#        - VIRTUAL_HOST=qgis-server.com
-#        - LETSENCRYPT_HOST=qgis-server.com
-#        - LETSENCRYPT_EMAIL=youremail@gmail.com
-#
-#      nginx-web:
-#        image: nginx
-#        labels:
-#          com.github.jrcs.letsencrypt_nginx_proxy_companion.nginx_proxy: "true"
-#        container_name: ${NGINX_WEB:-nginx-web}
-#        restart: always
-#        ports:
-#          - "${IP:-0.0.0.0}:${DOCKER_HTTP:-80}:80"
-#          - "${IP:-0.0.0.0}:${DOCKER_HTTPS:-443}:443"
-#        volumes:
-#          - ${NGINX_FILES_PATH:-./data}/conf.d:/etc/nginx/conf.d
-#          - ${NGINX_FILES_PATH:-./data}/vhost.d:/etc/nginx/vhost.d
-#          - ${NGINX_FILES_PATH:-./data}/html:/usr/share/nginx/html
-#          - ${NGINX_FILES_PATH:-./data}/certs:/etc/nginx/certs:ro
-#          - ${NGINX_FILES_PATH:-./data}/htpasswd:/etc/nginx/htpasswd:ro
-#        logging:
-#          driver: ${NGINX_WEB_LOG_DRIVER:-json-file}
-#          options:
-#            max-size: ${NGINX_WEB_LOG_MAX_SIZE:-4m}
-#            max-file: ${NGINX_WEB_LOG_MAX_FILE:-10}
-#
-#      nginx-gen:
-#        image: jwilder/docker-gen
-#        command: -notify-sighup ${NGINX_WEB:-nginx-web} -watch -wait 5s:30s /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
-#        container_name: ${DOCKER_GEN:-nginx-gen}
-#        restart: always
-#        volumes:
-#          - ${NGINX_FILES_PATH:-./data}/conf.d:/etc/nginx/conf.d
-#          - ${NGINX_FILES_PATH:-./data}/vhost.d:/etc/nginx/vhost.d
-#          - ${NGINX_FILES_PATH:-./data}/html:/usr/share/nginx/html
-#          - ${NGINX_FILES_PATH:-./data}/certs:/etc/nginx/certs:ro
-#          - ${NGINX_FILES_PATH:-./data}/htpasswd:/etc/nginx/htpasswd:ro
-#          - /var/run/docker.sock:/tmp/docker.sock:ro
-#          - ./nginx.tmpl:/etc/docker-gen/templates/nginx.tmpl:ro
-#        logging:
-#          driver: ${NGINX_GEN_LOG_DRIVER:-json-file}
-#          options:
-#            max-size: ${NGINX_GEN_LOG_MAX_SIZE:-2m}
-#            max-file: ${NGINX_GEN_LOG_MAX_FILE:-10}
-#
-#      nginx-letsencrypt:
-#        image: jrcs/letsencrypt-nginx-proxy-companion
-#        container_name: ${LETS_ENCRYPT:-nginx-letsencrypt}
-#        restart: always
-#        volumes:
-#          - ${NGINX_FILES_PATH:-./data}/conf.d:/etc/nginx/conf.d
-#          - ${NGINX_FILES_PATH:-./data}/vhost.d:/etc/nginx/vhost.d
-#          - ${NGINX_FILES_PATH:-./data}/html:/usr/share/nginx/html
-#          - ${NGINX_FILES_PATH:-./data}/certs:/etc/nginx/certs:rw
-#          - /var/run/docker.sock:/var/run/docker.sock:ro
-#        environment:
-#          NGINX_DOCKER_GEN_CONTAINER: ${DOCKER_GEN:-nginx-gen}
-#          NGINX_PROXY_CONTAINER: ${NGINX_WEB:-nginx-web}
-#        logging:
-#          driver: ${NGINX_LETSENCRYPT_LOG_DRIVER:-json-file}
-#          options:
-#            max-size: ${NGINX_LETSENCRYPT_LOG_MAX_SIZE:-2m}
-#            max-file: ${NGINX_LETSENCRYPT_LOG_MAX_FILE:-10}
-#
-#    networks:
-#      default:
-#        external:
-#          name: ${NETWORK:-webproxy}
+
+#  geoserver:
+#    image: kartoza/geoserver
+#    build:
+#      context: ./ardhi/geoserver
+#      dockerfile: Dockerfile
+#      args:
+#        IMAGE_VERSION: ${IMAGE_VERSION}
+#        JAVA_HOME: ${JAVA_HOME}
+#        GS_VERSION: ${GS_VERSION}
+#        WAR_URL: ${WAR_URL}
+#        ACTIVATE_ALL_STABLE_EXTENTIONS: ${ACTIVATE_ALL_STABLE_EXTENTIONS}
+#        ACTIVATE_ALL_COMMUNITY_EXTENTIONS: ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
+#    container_name: geoserver
+#    volumes:
+#      - geoserver_data:/opt/geoserver/data_dir
+#    ports:
+#      - "8600:8080"
+#    restart: on-failure
+#    environment:
+#      - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+#      - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
+#      - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+#      - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
+#      - INITIAL_MEMORY=${INITIAL_MEMORY}
+#      - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+#      - RECREATE_DATADIR=${RECREATE_DATADIR}
+#      - HTTP_PROXY_NAME
+#      - HTTP_PROXY_PORT
+
+
+
+  #    qgis-server:
+  #      # Should use version with utf-8 locale support:
+  #      image: qgis-server:latest
+  #      volumes:
+  #        - REPLACE_WITH_FULL_PATH/data:/data:ro
+  #      environment:
+  #        - LANG=en_EN.UTF-8
+  #        - QGIS_PROJECT_FILE=/data/osm.qgs
+  #        - QGIS_SERVER_LOG_LEVEL=0  # INFO (log all requests)
+  #        - DEBUG=1                  # display env before spawning QGIS Server
+  #        - VIRTUAL_HOST=qgis-server.com
+  #        - LETSENCRYPT_HOST=qgis-server.com
+  #        - LETSENCRYPT_EMAIL=youremail@gmail.com
+

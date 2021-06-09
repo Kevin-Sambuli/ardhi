@@ -11,6 +11,7 @@ RUN mkdir -p /home/app
 
 # depending on your environment you may also need to
 RUN mkdir -p /postgres_data
+RUN mkdir -p /pgadmin
 
 # create the appropriate directories
 ENV HOME=/home/app
@@ -40,7 +41,6 @@ RUN apt-get update \
     && apt-get -y install libpq-dev gcc \
     && pip install psycopg2
 
-
 # Setup GDAL
 RUN apt-get update &&\
    apt-get install -y binutils libproj-dev gdal-bin python-gdal python3-gdal 
@@ -65,7 +65,7 @@ RUN pip install -r requirements.txt
 COPY ./entrypoint.sh $APP_HOME
 
 # copy to project
-COPY . $APP_HOME
+COPY ./ardhi $APP_HOME
 
 # chown all the files to the app user
 # RUN chown -R app:app $APP_HOME
@@ -73,4 +73,4 @@ COPY . $APP_HOME
 # change to the app user
 # USER app
 
-ENTRYPOINT ["home/app/web/entrypoint.sh"]
+#ENTRYPOINT ["home/app/web/entrypoint.sh"]
