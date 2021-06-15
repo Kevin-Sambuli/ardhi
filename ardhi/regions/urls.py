@@ -12,5 +12,5 @@ from . import views
 
 urlpatterns = [
     path('map_json/', views.region_map, name='map_json'),
-    # path('map/', TemplateView.as_view(template_name='templates/regions/map.html'), name='map'),
+    path('map_leaf/', TemplateView.as_view(template_name='regions/map.html'), name='map'),
 ]

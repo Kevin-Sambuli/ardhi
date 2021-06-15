@@ -31,6 +31,8 @@ urlpatterns = [
 
     # django rest framework urls
     # path('api/accounts/', include('accounts.api.urls', 'account_api'))
+    # path('api/user/', include('accounts.user.urls')),
+    # path('api/geolocation/', include('accounts.geolocation.urls')),
 ]
 
 if settings.DEBUG:

@@ -1,8 +1,6 @@
 import os
-from pathlib import Path
 from django.contrib.gis.utils import LayerMapping
 from .models import Counties, SubCounties, Locations, SubLocations
-
 
 # python manage.py ogrinspect world\data\TM_WORLD_BORDERS-0.3.shp Parcels --srid=4326 --mapping --multi
 
@@ -40,13 +38,16 @@ def county_run(verbose=True):
     lm = LayerMapping(Counties, counties_shp, county_mapping, transform=False, encoding='utf-8')
     lm.save(strict=True, verbose=verbose)
 
+
 def subcounty_run(verbose=True):
     lm = LayerMapping(SubCounties, subcounty_shp, subcounties_mapping, transform=False, encoding='utf-8')
     lm.save(strict=True, verbose=verbose)
 
+
 def location_run(verbose=True):
     lm = LayerMapping(Locations, location_shp, locations_mapping, transform=False, encoding='utf-8')
     lm.save(strict=True, verbose=verbose)
+
 
 def subloc_run(verbose=True):
     lm = LayerMapping(SubLocations, subloc_shp, sublocations_mapping, transform=False, encoding='utf-8')

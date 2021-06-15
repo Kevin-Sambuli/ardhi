@@ -2,22 +2,28 @@ version: "3.9"
 
 services:
   land_app:
-    build: ./ardhi
+    build:
+      context: ./ardhi
+      dockerfile: Dockerfile
     container_name: ardhi_app
-    # command: gunicorn land_app.wsgi:application --bind 0.0.0.0:8000
-    command: python manage.py runserver 0.0.0.0:8000
-    #changes are made to source code
+#    command: gunicorn ardhi.wsgi:application --bind 0.0.0.0:8000
+    command: >
+      sh -c "python3 manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - .:/home/app/web
+      - ./ardhi:/home/app/web
       - static_volume:/home/app/web/static
       - media_volume:/home/app/web/media
     ports:
       - 8000:8000
-    expose:
-      - 8000
     environment:
       - DEBUG=${DEBUG}
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
+      - PG_DB_HOST=${PG_DB_HOST}
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASS=${PG_PASS}
+      - POSTGRES_DB=${PG_NAME}
       - CELERY_BROKER=${CELERY_BROKER}
       - CELERY_BACKEND=${CELERY_BACKEND}
     restart: "on-failure"
@@ -35,17 +41,11 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql
-#    environment:
-#      - POSTGRES_USER=${PG_USER}
-#      - POSTGRES_PASS=${PG_PASS}
-#      - POSTGRES_DB=${PG_NAME}
     environment:
-      # If you need to create multiple database you can add coma separated databases eg gis,data
-      - POSTGRES_DB=ardhi
-      - POSTGRES_USER=kevoh
-      - POSTGRES_PASS=kevoh1995
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASS=${PG_PASS}
+      - POSTGRES_DB=${PG_NAME}
       - ALLOW_IP_RANGE=0.0.0.0/0
-      # Add extensions you need to be enabled by default in the DB. Default are the five specified below
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting,
     networks:
       - land_app
@@ -55,24 +55,20 @@ services:
     image: dpage/pgadmin4
     restart: unless-stopped
     environment:
-      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_DEFAULT_EMAIL=sambulikevin@gmail.com
+      - PGADMIN_DEFAULT_PASSWORD=kevoh1995
       - PGADMIN_CONFIG_SERVER_MODE="False"
-    volumes:
-      - pgadmin:/root/.pgadmin
+    # volumes:
+    #   - pgadmin:/root/.pgadmin
     ports:
-      - 5050:80
+      - "5050:80"
     depends_on:
       - postgres-db
-    networks:
-      - land_app
-  #      - postgres-db
-  #    links:
-  #      - land_app
-  #      - postgres-db
+    # networks:
+    #   - land_app
 
   redis:
-    restart: always
+    restart: unless-stopped
     container_name: redis
     image: "redis:alpine"
     ports:
@@ -80,43 +76,72 @@ services:
     volumes:
       - redisdata:/data
 
-  celery:
-    restart: always
-    container_name: celery
-    build: ./ardhi
-    command: celery -A app worker -l INFO
-    volumes:
-      - .:/home/app/web
-    environment:
-      - DEBUG=${DEBUG}
-      - POSTGRES_USER=${PG_USER}
-      - POSTGRES_PASS=${PG_PASS}
-      - POSTGRES_DB=${PG_NAME}
-      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
-      - CELERY_BROKER=${CELERY_BROKER}
-      - CELERY_BACKEND=${CELERY_BACKEND}
-    depends_on:
-      - postgres-db
-      - redis
-      - land_app
-      - nginx
+  # celery:
+  #   restart: always
+  #   container_name: celery
+  #   build:
+  #     context: ./ardhi
+  #   command: celery -A app worker -l info
+  #   volumes:
+  #     - ./ardhi:/home/app/web
+  #   environment:
+  #     - DEBUG=${DEBUG}
+  #     - PG_DB_HOST=${PG_DB_HOST}
+  #     - POSTGRES_USER=${PG_USER}
+  #     - POSTGRES_PASS=${PG_PASS}
+  #     - POSTGRES_DB=${PG_NAME}
+  #     - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
+  #     - CELERY_BROKER=${CELERY_BROKER}
+  #     - CELERY_BACKEND=${CELERY_BACKEND}
+  #   depends_on:
+  #     - postgres-db
+  #     - redis
+  #     - land_app
+  #     - nginx
 
   nginx:
-    restart: always
+    restart: unless-stopped
     depends_on:
       - land_app
     volumes:
       - static_volume:/home/app/web/static
       - media_volume:/home/app/web/media
     build:
-      context: ./ardhi/nginx
+      context: ./ardhi/compose/nginx
       dockerfile: Dockerfile
     container_name: nginx
     ports:
-      - 1337:80
+      - 80:80
+      - 443:443
     networks:
       - land_app
 
+#   geoserver:
+#     image: kartoza/geoserver
+#     build:
+#       context: ./ardhi/compose/geoserver
+#       dockerfile: Dockerfile
+#     container_name: geoserver
+# #    volumes:
+# #      - geoserver_data:/home/app/web/geoserver
+#     volumes:
+#       - geoserver-data:/opt/geoserver/data_dir
+#     ports:
+#       - "8600:8080"
+#     restart: on-failure
+#     depends_on:
+#       - postgres-db
+#         # condition: service_healthy
+#     environment:
+#       - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+#       - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
+#       - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+#       - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
+#       - INITIAL_MEMORY=${INITIAL_MEMORY}
+#       - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+#       - RECREATE_DATADIR=${RECREATE_DATADIR}
+#       - HTTP_PROXY_NAME
+#       - HTTP_PROXY_PORT
 
 
 networks:
@@ -126,42 +151,40 @@ networks:
 volumes:
   postgres_data:
   pgadmin:
-  #  geoserver_data:
   static_volume:
   media_volume:
   redisdata:
   data:
+  # geoserver-data:
 
 
 
-#  geoserver:
-#    image: kartoza/geoserver
-#    build:
-#      context: ./ardhi/geoserver
-#      dockerfile: Dockerfile
-#      args:
-#        IMAGE_VERSION: ${IMAGE_VERSION}
-#        JAVA_HOME: ${JAVA_HOME}
-#        GS_VERSION: ${GS_VERSION}
-#        WAR_URL: ${WAR_URL}
-#        ACTIVATE_ALL_STABLE_EXTENTIONS: ${ACTIVATE_ALL_STABLE_EXTENTIONS}
-#        ACTIVATE_ALL_COMMUNITY_EXTENTIONS: ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
-#    container_name: geoserver
+#  qgis:
+#    image: kartoza/qgis-server
+#    container_name: QGIS
+#    hostname: qgis-server
 #    volumes:
-#      - geoserver_data:/opt/geoserver/data_dir
+#      # Wherever you want to mount your data from
+#      - ./project:/project
+#    links:
+#      - postgres-db:postgres-db
 #    ports:
-#      - "8600:8080"
-#    restart: on-failure
+#      - "8080:80"
 #    environment:
-#      - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
-#      - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
-#      - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
-#      - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
-#      - INITIAL_MEMORY=${INITIAL_MEMORY}
-#      - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
-#      - RECREATE_DATADIR=${RECREATE_DATADIR}
-#      - HTTP_PROXY_NAME
-#      - HTTP_PROXY_PORT
+#      QGIS_PROJECT_FILE: ''
+#      QGIS_DEBUG 5
+#      QGIS_LOG_FILE /proc/self/fd/1
+#      QGIS_SERVER_LOG_FILE /proc/self/fd/1
+#      QGIS_SERVER_LOG_LEVEL 5
+#      PGSERVICEFILE /project/pg_service.conf
+#      QGIS_PROJECT_FILE /project/project.qgs
+#      QGIS_PLUGINPATH /opt/qgis-server/plugins
+#    stdin_open: true
+#    tty: true
+#    extra_hosts:
+#      - postgis.kartoza.com:postgis.kartoza.com
+#    volumes_from:
+#      - bstync
 
 
 

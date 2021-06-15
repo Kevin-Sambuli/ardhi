@@ -5,14 +5,12 @@ from .models import Parcels
 from . import views
 
 urlpatterns = [
-    path('parcels/', GeoJSONLayerView.as_view(model=Parcels,
-                                              properties=('id', 'owner', 'area_ha', 'perimeter', 'lr_no',)),
-         name='data'),
-    # path('map/', TemplateView.as_view(template_name='ownership/map.html'), name='map'),
-    path('parcel_map/', TemplateView.as_view(template_name='parcels/parcels.html'), name='runda_parcels'),
-    # path('my_parcels_map/', TemplateView.as_view(template_name='ownership/my_map.html'), name='my_map'),
-    path('landparcels/', views.parcels, name='parcels'),
-    # path('distance/', views.calculate_distance_view, name='distance'),
+    path('data/', GeoJSONLayerView.as_view(model=Parcels,
+                                           properties=('id', 'owner', 'area_ha', 'perimeter', 'lr_no',)), name='data'),
     path('centroids/', views.get_points, name='distance'),
+    path('json/', views.parcels, name='json_parcels'),
+    path('map/', TemplateView.as_view(template_name='parcels/parcels.html'), name='parcels'),
+    path('ownership/', TemplateView.as_view(template_name='parcels/ownership_map.html'), name='my_map'),
+
 
 ]

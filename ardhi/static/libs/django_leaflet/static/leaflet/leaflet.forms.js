@@ -213,7 +213,7 @@ L.GeometryField = L.Class.extend({
             };
             this._map.fitBounds(bounds, options);
         }
-        // Else keep view extent set by django-leaflet_lib template tag
+        // Else keep view extent set by django-leaflet_lib templates tag
     },
 
     onCreated: function (e) {

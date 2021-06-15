@@ -11,7 +11,7 @@ def color_producer(perimeter):
         return 'red'
 
 
-def my_map(counties, subcounties, locations, sublocations):
+def my_map(counties, subcounties=None, locations=None, sublocations=None):
     extent = [-1.22488, 36.82467]
     m = folium.Map(location=extent, zoom_start=14, control_scale=True)
     m.choropleth(
@@ -31,15 +31,15 @@ def my_map(counties, subcounties, locations, sublocations):
     folium.plugins.MeasureControl(position='topleft', primary_length_unit='meters', secondary_length_unit='miles',
                                   primary_area_unit='sqmeters', secondary_area_unit='acres').add_to(m)
 
-    folium.features.GeoJson(subcounties, highlight_function=None, name='Sub_County',
-                            overlay=True, control=True,show=False, smooth_factor=None,
-                            embed=True).add_to(m)
-    folium.features.GeoJson(locations,highlight_function=None, name='Location',
-                            overlay=True, control=True, show=False, smooth_factor=None,
-                            embed=True).add_to(m)
-    folium.features.GeoJson(sublocations, highlight_function=None, name='Sub Locations',
-                            overlay=True, control=True, show=False, smooth_factor=None,
-                            embed=True).add_to(m)
+    # folium.features.GeoJson(subcounties, highlight_function=None, name='Sub_County',
+    #                         overlay=True, control=True,show=False, smooth_factor=None,
+    #                         embed=True).add_to(m)
+    # folium.features.GeoJson(locations,highlight_function=None, name='Location',
+    #                         overlay=True, control=True, show=False, smooth_factor=None,
+    #                         embed=True).add_to(m)
+    # folium.features.GeoJson(sublocations, highlight_function=None, name='Sub Locations',
+    #                         overlay=True, control=True, show=False, smooth_factor=None,
+    #                         embed=True).add_to(m)
 
     folium.plugins.Fullscreen(position='topleft', title='Full Screen', title_cancel='Exit Full Screen',
                               force_separate_button=False)
@@ -58,13 +58,5 @@ def my_map(counties, subcounties, locations, sublocations):
                            auto_toggle_display=False, minimized=False, ).add_to(m)
 
     folium.plugins.ScrollZoomToggler().add_to(m)
-
-    # folium.plugins.Search(parcel, search_label=None, search_zoom=None, geom_type='Polygon', position='topleft',
-    #                       placeholder='Search parcel', collapsed=False, ).add_to(m)
-
-    # return m._repr_html_()
-    # if parcel is not None:
-    #     folium.features.GeoJson(parcel, style_function=None, highlight_function=None, name='parcels', overlay=True,
-    #                             control=True, show=True, smooth_factor=None, tooltip=None, embed=True).add_to(m)
 
     return m

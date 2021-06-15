@@ -13,35 +13,39 @@ from django.shortcuts import render, get_object_or_404
 from .utils import get_geo, get_center_coordinates, get_zoom
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
-import folium
 
 
 # from .forms import MeasurementModelForm
 
 
+def get_points(request):
+    cur1 = get_cursor()  # first database connection instance
+    cur2 = get_cursor()  # second database connection instance
+
+    # return parcel data in geojson format
+    query1 = ('SELECT jsonb_build_object FROM public.parcels_json;')
+    cur1.execute(query1)
+
+    # return the centroids of all parcels
+    query2 = ('SELECT jsonb_build_object FROM public.centroids_json;')
+    cur2.execute(query2)
+
+    centroids = cur2.fetchall()
+    centroids_json = centroids[0][0]
+    return JsonResponse(centroids_json)
+
+
 def parcels(request):
-    user = request.user.id_no
-    # owner = Parcels.objects.filter(owner_id=user.id).value_list('lr_no')
-    print('details', ParcelDetails.objects.get(parcel__id=84))
-    print('email', user)
-    tree = ParcelDetails.objects.get(parcel__id=84)
-    print(tree.land_use)
-    # user = request.user print(user.id, user.username)
-    # print('my parcels',Parcels.objects.filter(owner_id=user.id))
-    # all_commenter_ids = PhotoComment.objects.filter(which_photo=which_photo).order_by('-id').values_list(
-    # 'submitted_by', flat=True)[:25]
+    """ function that returns parcels in geojson and generate a folium leaflet map"""
     points_as_geojson = serialize('geojson', Parcels.objects.all())
     parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
-    # map2 = my_map(parcel=parcel, land_parcels=points_as_geojson)
-    # map2.save('templates/parcels/my_map.html')
 
-    print('parcels', parcel)
-    print('land parcels', Parcels.objects.all())
+    # Generating folium leaflet map using my_map function
+    map2 = my_map(parcel=parcel, land_parcels=points_as_geojson)
+    map2.save('parcels/templates/parcels/ownership_map.html')
 
-    print(points_as_geojson)
     return HttpResponse(points_as_geojson, content_type='json')
     # return JsonResponse(json.loads(points_as_geojson))
-
 
 # from django.contrib.gis.geos import Point
 # from django.contrib.gis.measure import D
@@ -101,33 +105,6 @@ def parcels(request):
 #     context = {'object_list': parcel,}
 #     return render(request, 'poco/poco_js.html', context)
 
-
-def get_points(request):
-    cur = get_cursor()
-    # cur.execute("""SELECT json_build_object('type', 'Feature','geometry', ST_AsGeoJSON(the_geom :: geometry) :: json,
-    # 'properties', json_build_object('name', name)) jsonb FROM parcels;""")
-
-    # queryset_parcels = ("""SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(features.feature))
-    #        FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(geom)::jsonb,'properties',
-    #        to_jsonb(inputs)  -'geom') AS feature, 'geometry'
-    #        FROM (SELECT * FROM parcels) inputs) features;""")
-
-    query1 = ('SELECT jsonb_build_object FROM public.parcels_json;')
-    cur.execute(query1)
-
-    # query_set_centroids = ("""SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(
-    # features.feature)) FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(ST_Centroid(
-    # geom))::jsonb,'properties',  to_jsonb(inputs)  -'geom') AS feature, 'geometry' FROM (SELECT * FROM parcels)
-    # inputs) features;""")
-
-    query2 = ('SELECT jsonb_build_object FROM public.centroids_json;')
-    cur.execute(query2)
-
-    parcel = cur.fetchall()
-    centroids_json = parcel[0][0]
-    print('parcel', parcel)
-    print('centroids', centroids_json)
-    return JsonResponse(centroids_json)
 
 # def calculate_distance_view(request):
 #     # initial values

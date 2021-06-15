@@ -6,7 +6,7 @@ endif
 
 build:
 	docker-compose up --build --remove-orphans
-	docker-compose -f docker-compose.prod.yml down -v
+	docker-compose -f docker-compose.yml down -v
 	docker-compose -f docker-compose.yml up -d --build --remove-orphans
 	docker-compose -f docker-compose.yml exec land_app python manage.py migrate --noinput
 
@@ -32,7 +32,7 @@ down-v:
 	docker-compose down -v
 
 volume:
-	docker volume inspect geoapp_postgres_data
+	docker volume inspect land_app_postgres_data
 
 volumecheck:
 	docker volume ls
@@ -41,13 +41,18 @@ shell:
 	docker-compose exec land_app python manage.py shell
 
 database_check:
-	docker-compose exec db psql --username=kevoh --dbname=LIS
+	docker-compose exec postgres-db psql --username=kevoh --dbname=Ardhi
 	docker-compose exec postgres-db psql --username=kevoh --dbname=LIS
 	LIS=# \l
 	LID=# \c
 	LIS=# \dt
 	LIS=# \P
 
+create_app:
+	docker-compose run land_app sh -c "django-admin startapp core"
+
+start_django_proj:
+	docker-compose run land_app sh -c "django-admin startproject ardhi"
 
 #docker-compose -f docker-compose.prod.yml down -v
 #docker-compose -f docker-compose.prod.yml up -d --build

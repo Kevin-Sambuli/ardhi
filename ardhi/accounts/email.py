@@ -1,14 +1,14 @@
 from django.http import HttpResponseRedirect, HttpResponse
-
-
 from django.core.mail import EmailMessage, send_mail
-
 from django.conf import settings
-from accounts.models import Account
+from django.shortcuts import render
+from django.views import View
+
+from ardhi.accounts.models import Account
 
 
 class EmailAttachementView(View):
-    form_class = EmailForm
+    form_class = Account
     template_name = 'ownership/email_attachment.html'
 
     def get(self, request, *args, **kwargs):

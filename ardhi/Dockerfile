@@ -1,6 +1,6 @@
 FROM python:3.9-slim-buster
 
-LABEL maintainer="sambuikevin@outlook.com"
+LABEL maintainer=kevoh
 LABEL description="Land Information web based geodjango application"
 
 # set our working directory inside the container (when it's finally created from this image)
@@ -9,9 +9,13 @@ LABEL description="Land Information web based geodjango application"
 #WORKDIR /app
 RUN mkdir -p /home/app
 
+# create the app user
+#RUN addgroup -S app && adduser -S app -G app
+
 # depending on your environment you may also need to
 RUN mkdir -p /postgres_data
 RUN mkdir -p /pgadmin
+#RUN mkdir -p /geoserver_data
 
 # create the appropriate directories
 ENV HOME=/home/app
@@ -19,6 +23,7 @@ ENV APP_HOME=/home/app/web
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/static
 RUN mkdir $APP_HOME/media
+RUN mkdir $APP_HOME/geoserver
 WORKDIR $APP_HOME
 
 # set environment variables
@@ -65,12 +70,16 @@ RUN pip install -r requirements.txt
 COPY ./entrypoint.sh $APP_HOME
 
 # copy to project
-COPY ./ardhi $APP_HOME
+COPY . $APP_HOME
 
 # chown all the files to the app user
-# RUN chown -R app:app $APP_HOME
+#RUN chown -R app:app $APP_HOME
 
 # change to the app user
-# USER app
+#USER app
+
+#RUN adduser -D kevoh
+#USER kevoh
+#CMD gunicorn ardhi.wsgi:application --bind 0.0.0.0:$PORT
 
 #ENTRYPOINT ["home/app/web/entrypoint.sh"]

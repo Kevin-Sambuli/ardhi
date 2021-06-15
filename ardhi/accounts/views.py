@@ -1,23 +1,16 @@
-from django.conf import settings
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.http import HttpResponse
-from django.core.files.storage import default_storage, FileSystemStorage
-import os, json, base64, requests
-import cv2
-from django.core import files
-from django.views import View
-
-from django.core.mail import EmailMessage, send_mail
-# from .forms import EmailForm, OwnershipForm
-
-from .forms import RegistrationForm, AccountAuthenticationForm, AccountUpdateForm
-from .models import Account
-import datetime
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.conf import settings
+from django.contrib.auth.forms import PasswordChangeForm
+from .forms import RegisterForm, LoginForm, AccountUpdateForm, AccountProfileForm, AccountAddressForm
+import africastalking
+from .models import Profile, GeoLocation, Address
+from .services import get_location
 
 TEMP_PROFILE_IMAGE_NAME = "temp_profile_image.png"
-
-import africastalking
 
 username = "rundalis"
 api_key = "6fd1032dcebdbc0bf7d29d057238ee443ee8388e871aab6da7234f06ff8893bc"
@@ -25,38 +18,6 @@ africastalking.initialize(username, api_key)
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 
-
-# class EmailAttachementView(View):
-#     form_class = EmailForm
-#     template_name = 'ownership/email_attachment.html'
-
-#     def get(self, request, *args, **kwargs):
-#         form = self.form_class()
-#         return render(request, self.template_name, {'email_form': form})
-
-#     def post(self, request, *args, **kwargs):
-#         form = self.form_class(request.POST, request.FILES)
-
-#         if form.is_valid():
-
-#             subject = form.cleaned_data['subject']
-#             message = form.cleaned_data['message']
-#             email = form.cleaned_data['email']
-#             files = request.FILES.getlist('attach')
-
-#             try:
-#                 mail = EmailMessage(subject, message, settings.EMAIL_HOST_USER, [email])
-#                 for f in files:
-#                     mail.attach(f.name, f.read(), f.content_type)
-#                 mail.send()
-#                 return render(request, self.template_name,
-#                               {'email_form': form, 'error_message': 'Sent email to %s' % email})
-#             except:
-#                 return render(request, self.template_name,
-#                               {'email_form': form, 'error_message': 'Either the attachment is too big or corrupt'})
-
-#         return render(request, self.template_name,
-#                       {'email_form': form, 'error_message': 'Unable to send email. Please try again later'})
 
 # Create your views here.
 def registration_view(request):
@@ -66,50 +27,99 @@ def registration_view(request):
 
     context = {}
     if request.POST:
-        form = RegistrationForm(request.POST)
+        form = RegisterForm(request.POST)
         if form.is_valid():
             form.save()
             first_name = form.cleaned_data.get('first_name')
             last_name = form.cleaned_data.get('last_name')
             email = form.cleaned_data.get('email')
             username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+
+            # authenticate the user if information is correct and valid
+            account = authenticate(first_name=first_name, last_name=last_name, email=email,
+                                   username=username, password=password)
+            # login(request, account)
+
+            # data = get_location()
+            #
+            # location = GeoLocation(owner=request.user.id, ip=data["ip"],
+            #                        country_name=data["country_name"], region_code=data["region_code"],
+            #                        city=data["city"], latitude=data['latitude'],
+            #                        longitude=data['longitude'], zip_code=data['zip'],).
+            # location.save()
+
+            messages.success(request, f"Hey {username}, You have successfully been Registered..")
+
+            subject = 'Runda LIS Registration.'
+            message = f"""
+            Hi {first_name} {last_name},Thank you for registering to our services. 
+            Please find the attached certificate of registration"""
+
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, )
+
+            return redirect('login')
+        else:
+            context['registration_form'] = form
+
+    else:
+        form = RegisterForm()
+        context['registration_form'] = form
+    return render(request, 'accounts/register.html', context)
+
+
+def profile_view(request):
+    context = {}
+    if request.POST:
+        form = AccountProfileForm(request.POST)
+        if form.is_valid():
+            form.save()
+
             gender = form.cleaned_data.get('gender')
             kra_pin = form.cleaned_data.get('kra_pin')
             id_no = form.cleaned_data.get('id_no')
             dob = form.cleaned_data.get('dob')
             phone = form.cleaned_data.get('phone')
-            password = form.cleaned_data.get('password1')
 
-            # authenticate the user if information is correct and valid
-            account = authenticate(first_name=first_name, last_name=last_name, email=email,
-                                   username=username, gender=gender, kra_pin=kra_pin, id_no=id_no,
-                                   dob=dob, phone=phone, password=password)
+            # update user profile
+            profile = Profile(owner_id=request.user.id, gender=gender, kra_pin=kra_pin, id_no=id_no,
+                              dob=dob, phone=phone)
+            profile.save()
 
-            login(request, account)
-
-            subject = 'Runda LIS registration.'
-            message = f'Hi {first_name} {last_name},Thank you for registering to our services'
-
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, )
-
-            # Use the service synchronously
-            response = sms.send(message, [phone])
-            print(response)
+            messages.success(request, f"Hey {username}, You have successfully Updated your profile..")
 
             # return redirect('success')
             return redirect('home')
         else:
-            context['registration_form'] = form
-
+            context['profile_form'] = form
     else:
-        form = RegistrationForm()
-        context['registration_form'] = form
-    return render(request, 'accounts/register.html', context)
+        form = AccountProfileForm()
+        context['profile_form'] = form
+    return render(request, 'accounts/profile.html', context)
 
 
-def logout_view(request):
-    logout(request)
-    return redirect('home')
+def address_view(request):
+    context = {}
+    if request.POST:
+        form = AccountAddressForm(request.POST)
+        if form.is_valid():
+            form.save()
+            street = form.cleaned_data.get('street')
+            city = form.cleaned_data.get('city')
+            code = form.cleaned_data.get('code')
+
+            # update user address
+            address = Address(owner_id=request.user.id, street=street, city=city, code=code)
+            address.save()
+
+            # return redirect('success')
+            return redirect('home')
+        else:
+            context['address_form'] = form
+    else:
+        form = AccountAddressForm()
+        context['address_form'] = form
+    return render(request, 'accounts/address.html', context)
 
 
 def login_view(request):
@@ -117,28 +127,35 @@ def login_view(request):
 
     user = request.user
     if user.is_authenticated:
+        messages.success(request, f'Welcome back {request.user.username}, you have been logged in!')
         return redirect("home")
 
     if request.POST:
-        form = AccountAuthenticationForm(request.POST)
+        form = LoginForm(request.POST)
         if form.is_valid():
             email = request.POST['email']
             password = request.POST['password']
             user = authenticate(email=email, password=password)
+            return redirect('home')
 
-            if user:
-                login(request, user)
-                return redirect("home")
+            # data = get_location()
+            #
+            # location = GeoLocation(owner=request.user.id, ip=data["ip"],
+            #                        country_name=data["country_name"], region_code=data["region_code"],
+            #                        city=data["city"], latitude=data['latitude'],
+            #                        longitude=data['longitude'], zip_code=data['zip'],)
+            # location.save()
 
+        else:
+            messages.success(request, 'Error while logging in. Please try again')
+            return redirect('login')
     else:
-        form = AccountAuthenticationForm()
-
+        form = LoginForm()
     context['login_form'] = form
     return render(request, "accounts/login.html", context)
 
 
-# function for account view
-def account_view(request):
+def edit_account(request):
     if not request.user.is_authenticated:
         return redirect("login")
 
@@ -148,10 +165,12 @@ def account_view(request):
         if form.is_valid():
             form.initial = {
                 "email": request.POST["email"],
-                "username": request.POST["username"]
+                "username": request.POST["username"],
             }
             form.save()
             context["success_message"] = "Account successfully updated"
+            messages.success(request, f" Hey ,{request.user.username}, You have edited your profile")
+            return redirect('home')
     else:
         form = AccountUpdateForm(
             initial={
@@ -160,26 +179,29 @@ def account_view(request):
             }
         )
     context['account_form'] = form
-    return render(request, "accounts/account.html", context)
+    return render(request, "accounts/edit_account.html", context)
 
 
-def must_authenticate_view(request):
-    return render(request, 'accounts/must_authenticate.html', {})
-
-
-def home_screen_view(request, *args, **kwargs):
+def update_password(request):
     context = {}
+    if request.POST:
+        form = PasswordChangeForm(data=request.POST, instance=request.user.id)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)
+            messages.success(request, 'You have edited your Password')
+            return redirect('home')
+        else:
+            messages.success(request, 'Error while changing your password. Please try again')
+            return redirect('login')
+    else:
+        form = PasswordChangeForm(user=request.user)
+    context['password_form'] = form
+    return render(request, "accounts/update_password.html", context)
 
-    users = Account.objects.all()
-    context['users'] = users
 
-    return render(request, "index.html", context)
+def logout_view(request):
+    logout(request)
+    messages.success(request, f'You {request.user.username} have been logged out!')
 
-
-# view to display all users
-def user_list_view(request):
-    context = {}
-    users = Account.objects.all()
-    context['users'] = users
-
-    return render(request, "users_list.html", context)
+    return redirect('home')

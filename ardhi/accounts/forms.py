@@ -1,32 +1,35 @@
-from django import forms
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import authenticate
-
-from .models import Account
-
-# class OwnershipForm(forms.ModelForm):
-
-#     class Meta:
-#         model = Account
-#         fields = '__all__'
+from django import forms
+from .models import Account, Profile, Address
 
 
-# # multiple files
-# class EmailForm(forms.Form):
-#     email = forms.EmailField()
-#     subject = forms.CharField(max_length=100)
-#     attach = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}))
-#     message = forms.CharField(widget=forms.Textarea)
-
-
-class RegistrationForm(UserCreationForm):
-    email = forms.EmailField(max_length=100)  # help_text='Add a valid email address.')
+class RegisterForm(UserCreationForm):
+    first_name = forms.CharField(label="", max_length=100,
+                                 widget=forms.TextInput(attrs={'class': 'form_control', 'placeholder': 'First Name'}))
+    last_name = forms.CharField(label="", max_length=100,
+                                widget=forms.TextInput(attrs={'class': 'form_control', 'placeholder': 'Last Name'}))
+    email = forms.EmailField(label="", max_length=100,
+                             widget=forms.TextInput(attrs={'class': 'form_control', 'placeholder': 'Email address'}))
 
     class Meta:
         model = Account
-        fields = ('first_name', 'last_name', 'email', 'username', 'gender', 'kra_pin', 'id_no',
-                  'dob', 'phone', 'password1', 'password2',)
-        # fields = '__all__'
+        fields = ('first_name', 'last_name', 'email', 'username', 'password1', 'password2',)
+
+    def __init__(self, *args, **kwargs):
+        super(RegisterForm, self).__init__(*args, **kwargs)
+
+        self.fields['username'].widget.attrs['class'] = 'form-control'
+        self.fields['username'].widget.attrs['placeholder'] = 'User Name'
+        self.fields['username'].label = ""
+
+        self.fields['password1'].widget.attrs['class'] = 'form-control'
+        self.fields['password1'].widget.attrs['placeholder'] = 'Password'
+        self.fields['password1'].label = ""
+
+        self.fields['password2'].widget.attrs['class'] = 'form-control'
+        self.fields['password2'].widget.attrs['placeholder'] = 'Confirm Password'
+        self.fields['password2'].label = ""
 
     def clean_email(self):
         email = self.cleaned_data['email'].lower()
@@ -45,15 +48,69 @@ class RegistrationForm(UserCreationForm):
         raise forms.ValidationError('Username "%s" is already in use.' % username)
 
 
+class AccountProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        fields = ("kra_pin", "dob", "id_no", "phone", "gender", "profile_image",)
+
+    def __init__(self, *args, **kwargs):
+        super(AccountProfileForm, self).__init__(*args, **kwargs)
+
+        self.fields['kra_pin'].widget.attrs['class'] = 'form-control'
+        self.fields['kra_pin'].widget.attrs['placeholder'] = 'KRA PIN'
+        self.fields['kra_pin'].label = ""
+
+        self.fields['id_no'].widget.attrs['class'] = 'form-control'
+        self.fields['id_no'].widget.attrs['placeholder'] = 'Id Number'
+        self.fields['id_no'].label = ""
+
+        self.fields['phone'].widget.attrs['class'] = 'form-control'
+        self.fields['phone'].widget.attrs['placeholder'] = 'Telephone'
+        self.fields['phone'].label = ""
+
+        self.fields['dob'].widget.attrs['class'] = 'form-control'
+        self.fields['dob'].widget.attrs['placeholder'] = 'Date of Birth'
+        self.fields['dob'].label = ""
 
 
-# login authenticated users
-class AccountAuthenticationForm(forms.ModelForm):
-    password = forms.CharField(label='Password', widget=forms.PasswordInput)
+class AccountAddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = ("street", "city", "code")
+
+    def __init__(self, *args, **kwargs):
+        super(AccountAddressForm, self).__init__(*args, **kwargs)
+
+        self.fields['street'].widget.attrs['class'] = 'form-control'
+        self.fields['street'].widget.attrs['placeholder'] = 'Street'
+        self.fields['street'].label = ""
+
+        self.fields['city'].widget.attrs['class'] = 'form-control'
+        self.fields['city'].widget.attrs['placeholder'] = 'City'
+        self.fields['city'].label = ""
+
+        self.fields['code'].widget.attrs['class'] = 'form-control'
+        self.fields['code'].widget.attrs['placeholder'] = 'Code'
+        self.fields['code'].label = ""
+
+
+class LoginForm(forms.ModelForm):
+    password = forms.CharField(label='', widget=forms.PasswordInput)
 
     class Meta:
         model = Account
         fields = ('email', 'password')
+
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+
+        self.fields['email'].widget.attrs['class'] = 'form-control'
+        self.fields['email'].widget.attrs['placeholder'] = 'Enter valid email'
+        self.fields['email'].label = ""
+
+        self.fields['password'].widget.attrs['class'] = 'form-control'
+        self.fields['password'].widget.attrs['placeholder'] = 'password'
+        self.fields['password'].label = ""
 
     def clean(self):
         if self.is_valid():
@@ -64,9 +121,11 @@ class AccountAuthenticationForm(forms.ModelForm):
 
 
 class AccountUpdateForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.TextInput(attrs={'type': 'hidden'}))
+
     class Meta:
         model = Account
-        fields = ('email', 'username','profile_image')
+        fields = ('email', 'username')
 
     def clean_email(self):
         email = self.cleaned_data['email']
@@ -83,13 +142,11 @@ class AccountUpdateForm(forms.ModelForm):
         except Account.DoesNotExist:
             return username
         raise forms.ValidationError('Username "%s" is already in use.' % username)
-    
+
     def save(self, commit=True):
         account = super(AccountUpdateForm, self).save(commit=False)
         account.username = self.cleaned_data['username']
         account.email = self.cleaned_data['email'].lower()
-        account.profile_image = self.cleaned_data['profile_image']
-        # account.hide_email = self.cleaned_data['hide_email']
         if commit:
             account.save()
         return account

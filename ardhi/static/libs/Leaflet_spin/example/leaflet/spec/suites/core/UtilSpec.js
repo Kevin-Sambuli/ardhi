@@ -186,7 +186,7 @@ describe('Util', function () {
 
 	// TODO setOptions
 
-	describe('#template', function () {
+	describe('#templates', function () {
 		it('evaluates templates with a given data object', function () {
 			var tpl = 'Hello {foo} and {bar}!';
 
@@ -207,7 +207,7 @@ describe('Util', function () {
 			})).to.eql('He said: "Hello"!');
 		});
 
-		it('throws when a template token is not given', function () {
+		it('throws when a templates token is not given', function () {
 			expect(function () {
 				L.Util.template(undefined, {foo: 'bar'});
 			}).to.throwError();

@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from accounts.models import Account
+from ardhi.accounts.models import Account
+
+from django.contrib.auth import get_user_model, authenticate
+from django.core.exceptions import ValidationError
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -7,10 +10,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Account
-        fields = ['first_name', 'last_name', 'email', 'username', 'gender', 'kra_pin',
-                  'id_no', 'dob', 'phone', 'password', 'password2']
+        fields = ['first_name', 'last_name', 'email', 'username','password', 'password2']
 
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {'password': {'write_only': True, 'min_length': 5}}
 
     def create(self, validated_data):
         account = Account(
@@ -18,11 +20,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
             last_name=self.validated_data['last_name'],
             email=self.validated_data['email'],
             username=self.validated_data['username'],
-            gender=self.validated_data['username'],
-            kra_pin=self.validated_data['kra_pin'],
-            id_no=self.validated_data['id_no'],
-            dob=self.validated_data['dob'],
-            phone=self.validated_data['phone'],
         )
         password = self.validated_data['password']
         password2 = self.validated_data['password2']
@@ -30,6 +27,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({'password': 'Passwords must match.'})
         account.set_password(password)
         account.save()
+        return account
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        account = super().update(instance, validated_data)
+        if password:
+            account.set_password(password)
+            account.save
         return account
 
 

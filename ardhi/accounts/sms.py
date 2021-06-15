@@ -1,26 +1,20 @@
-# import package
 import africastalking
 
 # Initialize SDK
 # username = os.getenv('user_name', 'sandbox')
 # api_key = os.getenv('api_key', 'fake')
-username = "rundalis"  # use 'sandbox' for development in the test environment
-api_key = "6fd1032dcebdbc0bf7d29d057238ee443ee8388e871aab6da7234f06ff8893bc"  # use your sandbox app API key for development in the test environment
+username = "rundalis"
+api_key = "6fd1032dcebdbc0bf7d29d057238ee443ee8388e871aab6da7234f06ff8893bc"
 africastalking.initialize(username, api_key)
 
 # Initialize a service e.g. SMS
-
-
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 airtime = africastalking.Airtime
 payment = africastalking.Payment
 
 # Use the service synchronously
-num = "0729759023"
-sender = "AFRICASTALKING"
 response = sms.send("Hello message!", ["+254729759023"])
-# response = sms.send("Hello Message!", [num])
 print('response=', response)
 
 # Or use it asynchronously

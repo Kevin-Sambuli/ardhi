@@ -1,0 +1,57 @@
+-- select * from counties;
+
+-- returning the centroids of all parcels
+create view centroids_json as
+    SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(
+        features.feature)) FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(ST_Centroid(
+        geom))::jsonb,'properties',  to_jsonb(inputs)  -'geom') AS feature, 'geometry' FROM (SELECT * FROM parcels)
+        inputs) features;
+
+
+-- returning the geojson of parcels
+create view parcels_json as
+    SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(features.feature))
+    FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(geom)::jsonb,'properties',
+    to_jsonb(inputs)  -'geom') AS feature, 'geometry'
+    FROM (SELECT * FROM parcels) inputs) features;
+
+-- returning the geojson of all counties
+create view counties_json as
+	SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(
+    features.feature)) FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(ST_Centroid(
+    geom))::jsonb,'properties',  to_jsonb(inputs)  -'geom') AS feature, 'geometry' FROM (SELECT * FROM counties)
+    inputs) features;
+
+comment on view counties_json is 'county geojson';
+
+
+-- creating geojson of sub counties
+create view subcounty_json as
+	SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(
+    features.feature)) FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(ST_Centroid(
+    geom))::jsonb,'properties',  to_jsonb(inputs)  -'geom') AS feature, 'geometry' FROM (SELECT * FROM subcounties
+        )inputs) features;
+
+comment on view subcounty_json is 'subcounty geojson';
+
+
+-- generating location geojson
+create view location_json as
+	SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(
+    features.feature)) FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(ST_Centroid(
+    geom))::jsonb,'properties',  to_jsonb(inputs)  -'geom') AS feature, 'geometry' FROM (SELECT * FROM locations
+        )inputs) features;
+
+comment on view location_json is 'location geojson';
+
+
+
+-- generating sub location geojson
+create view subloc_json as
+	SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(
+    features.feature)) FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(ST_Centroid(
+    geom))::jsonb,'properties',  to_jsonb(inputs)  -'geom') AS feature, 'geometry' FROM (SELECT * FROM sublocations
+        )inputs) features;
+
+comment on view subloc_json is 'sublocation geojson';
+

@@ -164,8 +164,8 @@ function getParamString(obj, existingUrl, uppercase) {
 
 var templateRe = /\{ *([\w_-]+) *\}/g;
 
-// @function template(str: String, data: Object): String
-// Simple templating facility, accepts a template string of the form `'Hello {a}, {b}'`
+// @function templates(str: String, data: Object): String
+// Simple templating facility, accepts a templates string of the form `'Hello {a}, {b}'`
 // and a data object like `{a: 'foo', b: 'bar'}`, returns evaluated string
 // `('Hello foo, bar')`. You can also specify functions instead of strings for
 // data values — they will be evaluated passing `data` as an argument.
@@ -11576,7 +11576,7 @@ function gridLayer(options) {
  * L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png?{foo}', {foo: 'bar', attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>'}).addTo(map);
  * ```
  *
- * @section URL template
+ * @section URL templates
  * @example
  *
  * A string of the following form:
@@ -11587,7 +11587,7 @@ function gridLayer(options) {
  *
  * `{s}` means one of the available subdomains (used sequentially to help with browser parallel requests per domain limitation; subdomain values are specified in options; `a`, `b` or `c` by default, can be omitted), `{z}` — zoom level, `{x}` and `{y}` — tile coordinates. `{r}` can be used to add "&commat;2x" to the URL to load retina tiles.
  *
- * You can use custom keys in the template, which will be [evaluated](#util-template) from TileLayer options, like this:
+ * You can use custom keys in the templates, which will be [evaluated](#util-templates) from TileLayer options, like this:
  *
  * ```
  * L.tileLayer('http://{s}.somedomain.com/{foo}/{z}/{x}/{y}.png', {foo: 'bar'});
@@ -11672,7 +11672,7 @@ var TileLayer = GridLayer.extend({
 	},
 
 	// @method setUrl(url: String, noRedraw?: Boolean): this
-	// Updates the layer's URL template and redraws it (unless `noRedraw` is set to `true`).
+	// Updates the layer's URL templates and redraws it (unless `noRedraw` is set to `true`).
 	// If the URL does not change, the layer will not be redrawn unless
 	// the noRedraw parameter is set to false.
 	setUrl: function (url, noRedraw) {
@@ -11827,7 +11827,7 @@ var TileLayer = GridLayer.extend({
 
 
 // @factory L.tilelayer(urlTemplate: String, options?: TileLayer options)
-// Instantiates a tile layer object given a `URL template` and optionally an options object.
+// Instantiates a tile layer object given a `URL templates` and optionally an options object.
 
 function tileLayer(url, options) {
 	return new TileLayer(url, options);

@@ -62,7 +62,7 @@ THIRD_PIRTY_APPS = [
     'djgeojson',
 ]
 
-PROJECT_APPS = ['accounts', 'regions', 'parcels']
+PROJECT_APPS = ['accounts', 'regions', 'parcels', 'payments']
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PIRTY_APPS + PROJECT_APPS
 
@@ -70,6 +70,9 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PIRTY_APPS + PROJECT_APPS
 AUTH_USER_MODEL = 'accounts.Account'
 # sign up form
 SIGNUP_FORM_CLASS = 'accounts.forms.RegistrationForm'
+
+# LOGIN_REDIRECT_URL = "home"
+# LOGOUT_REDIRECT_URL = "home"
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
@@ -125,14 +128,14 @@ DATABASES = {
     }
 }
 
-# local database
+# # local database
 # DATABASES = {
 #     'default': {
 #         'ENGINE': env("PG_ENGINE"),
 #         'NAME': env("PG_NAME"),
 #         'USER': env("PG_USER_LOCAL"),
-#         'PASSWORD': env("PG_PASS"),
-#         'HOST': env("PG_DB_HOST"),
+#         'PASSWORD': env("PG_PASS_LOCAL"),
+#         'HOST': env("PG_HOST_LOCAL"),
 #         'PORT': env("PG_PORT"),
 #     },
 # }
@@ -160,7 +163,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Nairobi'
 
 USE_I18N = True
 
@@ -245,8 +248,8 @@ SERIALIZATION_MODULES = {
 
 # celery url
 
-# CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
-# CELERY_RESULT_BACKEND = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379")
 # BROKER_URL = 'redis://localhost:6379'
 # CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 # CELERY_ACCEPT_CONTENT = ['application/json']

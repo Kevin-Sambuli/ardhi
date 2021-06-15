@@ -1,5 +1,5 @@
 from django.urls import path
-from accounts.api.views import (
+from ardhi.accounts.api.views import (
             registration_view,
             ObtainAuthTokenView,
             account_properties_view,

@@ -2,7 +2,6 @@ from django.contrib.gis.geoip2 import GeoIP2
 
 
 # Helper functions
-
 # def get_ip_address(request):
 #     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
 #     print('ip', x_forwarded_for)

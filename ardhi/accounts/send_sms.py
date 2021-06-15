@@ -7,15 +7,14 @@ import africastalking
 #     api_key='[1c2f60bceb80f2f8666092cd97b40dbe73a82193c0937fcfc64b2b8f95a1e1cd4]'
 # )
 
-username = 'rundalis'
-api_key = '1c2f60bceb80f2f8666092cd97b40dbe73a82193c0937fcfc64b2b8f95a1e1cd4'
-africastalking.initialize(username, api_key)
 
-sms = africastalking.SMS
+class SendSMS:
 
+    username = 'rundalis'
+    api_key = '1c2f60bceb80f2f8666092cd97b40dbe73a82193c0937fcfc64b2b8f95a1e1cd4'
+    africastalking.initialize(username, api_key)
 
-class send_sms:
-    # sms = africastalking.SMS
+    sms = africastalking.SMS
 
     def send(self):
         # TODO: Send message
@@ -31,4 +30,5 @@ class send_sms:
         except Exception as e:
             print(f'Sambuli, we have a problem: {e}')
 
-send_sms.send()
+
+    # send_sms.send()

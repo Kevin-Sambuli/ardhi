@@ -1,0 +1,96 @@
+<html>
+<head>
+    {% load leaflet_tags %}
+    {% leaflet_js plugins="ALL" %}
+    {% leaflet_css plugins="ALL" %}
+
+    <style>
+        {#.leaflet-container { height: 80%; width: 90%; padding-left: 0.5%; padding-right: 0.5%}#}
+        .leaflet-container { /* all maps */
+            width: 800px;
+            height: 500px;
+        }
+
+        #specialbigmap {
+            height: 800px;
+        }
+
+        /* Resize the "display_raw" textbox */
+        .django-leaflet-raw-textarea {
+            width: 100%;
+        }
+    </style>
+
+    <script>
+        var dataurl = '{% url "data" %}';
+    {##}
+    {#    function highlightFeature(e) {#}
+    {#        var layer = e.target;layer.setStyle({#}
+    {#            weight: 5,#}
+    {#            color: '#666',#}
+    {#            dashArray: '',#}
+    {#            fillOpacity: 0.7#}
+    {#        });#}
+    {##}
+    {#if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {#}
+    {#    layer.bringToFront();#}
+    {#        }#}
+    {#    }#}
+    {#    function resetHighlight(e) {geojson.resetStyle(e.target);}#}
+        function zoomToFeature(e) {map.fitBounds(e.target.getBounds());}
+
+
+
+        window.addEventListener("map:init", function (event)
+        {
+            var map = event.detail.map;
+            // Download GeoJSON data with Ajax
+            fetch(dataurl)
+                .then(function (resp) {
+                    return resp.json();
+                })
+                .then(function (data)
+               {
+                    L.geoJson(data,
+                        {
+                            onEachFeature: function onEachFeature(feature, layer)
+                            {
+                                layer.bindPopup('<h3 style="align-content: center">Parcel Details</h3>' +
+                                    '<p>Owner: ' + feature.properties.owner + '</p> ' +
+                                    '<p>Parcel ID: ' + feature.properties.id + '</p> ' +
+                                    '<p>Parcel Number: ' + feature.properties.lr_no + '</p> ' +
+                                    '<p>Area: ' + feature.properties.area_ha + ' Ha</p>' +
+                                    '<p>Perimeter: ' + feature.properties.perimeter + ' M</p>').openPopup();
+                                layer.on({
+                                    {#mouseover: highlightFeature,#}
+                                    {#mouseout: resetHighlight,#}
+                                    click: zoomToFeature });
+                            },
+                            style:
+                                {
+                                    fillColor: 'yellow',
+                                    fillOpacity: 0.2,
+                                    color: '#c0c0c0',
+                                }
+                        }
+                    ).addTo(map);
+               });
+        });
+    </script>
+
+</head>
+<body>
+    <div style="align-content: center">
+        <h1 style="align-content: center">Ardhi Land Parcels</h1>
+        {% leaflet_map "main" %}
+    </div>
+    <br><hr>
+
+    <div style="padding-left: 10px">
+        <p style="font-weight: bold; font-size: 14px;">
+            Click to return to the <a href=" {% url 'login' %}" style="font-weight: bold">Login</a>
+        </p>
+    </div>
+
+</body>
+</html>

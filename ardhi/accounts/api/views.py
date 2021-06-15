@@ -8,8 +8,8 @@ from django.contrib.auth import authenticate
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 
-from accounts.api.serializers import RegistrationSerializer, AccountPropertiesSerializer, ChangePasswordSerializer
-from accounts.models import Account
+from ardhi.accounts.api.serializers import RegistrationSerializer, AccountPropertiesSerializer, ChangePasswordSerializer
+from ardhi.accounts.models import Account
 from rest_framework.authtoken.models import Token
 
 
