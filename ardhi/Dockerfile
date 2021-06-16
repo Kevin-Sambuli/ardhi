@@ -1,7 +1,7 @@
-FROM python:3.9-slim-buster
+FROM python:3.8-slim-buster
 
 LABEL maintainer=kevoh
-LABEL description="Land Information web based geodjango application"
+LABEL description="Web based geodjango Land Information application"
 
 # set our working directory inside the container (when it's finally created from this image)
 # depending on your environment you may need to
@@ -15,7 +15,7 @@ RUN mkdir -p /home/app
 # depending on your environment you may also need to
 RUN mkdir -p /postgres_data
 RUN mkdir -p /pgadmin
-#RUN mkdir -p /geoserver_data
+RUN mkdir -p /geoserver_data
 
 # create the appropriate directories
 ENV HOME=/home/app
@@ -23,15 +23,12 @@ ENV APP_HOME=/home/app/web
 RUN mkdir $APP_HOME
 RUN mkdir $APP_HOME/static
 RUN mkdir $APP_HOME/media
-RUN mkdir $APP_HOME/geoserver
+#RUN mkdir $APP_HOME/geoserver
 WORKDIR $APP_HOME
 
 # set environment variables
-# Prevents Python from writing .pyc files to disc
-ENV PYTHONDONTWRITEBYTECODE 1
-
-# Prevents Python from buffering stdout and stderr
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1 # Prevents Python from writing .pyc files to disc
+ENV PYTHONUNBUFFERED 1 # Prevents Python from buffering stdout and stderr
 
 # install psycopg2 dependencies
 #RUN apt-get update \

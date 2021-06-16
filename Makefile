@@ -57,3 +57,6 @@ start_django_proj:
 #docker-compose -f docker-compose.prod.yml down -v
 #docker-compose -f docker-compose.prod.yml up -d --build
 #docker-compose -f docker-compose.prod.yml exec land_app python manage.py migrate --noinput
+
+#docker-compose up -a # showing running containers
+#docker-compose inspect 977654323456 # returning container information

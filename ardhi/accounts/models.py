@@ -101,10 +101,10 @@ class Account(AbstractBaseUser, PermissionsMixin):
 #         Token.objects.create(user=instance)
 
 
-@receiver(post_save, sender=Account)
-def create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        Account.objects.create(user=instance)
+# @receiver(post_save, sender=Account)
+# def create_user_profile(sender, instance, created, **kwargs):
+#     if created:
+#         Account.objects.create(user=instance)
 
 
 # @receiver(post_save, sender=Account)
@@ -173,7 +173,7 @@ class Profile(models.Model):
     ]
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
                               null=True, default=None)
-    gender = models.CharField('Gender', max_length=1, choices=GENDER, default=None)
+    gender = models.CharField('Gender', max_length=1, choices=GENDER, default=MALE)
     kra_pin = models.CharField('KRA PIN', max_length=20, unique=True, blank=False)
     id_no = models.CharField('ID NO', max_length=10, unique=True, blank=False)
     dob = models.DateField('Date of Birth', blank=False)

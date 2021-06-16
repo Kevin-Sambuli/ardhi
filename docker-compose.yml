@@ -1,4 +1,4 @@
-version: "3.9"
+version: "3.8"
 
 services:
   land_app:
@@ -24,8 +24,8 @@ services:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASS=${PG_PASS}
       - POSTGRES_DB=${PG_NAME}
-      - CELERY_BROKER=${CELERY_BROKER}
-      - CELERY_BACKEND=${CELERY_BACKEND}
+#      - CELERY_BROKER=${CELERY_BROKER}
+#      - CELERY_BACKEND=${CELERY_BACKEND}
     restart: "on-failure"
     depends_on:
       - postgres-db
@@ -45,7 +45,6 @@ services:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASS=${PG_PASS}
       - POSTGRES_DB=${PG_NAME}
-      - ALLOW_IP_RANGE=0.0.0.0/0
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting,
     networks:
       - land_app
@@ -55,17 +54,41 @@ services:
     image: dpage/pgadmin4
     restart: unless-stopped
     environment:
-      - PGADMIN_DEFAULT_EMAIL=sambulikevin@gmail.com
-      - PGADMIN_DEFAULT_PASSWORD=kevoh1995
-      - PGADMIN_CONFIG_SERVER_MODE="False"
-    # volumes:
-    #   - pgadmin:/root/.pgadmin
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+#      - PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION=True
+#      - PGADMIN_CONFIG_LOGIN_BANNER=Authorised users only!
+#      - PGADMIN_CONFIG_CONSOLE_LOG_LEVEL=10'
+      # - PGADMIN_ENABLE_TLS=True
+#    volumes:
+#      - pgadmin:/var/lib/pgadmin
     ports:
       - "5050:80"
     depends_on:
       - postgres-db
-    # networks:
-    #   - land_app
+
+
+  geoserver:
+    image: kartoza/geoserver
+    build:
+      context: ./ardhi/compose/geoserver
+      dockerfile: Dockerfile
+    container_name: geoserver
+    volumes:
+     - geoserver_data:/opt/geoserver/data_dir
+    ports:
+     - "8600:8080"
+    restart: on-failure
+    depends_on:
+     - postgres-db
+    environment:
+     - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+     - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
+     - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+     - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
+     - INITIAL_MEMORY=${INITIAL_MEMORY}
+     - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+     - RECREATE_DATADIR=${RECREATE_DATADIR}
 
   redis:
     restart: unless-stopped
@@ -116,7 +139,44 @@ services:
     networks:
       - land_app
 
-#   geoserver:
+networks:
+  land_app:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  redisdata:
+#  pgadmin:
+  geoserver_data:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    #   geoserver:
 #     image: kartoza/geoserver
 #     build:
 #       context: ./ardhi/compose/geoserver
@@ -144,21 +204,13 @@ services:
 #       - HTTP_PROXY_PORT
 
 
-networks:
-  land_app:
-    driver: bridge
-
-volumes:
-  postgres_data:
-  pgadmin:
-  static_volume:
-  media_volume:
-  redisdata:
-  data:
-  # geoserver-data:
 
 
 
+
+
+
+# 
 #  qgis:
 #    image: kartoza/qgis-server
 #    container_name: QGIS
