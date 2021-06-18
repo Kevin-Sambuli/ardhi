@@ -1,1 +1,1 @@
-web: gunicorn Land_info.wsgi --log-file -
+web: gunicorn ardhi.wsgi --log-file -

@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 # from pathlib import Path
 import os
 import environ
+# from decouple import config
 from django.contrib import staticfiles
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -27,12 +28,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # environ.Env.read_env(env_file='.env')
 # SECRET_KEY = os.environ.get("SECRET_KEY")
 SECRET_KEY ='django-insecure-bejnxzbe$j3mi^zv(z6()3=d9)7_kp-o6trkx+74l17aqkpl$_'
-# DEBUG = env('DEBUG')
-DEBUG = True
+# DEBUG = True
+DEBUG=os.environ.get("DEBUG")
 
 # Application definition
 # ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS =['ardhi-land-info.herokuapp.com','localhost', '127.0.0.1']
 
 # Application definition
 if DEBUG:
@@ -86,10 +87,9 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     # 'django.middleware.cache.UpdateCacheMiddleware',
-    # 'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -120,26 +120,26 @@ WSGI_APPLICATION = 'ardhi.wsgi.application'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 # docker database
-DATABASES = {
-    'default': {
-        'ENGINE': env("PG_ENGINE"),
-        'NAME': env("PG_NAME"),
-        'USER': env("PG_USER"),
-        'PASSWORD': env("PG_PASS"),
-        'HOST': env("PG_DB_HOST"),
-        'PORT': env("PG_PORT"),
-    }
-}
+# DATABASES = {
+#     'default': {
+        # 'ENGINE': os.environ.get("PG_ENGINE"),
+#         'NAME': os.environ.get("PG_NAME"),
+#         'USER': os.environ.get("PG_USER"),
+#         'PASSWORD': os.environ.get("PG_PASS"),
+#         'HOST': os.environ.get("PG_DB_HOST"),
+#         'PORT': os.environ.get("PG_PORT"),
+#     }
+# }
 
 # # local database
 # DATABASES = {
 #     'default': {
-#         'ENGINE': env("PG_ENGINE"),
-#         'NAME': env("PG_NAME"),
-#         'USER': env("PG_USER_LOCAL"),
-#         'PASSWORD': env("PG_PASS_LOCAL"),
-#         'HOST': env("PG_HOST_LOCAL"),
-#         'PORT': env("PG_PORT"),
+#         'ENGINE': os.environ.get("PG_ENGINE"),
+#         'NAME': os.environ.get("PG_NAME"),
+#         'USER': os.environ.get("PG_USER_LOCAL"),
+#         'PASSWORD': os.environ.get("PG_PASS_LOCAL"),
+#         'HOST': os.environ.get("PG_HOST_LOCAL"),
+#         'PORT': os.environ.get("PG_PORT"),
 #     },
 # }
 
@@ -153,6 +153,18 @@ DATABASES = {
 #         'PORT': 5432,
 #     },
 # }
+
+# heroku database
+DATABASES = {
+    'default': {
+        'ENGINE': os.environ.get("PG_ENGINE"),
+        'NAME': os.environ.get("PG_DATABASE_NAME"),
+        'USER': os.environ.get("POSTGRES_USER"),
+        'PASSWORD': os.environ.get("POSTGRES_PASS"),
+        'HOST': os.environ.get("PG_HOST"),
+        'PORT': os.environ.get("PG_PORT"),
+    },
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -247,33 +259,11 @@ SERIALIZATION_MODULES = {
 #     ]
 # }
 
-# django redis cache
-
-# CACHE_TTL = 60 * 1500
-# CACHES = {
-#     "default": {
-#         "BACKEND": "django_redis.cache.RedisCache",
-#         "LOCATION": "redis://127.0.0.1:6379/0",
-#         "OPTIONS": {
-#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-#         }
-#     }
-# }
-
 # celery url
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379")
-# BROKER_URL = 'redis://localhost:6379'
-# CELERY_RESULT_BACKEND = 'redis://localhost:6379'
-# CELERY_ACCEPT_CONTENT = ['application/json']
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'Africa/Nairobi'
 
-# using django redis for sessions
-# SESSION_ENGINE = "django.contrib.sessions.backends.cache"
-# SESSION_CACHE_ALIAS = "default"
 
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -281,13 +271,6 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379")
 #     )
 # }
 
-# STREAM_API_KEY = YOUR_STREAM_API_KEY # https://getstream.io/dashboard/
-# STREAM_API_SECRET = YOUR_STREAM_API_SECRET
-# DJOSER = {
-#     'SERIALIZERS': {
-#         'token': 'auth.serializers.StreamTokenSerializer',
-#     }
-# }
 
 
 # REDIS_HOST = 'localhost'

@@ -5,7 +5,7 @@ ifneq (,$(wildcard .env))
 endif
 
 build:
-	docker-compose up --build --remove-orphans
+	docker-compose up docker-compose.yml --build --remove-orphans
 	docker-compose -f docker-compose.yml down -v
 	docker-compose -f docker-compose.yml up -d --build --remove-orphans
 	docker-compose -f docker-compose.yml exec land_app python manage.py migrate --noinput
