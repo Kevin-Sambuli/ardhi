@@ -23,27 +23,30 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
 # SECURITY WARNING: don't run with debug turned on in production!
-env = environ.Env(DEBUG=(bool, False))
-environ.Env.read_env(env_file='.env')
-SECRET_KEY = os.environ.get("SECRET_KEY")
-DEBUG = env('DEBUG')
+# env = environ.Env(DEBUG=(bool, False))
+# environ.Env.read_env(env_file='.env')
+# SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY ='django-insecure-bejnxzbe$j3mi^zv(z6()3=d9)7_kp-o6trkx+74l17aqkpl$_'
+# DEBUG = env('DEBUG')
+DEBUG = True
 
 # Application definition
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = []
 
 # Application definition
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     EMAIL_HOST_USER = 'sambulikevin@gmail.com'
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-else:
-    EMAIL_BACKEND = env("EMAIL_BACKEND")
-    EMAIL_HOST_USER = env("EMAIL_HOST_USER")
-    EMAIL_HOST = env("EMAIL_HOST")
-    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
-    EMAIL_USE_TLS = env("EMAIL_USE_TLS")
-    EMAIL_PORT = env("EMAIL_PORT")
-    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+# else:
+#     EMAIL_BACKEND = env("EMAIL_BACKEND")
+#     EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+#     EMAIL_HOST = env("EMAIL_HOST")
+#     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+#     EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+#     EMAIL_PORT = env("EMAIL_PORT")
+#     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 DJANGO_APPS = [
     'django.contrib.admin',
@@ -62,7 +65,7 @@ THIRD_PIRTY_APPS = [
     'djgeojson',
 ]
 
-PROJECT_APPS = ['accounts', 'regions', 'parcels', 'payments']
+PROJECT_APPS = ['accounts', 'regions', 'parcels', 'payments', 'search']
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PIRTY_APPS + PROJECT_APPS
 
@@ -137,6 +140,17 @@ DATABASES = {
 #         'PASSWORD': env("PG_PASS_LOCAL"),
 #         'HOST': env("PG_HOST_LOCAL"),
 #         'PORT': env("PG_PORT"),
+#     },
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'Ardhi',
+#         'USER': 'postgres',
+#         'PASSWORD': 'kevoh',
+#         'HOST': 'localhost',
+#         'PORT': 5432,
 #     },
 # }
 

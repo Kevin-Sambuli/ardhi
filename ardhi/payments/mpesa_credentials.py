@@ -1,8 +1,8 @@
-import requests
-import json
 from requests.auth import HTTPBasicAuth
 from datetime import datetime
+import requests
 import base64
+import json
 
 
 class MpesaC2bCredential:

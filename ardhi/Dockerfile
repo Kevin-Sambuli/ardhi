@@ -77,6 +77,9 @@ COPY . $APP_HOME
 
 #RUN adduser -D kevoh
 #USER kevoh
-#CMD gunicorn ardhi.wsgi:application --bind 0.0.0.0:$PORT
+#CMD gunicorn ardhi.wsgi:application --bind 0.0.0.0:$PORT 8000
 
 #ENTRYPOINT ["home/app/web/entrypoint.sh"]
+
+#CMD gunicorn ardhi.wsgi:application --bind 0.0.0.0:8000
+#CMD python manage.py runserver 0.0.0.0:8000

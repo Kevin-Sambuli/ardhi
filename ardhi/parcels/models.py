@@ -1,17 +1,26 @@
-from django.contrib.gis.db import models
-import datetime
-from django.conf import settings
 from django.template.defaultfilters import date
+from django.contrib.gis.db import models
+from django.conf import settings
+import datetime
+
+
 
 
 # Create your models here.
 class Parcels(models.Model):
+    ON_SALE = 'on_sale'
+    IN_USE = 'in_use'
+    STATUS = [
+        (ON_SALE, 'on sale'),
+        (IN_USE, 'in use')
+    ]
     id = models.BigIntegerField(primary_key=True)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
                               null=True, default=None)
     perimeter = models.FloatField('Perimeter', max_length=10)
     area_ha = models.FloatField('Area', max_length=10)
     lr_no = models.CharField('LR Number', max_length=10)
+    status = models.CharField('Status', max_length=10, choices=STATUS, default=IN_USE)
     geom = models.MultiPolygonField(srid=4326)
 
     class Meta:
@@ -28,6 +37,7 @@ class Parcels(models.Model):
         popup += "<span>Perimeter  :  </span>{}".format(self.perimeter)
         popup += "<span>Area (m)   :  </span>{}".format(self.area_ha)
         popup += "<span>Plot Number:  </span>{}".format(self.lr_no)
+        popup += "<span>Status   :  </span>{}".format(self.status)
         return popup
 
 
@@ -78,10 +88,10 @@ class ParcelDetails(models.Model):
 #     area_ha = models.FloatField()
 #     lr_no = models.CharField(max_length=10)
 #     geom = models.MultiPointField(srid=4326)
-#
+
 #     class Meta:
 #         db_table = 'centroids'
 #         verbose_name_plural = "centroid"
-#
+
 #     def __str__(self):
 #         return self.lr_no

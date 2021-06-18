@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        <h1 class="display-4">My Property Details</h1>
+        <hr>
+    </div>
+    <div style="align-content: center" align="center">
+        <p style="font-weight: bold" color="green"> Personal Details</p>
+        <p style="font-weight: bold"> Full Names : {{ request.user }}</p>
+        <p style="font-weight: bold"> Email Address : {{ request.user.email }}</p>
+        <p style="font-weight: bold"> Contact Number : {{ request.user.phone }}</p>
+    </div>
+    <hr>
+    <div style="align-content: center" align="center" background-color="blue">
+        <p style="font-weight: bold"> Parcel Details</p>
+        {% for detail in details %}
+            {% for parcel in parcels %}
+                {% if detail.parcel_id == parcel.id %}
+                    <p style="font-weight: bold" color="green"> Parcel Number:  {{ parcel.lr_no }}</p>
+                    <p> Land Use: {{ detail.land_use.title }}</p>
+                    <p> Encumbrances: {{ detail.encumbrances.title }}</p>
+                    <p> Improvements: {{ detail.improvements.title }}</p>
+                    <p> Purchase date: {{ detail.purchase_date }}</p>
+                {% endif %}
+            {% endfor %}
+            <hr>
+        {% endfor %}
+    </div>
+    <div style="align-content: center" align="center">
+        <p style="font-weight: bold">
+            Click the link to view the parcel(s) on A<a href="{% url 'my_parcel_map' %}" style="font-weight: bold"> Map</a>
+        </p>
+    </div>
+
+{% endblock content %}

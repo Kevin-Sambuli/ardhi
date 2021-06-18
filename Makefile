@@ -13,6 +13,9 @@ build:
 up:
 	docker-compose up
 
+exec:
+	docker-compose -f docker-compose.yml exec land_app python manage.py
+
 logs:
 	docker-compose logs
 
@@ -53,10 +56,26 @@ create_app:
 
 start_django_proj:
 	docker-compose run land_app sh -c "django-admin startproject ardhi"
+container:
+	docker up  # showing running containers
+	docker up -a
+inspect:
+	docker inspect 977654323456 # returning container information
 
-#docker-compose -f docker-compose.prod.yml down -v
-#docker-compose -f docker-compose.prod.yml up -d --build
-#docker-compose -f docker-compose.prod.yml exec land_app python manage.py migrate --noinput
 
-#docker-compose up -a # showing running containers
-#docker-compose inspect 977654323456 # returning container information
+# container commands
+docker run postgres
+docker up 
+docker images
+docker config
+docker pull image
+docker logs container name or image
+docker inspect container name # check container details
+docker exec container name
+docker ps #checking running container
+docker ps -a # checking all containers
+docker stop container id or name # stopping container
+docker run i postgres # interactive mode
+docker run it postgres # interactive shell and prompt
+
+docker network ls # checking all networks in the docker

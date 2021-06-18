@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Home{% endblock title %}
+
+{% block content %}
+    <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        <h1 class="display-4">Search Results</h1>
+        <br>
+    </div>
+
+    <div style="align-content: center" align="center">
+        <p style="font-weight: bold"> Full Name: {{ full_names }}</p> <hr>
+        <p> Email Address: {{ email.email }}</p>
+        <p> Contact Number: {{ email.phone }}</p>
+
+        <p> Tenure: {{ details.tenure }}</p>
+        <p> Land Use: {{ details.land_use }}</p>
+        <p> Encumbrances: {{ details.encumbrances }}</p>
+        <p> Improvements: {{ details.improvements }}</p>
+        <p> Purchase: {{ details.purchase_date }}</p>
+
+    </div>
+    <hr>
+
+    <div style="align-content: center" align="center">
+      <p style="font-weight: bold">
+        Click the link to view the parcel on A<a href="{% url 'parcel_search' %}" style="font-weight: bold"> Map</a>
+      </p>
+    </div>
+
+{% endblock content %}

@@ -1,21 +1,18 @@
-import json
-
-from django import forms
+from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid
+from .utils import get_geo, get_center_coordinates, get_zoom
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.core.serializers import serialize
 from djgeojson.views import GeoJSONLayerView
-
 from .models import Parcels, ParcelDetails
-from .map import my_map
-from .database import get_cursor
-
-from django.shortcuts import render, get_object_or_404
-from .utils import get_geo, get_center_coordinates, get_zoom
 from geopy.geocoders import Nominatim
 from geopy.distance import geodesic
-
-
+from .database import get_cursor
+from django import forms
+from .map import my_map
+import json
 # from .forms import MeasurementModelForm
+
 
 
 def get_points(request):
@@ -42,10 +39,34 @@ def parcels(request):
 
     # Generating folium leaflet map using my_map function
     map2 = my_map(parcel=parcel, land_parcels=points_as_geojson)
-    map2.save('parcels/templates/parcels/ownership_map.html')
+    # map2 = map2._repr_html_()
+    map2.save('parcels/templates/parcels/map.html')
 
     return HttpResponse(points_as_geojson, content_type='json')
     # return JsonResponse(json.loads(points_as_geojson))
+
+
+def parcels_within_3km(request):
+    """Get parcels that are at least 3km or less from a users location"""
+    Pol = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
+    parcel =  serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
+
+    return HttpResponse(parcel, content_type='json')
+    # longitude = request.GET.get("lon", None)
+    # latitude = request.GET.get("lat", None)
+
+    # if longitude and latitude:
+    #     user_location = Point(float(longitude), float(latitude), srid=4326)
+    #     closest_parcels = Parcels.objects.filter(geom__distance_lte=(user_location, D(km=3)))
+    #     parcels= serialize('geojson', Parcels.objects.filter(geom__distance_lte=(user_location, D(km=3))))
+
+    #     return HttpResponse(parcels, content_type='json')
+
+
+    #     serializer = self.get_serializer_class()
+    #     serialized_hospitals = serializer(closest_hospitals, many=True)
+    #     return Response(serialized_hospitals.data, status=status.HTTP_200_OK)
+    # return Response(status=status.HTTP_400_BAD_REQUEST)
 
 # from django.contrib.gis.geos import Point
 # from django.contrib.gis.measure import D

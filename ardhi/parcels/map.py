@@ -18,7 +18,7 @@ def my_map(land_parcels, parcel):
         geo_data=land_parcels,
         name='Runda Parcels',
         key_on='gid',
-        fill_color='yellow',
+        fill_color='blue',
         # fill_color='#ffffff',
         fill_opacity='0.2',
         line_opacity='2',
@@ -53,21 +53,7 @@ def my_map(land_parcels, parcel):
 
     folium.plugins.ScrollZoomToggler().add_to(m)
 
-    # folium.plugins.Search(parcel, search_label=None, search_zoom=None, geom_type='Polygon', position='topleft',
-    #                       placeholder='Search parcel', collapsed=False, ).add_to(m)
-
-    # return m._repr_html_()
-    # if parcel is not None:
-    #     folium.features.GeoJson(parcel, style_function=None, highlight_function=None, name='parcels', overlay=True,
-    #                             control=True, show=True, smooth_factor=None, tooltip=None, embed=True).add_to(m)
-
+    # m = m._repr_html_()
+ 
     return m
 
-#
-# from geopy.geocoders import Nominatim
-# geolocator = Nominatim(user_agent="parcels")
-# location = geolocator.geocode("175 5th Avenue NYC")
-# print(location.address)
-# print((location.latitude, location.longitude))
-# print(location.raw)
-# {'place_id': '9167009604', 'type': 'attraction', }

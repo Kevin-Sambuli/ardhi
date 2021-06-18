@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Registration{% endblock title %}
+{% block title %}Search{% endblock title %}
 
 {% block content %}
     <div class="col-md-6 offset-md-3">
     <form class="form-signin" method="post">{% csrf_token %}
 
-        <h1 class="h3 mb-3 font-weight-normal">Account Registration</h1>
+        <h1 class="h3 mb-3 font-weight-normal">Property Search</h1>
 
-        {% for field in registration_form %}
+
+        {% for field in search_form %}
             <p>
                 {{ field.label_tag }}
                 {{ field }}
@@ -23,13 +24,13 @@
             </p>
         {% endfor %}
 
-        {% if registration_form.non_field_errors %}
+        {% if search_form.non_field_errors %}
             <div style="color: red">
-                <p>{{ registration_form.non_field_errors }}</p>
+                <p>{{ search_form.non_field_errors }}</p>
             </div>
 
         {% endif %}
-        <button class="btn btn-secondary" type="submit">Register</button>
+        <button class="btn btn-secondary" type="submit">Search</button>
     </form>
 </div>
 {% endblock content %}

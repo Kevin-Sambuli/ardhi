@@ -1,16 +1,17 @@
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth import authenticate
-from django import forms
 from .models import Account, Profile, Address
+from django import forms
 
 
 class RegisterForm(UserCreationForm):
-    first_name = forms.CharField(label="", max_length=100,
-                                 widget=forms.TextInput(attrs={'class': 'form_control', 'placeholder': 'First Name'}))
-    last_name = forms.CharField(label="", max_length=100,
-                                widget=forms.TextInput(attrs={'class': 'form_control', 'placeholder': 'Last Name'}))
-    email = forms.EmailField(label="", max_length=100,
-                             widget=forms.TextInput(attrs={'class': 'form_control', 'placeholder': 'Email address'}))
+    first_name = forms.CharField(label="", max_length=100, widget=forms.TextInput())
+    last_name  = forms.CharField(label="", max_length=100,widget=forms.TextInput())
+    username   = forms.CharField(label="", max_length=100,widget=forms.TextInput())
+    email      = forms.EmailField(label="", max_length=100,widget=forms.TextInput())
+    password1  = forms.CharField(label='', widget=forms.PasswordInput)
+    password2  = forms.CharField(label='', widget=forms.PasswordInput)
+    # attrs={'class': 'form_control', 'placeholder': 'Last Name'})
 
     class Meta:
         model = Account
@@ -18,6 +19,19 @@ class RegisterForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super(RegisterForm, self).__init__(*args, **kwargs)
+
+        self.fields['first_name'].widget.attrs['class'] = 'form-control'
+        self.fields['first_name'].widget.attrs['placeholder'] = 'First Name'
+        self.fields['first_name'].label = ""
+
+        self.fields['last_name'].widget.attrs['class'] = 'form-control'
+        self.fields['last_name'].widget.attrs['placeholder'] = 'Last Name'
+        self.fields['last_name'].label = ""
+
+        self.fields['email'].widget.attrs['class'] = 'form-control'
+        self.fields['email'].widget.attrs['placeholder'] = 'Email'
+        self.fields['email'].label = ""
+
 
         self.fields['username'].widget.attrs['class'] = 'form-control'
         self.fields['username'].widget.attrs['placeholder'] = 'User Name'
@@ -95,6 +109,7 @@ class AccountAddressForm(forms.ModelForm):
 
 
 class LoginForm(forms.ModelForm):
+    email      = forms.EmailField(label="", max_length=100,widget=forms.TextInput())
     password = forms.CharField(label='', widget=forms.PasswordInput)
 
     class Meta:

@@ -1,14 +1,16 @@
-from django.shortcuts import render, redirect
+from .forms import RegisterForm, LoginForm, AccountUpdateForm, AccountProfileForm, AccountAddressForm
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from .models import Profile, GeoLocation, Address
+from django.shortcuts import render, redirect
+from django.core.mail import send_mail
 from django.http import HttpResponse
 from django.contrib import messages
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth.forms import PasswordChangeForm
-from .forms import RegisterForm, LoginForm, AccountUpdateForm, AccountProfileForm, AccountAddressForm
-import africastalking
-from .models import Profile, GeoLocation, Address
 from .services import get_location
+from django.conf import settings
+import africastalking
+
+
 
 TEMP_PROFILE_IMAGE_NAME = "temp_profile_image.png"
 
@@ -49,7 +51,7 @@ def registration_view(request):
             #                        longitude=data['longitude'], zip_code=data['zip'],).
             # location.save()
 
-            messages.success(request, f"Hey {username}, You have successfully been Registered..")
+            # messages.success(request, f"Hey {username.title}, You have successfully been Registered..")
 
             subject = 'Runda LIS Registration.'
             message = f"""
@@ -58,7 +60,12 @@ def registration_view(request):
 
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, )
 
-            return redirect('login')
+            if account:
+                login(request, account)
+
+            messages.success(request, "Hey, You have been registered please update your profile and address")
+            return redirect('home')
+
         else:
             context['registration_form'] = form
 
@@ -69,6 +76,7 @@ def registration_view(request):
 
 
 def profile_view(request):
+    print(request.user.id)
     context = {}
     if request.POST:
         form = AccountProfileForm(request.POST)
@@ -86,7 +94,7 @@ def profile_view(request):
                               dob=dob, phone=phone)
             profile.save()
 
-            messages.success(request, f"Hey {username}, You have successfully Updated your profile..")
+            messages.success(request, f"Hey {request.user}, You have successfully Updated your profile..")
 
             # return redirect('success')
             return redirect('home')
@@ -111,9 +119,10 @@ def address_view(request):
             # update user address
             address = Address(owner_id=request.user.id, street=street, city=city, code=code)
             address.save()
+            messages.success(request, f"Hey {username}, You Address has been updated..")
 
             # return redirect('success')
-            return redirect('home')
+            return redirect("home")
         else:
             context['address_form'] = form
     else:
@@ -127,7 +136,7 @@ def login_view(request):
 
     user = request.user
     if user.is_authenticated:
-        messages.success(request, f'Welcome back {request.user.username}, you have been logged in!')
+        messages.success(request, f'Welcome back {request.user}, you have been logged in!')
         return redirect("home")
 
     if request.POST:
@@ -136,19 +145,15 @@ def login_view(request):
             email = request.POST['email']
             password = request.POST['password']
             user = authenticate(email=email, password=password)
-            return redirect('home')
 
-            # data = get_location()
-            #
-            # location = GeoLocation(owner=request.user.id, ip=data["ip"],
-            #                        country_name=data["country_name"], region_code=data["region_code"],
-            #                        city=data["city"], latitude=data['latitude'],
-            #                        longitude=data['longitude'], zip_code=data['zip'],)
-            # location.save()
+            if user:
+                login(request, user)
+                messages.success(request, f"{request.user}, Welcome back..")
+                return redirect("home")
 
         else:
             messages.success(request, 'Error while logging in. Please try again')
-            return redirect('login')
+            return redirect("login")
     else:
         form = LoginForm()
     context['login_form'] = form

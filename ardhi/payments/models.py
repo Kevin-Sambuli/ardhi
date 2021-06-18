@@ -17,6 +17,7 @@ class MpesaCalls(BaseModel):
     content = models.TextField()
 
     class Meta:
+        db_table = 'mpesa_calls'
         verbose_name = 'Mpesa Call'
         verbose_name_plural = 'Mpesa Calls'
 
@@ -28,6 +29,7 @@ class MpesaCallBacks(BaseModel):
     content = models.TextField()
 
     class Meta:
+        db_table = 'mpesa_calls_backs'
         verbose_name = 'Mpesa Call Back'
         verbose_name_plural = 'Mpesa Call Backs'
 
@@ -44,6 +46,7 @@ class MpesaPayment(BaseModel):
     organization_balance = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
+        db_table = 'mpesa_payments'
         verbose_name = 'Mpesa Payment'
         verbose_name_plural = 'Mpesa Payments'
 

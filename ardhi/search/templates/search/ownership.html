@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}ownership{% endblock title %}
+{% block content %}
+
+
+    <form class="form-signing" method="post">{% csrf_token %}
+
+        <h1 class="h3 mb-3 font-weight-normal">Ownership Registration</h1>
+
+        {% for field in ownership_form %}
+            <p>
+                {{ field.label_tag }}
+                {{ field }}
+
+                {% if field.help_text %}
+                    <small style="color: grey;">{{ field.help_text }}
+                {% endif %}
+
+                {% for error in field.errors %}
+                    <p style="color: red">{{ error }}</p>
+                {% endfor %}
+            </p>
+        {% endfor %}
+
+        {% if ownership_form.non_field_errors %}
+            <div style="color: red">
+                <p>{{ ownership_form.non_field_errors }}</p>
+            </div>
+
+        {% endif %}
+
+        <button class="btn btn-lg btn-primary btn-block" type="submit">assign</button>
+
+    </form>
+
+
+{% endblock content %}

@@ -25,6 +25,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('regions/', include('regions.urls')),
     path('parcels/', include('parcels.urls')),
+    path('search/', include('search.urls')),
     # path('payments/', include('payments.urls')),
     # path('ownership/', include('ownership.urls')),
     # path('transaction/', include('transaction.urls')),

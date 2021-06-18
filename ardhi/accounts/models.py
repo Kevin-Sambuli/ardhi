@@ -1,11 +1,11 @@
-from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.core.mail import send_mail
-from django.contrib.auth.models import PermissionsMixin
 from rest_framework.authtoken.models import Token
-from django.conf import settings
 from django.db.models.signals import post_save
+from django.core.mail import send_mail
 from django.dispatch import receiver
+from django.conf import settings
+from django.db import models
+
 
 
 class UserManager(BaseUserManager):
@@ -51,6 +51,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(verbose_name='Email', blank=False, max_length=100, unique=True)
     username = models.CharField('Username', max_length=30, unique=True)
     date_joined = models.DateTimeField('Date Joined', auto_now_add=True)
+
     # permissions
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
     is_admin = models.BooleanField('admin', default=False)
@@ -68,8 +69,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     class Meta:
         db_table = 'accounts'
-        verbose_name = "accounts"
-        verbose_name_plural = "accounts"
+        verbose_name = "Accounts"
+        verbose_name_plural = "Accounts"
 
     def __str__(self):
         return '{}'.format(self.get_full_name())
@@ -77,6 +78,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def get_full_name(self):
         """ Returns the first_name plus the last_name, with a space in between. """
         full_name = '%s %s' % (self.first_name, self.last_name)
+        # full_name= str(full_name.title)
         return full_name.strip()
 
     # For checking permissions. to keep it simple all admin have ALL permissions
@@ -120,6 +122,7 @@ class Address(models.Model):
     code = models.CharField('Code', max_length=20, blank=False, null=False,)
 
     class Meta:
+        db_table = 'addresses'
         verbose_name = "Address"
         verbose_name_plural = "Addresses"
 
@@ -144,8 +147,9 @@ class GeoLocation(models.Model):
     zip_code = models.CharField("Zip code", max_length=255, null=True, blank=True)
 
     class Meta:
-        verbose_name = "location"
-        verbose_name_plural = "location"
+        db_table = 'geolocations'
+        verbose_name = "Geo location"
+        verbose_name_plural = "Geo locations"
 
     def __str__(self):
         return '{}'.format(self.get_user_ip())
@@ -183,8 +187,8 @@ class Profile(models.Model):
 
     class Meta:
         db_table = 'profile'
-        verbose_name = "profile"
-        verbose_name_plural = "profile"
+        verbose_name = "Profile"
+        verbose_name_plural = "Profile"
 
     def __str__(self):
         return self.owner
