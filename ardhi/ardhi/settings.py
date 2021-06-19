@@ -28,8 +28,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # environ.Env.read_env(env_file='.env')
 # SECRET_KEY = os.environ.get("SECRET_KEY")
 SECRET_KEY ='django-insecure-bejnxzbe$j3mi^zv(z6()3=d9)7_kp-o6trkx+74l17aqkpl$_'
-# DEBUG = True
-DEBUG=os.environ.get("DEBUG")
+DEBUG = True
+# DEBUG=os.environ.get("DEBUG")
 
 # Application definition
 # ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
@@ -89,7 +89,7 @@ MIDDLEWARE = [
     # 'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # 'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -122,12 +122,12 @@ WSGI_APPLICATION = 'ardhi.wsgi.application'
 # docker database
 # DATABASES = {
 #     'default': {
-        # 'ENGINE': os.environ.get("PG_ENGINE"),
-#         'NAME': os.environ.get("PG_NAME"),
-#         'USER': os.environ.get("PG_USER"),
-#         'PASSWORD': os.environ.get("PG_PASS"),
-#         'HOST': os.environ.get("PG_DB_HOST"),
-#         'PORT': os.environ.get("PG_PORT"),
+#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
+#         'NAME': 'Ardhi',
+#         'USER': "kevoh",
+#         'PASSWORD': 'kevoh1995',
+#         'HOST': 'postgres-db',
+#         'PORT': '5432',
 #     }
 # }
 
@@ -143,28 +143,28 @@ WSGI_APPLICATION = 'ardhi.wsgi.application'
 #     },
 # }
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         'NAME': 'Ardhi',
-#         'USER': 'postgres',
-#         'PASSWORD': 'kevoh',
-#         'HOST': 'localhost',
-#         'PORT': 5432,
-#     },
-# }
-
-# heroku database
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get("PG_ENGINE"),
-        'NAME': os.environ.get("PG_DATABASE_NAME"),
-        'USER': os.environ.get("POSTGRES_USER"),
-        'PASSWORD': os.environ.get("POSTGRES_PASS"),
-        'HOST': os.environ.get("PG_HOST"),
-        'PORT': os.environ.get("PG_PORT"),
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'NAME': 'Ardhi',
+        'USER': 'postgres',
+        'PASSWORD': 'kevoh',
+        'HOST': 'localhost',
+        'PORT': 5432,
     },
 }
+
+# heroku database
+# DATABASES = {
+#     'default': {
+#         'ENGINE': os.environ.get("PG_ENGINE"),
+#         'NAME': os.environ.get("PG_DATABASE_NAME"),
+#         'USER': os.environ.get("POSTGRES_USER"),
+#         'PASSWORD': os.environ.get("POSTGRES_PASS"),
+#         'HOST': os.environ.get("PG_HOST"),
+#         'PORT': os.environ.get("PG_PORT"),
+#     },
+# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

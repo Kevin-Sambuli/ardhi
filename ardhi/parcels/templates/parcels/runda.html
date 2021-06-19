@@ -1,0 +1,43 @@
+<html>
+<head>
+    {% load leaflet_tags %}
+    {% leaflet_js plugins="ALL" %}
+    {% leaflet_css plugins="ALL" %}
+
+    <script>
+        var dataurl = '{% url "data" %}';
+
+        window.addEventListener("map:init", function (event)
+        {
+            var map = event.detail.map;
+            // Download GeoJSON data with Ajax
+            fetch(dataurl)
+                .then(function (resp) {
+                    return resp.json();
+                })
+                .then(function (data)
+               {
+                    L.geoJson(data,
+                        {
+                            onEachFeature: function onEachFeature(feature, layer)
+                            {
+                                layer.bindPopup('<h3 style="align-content: center">Parcel Details</h3>' +
+                                    '<p>Owner: ' + feature.properties.owner + '</p> ' +
+                                    '<p>Parcel ID: ' + feature.properties.id + '</p> ' +
+                                    '<p>Parcel Number: ' + feature.properties.lr_no + '</p> ' +
+                                    '<p>Status: ' + feature.properties.status + '</p> ' +
+                                    '<p>Area: ' + feature.properties.area_ha + ' Ha</p>' +
+                                    '<p>Perimeter: ' + feature.properties.perimeter + ' M</p>').openPopup();
+                                 },
+                        }).addTo(map);
+               });
+        });
+    </script>
+
+</head>
+<body>
+    <div style="align-content: center">
+        {% leaflet_map "main" %}
+    </div>
+</body>
+</html>

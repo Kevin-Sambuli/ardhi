@@ -11,8 +11,9 @@ from .database import get_cursor
 from django import forms
 from .map import my_map
 import json
-# from .forms import MeasurementModelForm
 
+
+# from .forms import MeasurementModelForm
 
 
 def get_points(request):
@@ -35,21 +36,28 @@ def get_points(request):
 def parcels(request):
     """ function that returns parcels in geojson and generate a folium leaflet map"""
     points_as_geojson = serialize('geojson', Parcels.objects.all())
+    return HttpResponse(points_as_geojson, content_type='json')
+    # return JsonResponse(json.loads(points_as_geojson))
+
+
+def my_parcels(request):
+    """ function that returns parcels in geojson and generate a folium leaflet map"""
+    context = {}
+    points_as_geojson = serialize('geojson', Parcels.objects.all())
     parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
 
     # Generating folium leaflet map using my_map function
-    map2 = my_map(parcel=parcel, land_parcels=points_as_geojson)
-    # map2 = map2._repr_html_()
-    map2.save('parcels/templates/parcels/map.html')
+    m = my_map(parcel=parcel, land_parcels=points_as_geojson)
+    m = m._repr_html_()
+    context['map'] = m
 
-    return HttpResponse(points_as_geojson, content_type='json')
-    # return JsonResponse(json.loads(points_as_geojson))
+    return render(request, 'parcels/map.html', context)
 
 
 def parcels_within_3km(request):
     """Get parcels that are at least 3km or less from a users location"""
     Pol = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
-    parcel =  serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
+    parcel = serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
 
     return HttpResponse(parcel, content_type='json')
     # longitude = request.GET.get("lon", None)
@@ -61,7 +69,6 @@ def parcels_within_3km(request):
     #     parcels= serialize('geojson', Parcels.objects.filter(geom__distance_lte=(user_location, D(km=3))))
 
     #     return HttpResponse(parcels, content_type='json')
-
 
     #     serializer = self.get_serializer_class()
     #     serialized_hospitals = serializer(closest_hospitals, many=True)
@@ -127,68 +134,68 @@ def parcels_within_3km(request):
 #     return render(request, 'poco/poco_js.html', context)
 
 
-def calculate_distance_view(request):
-    # initial values
-    distance = None
-    destination = None
+# def calculate_distance_view(request):
+#     # initial values
+#     distance = None
+#     destination = None
+#
+#     obj = get_object_or_404(Parcels, id=1)
+#     form = MeasurementModelForm(request.POST or None)
+#     geolocator = Nominatim(user_agent='measurements')
+#
+#     ip = '72.14.207.99'
+#     country, city, lat, lon = get_geo(ip)
+#     location = geolocator.geocode(city)
+#
+#     # location coordinates
+#     l_lat = lat
+#     l_lon = lon
+#     pointA = (l_lat, l_lon)
+#
+#     # initial folium map
+#     m = folium.Map(width=800, height=500, location=get_center_coordinates(l_lat, l_lon), zoom_start=8)
+#     # location marker
+#     folium.Marker([l_lat, l_lon], tooltip='click here for more', popup=city['city'],
+#                   icon=folium.Icon(color='purple')).add_to(m)
+#
+#     if form.is_valid():
+#         instance = form.save(commit=False)
+#         destination_ = form.cleaned_data.get('destination')
+#         destination = geolocator.geocode(destination_)
+#
+#         # destination coordinates
+#         d_lat = destination.latitude
+#         d_lon = destination.longitude
+#         pointB = (d_lat, d_lon)
+#         # distance calculation
+#         distance = round(geodesic(pointA, pointB).km, 2)
+#
+#         # folium map modification
+#         m = folium.Map(width=800, height=500, location=get_center_coordinates(l_lat, l_lon, d_lat, d_lon),
+#                        zoom_start=get_zoom(distance))
+#         # location marker
+#         folium.Marker([l_lat, l_lon], tooltip='click here for more', popup=city['city'],
+#                       icon=folium.Icon(color='purple')).add_to(m)
+#         # destination marker
+#         folium.Marker([d_lat, d_lon], tooltip='click here for more', popup=destination,
+#                       icon=folium.Icon(color='red', icon='cloud')).add_to(m)
+#
+#         # draw the line between location and destination
+#         line = folium.PolyLine(locations=[pointA, pointB], weight=5, color='blue')
+#         m.add_child(line)
+#
+#         instance.location = location
+#         instance.distance = distance
+#         instance.save()
 
-    obj = get_object_or_404(Parcels, id=1)
-    form = MeasurementModelForm(request.POST or None)
-    geolocator = Nominatim(user_agent='measurements')
+# m = m._repr_html_()
 
-    ip = '72.14.207.99'
-    country, city, lat, lon = get_geo(ip)
-    location = geolocator.geocode(city)
-
-    # location coordinates
-    l_lat = lat
-    l_lon = lon
-    pointA = (l_lat, l_lon)
-
-    # initial folium map
-    m = folium.Map(width=800, height=500, location=get_center_coordinates(l_lat, l_lon), zoom_start=8)
-    # location marker
-    folium.Marker([l_lat, l_lon], tooltip='click here for more', popup=city['city'],
-                  icon=folium.Icon(color='purple')).add_to(m)
-
-    if form.is_valid():
-        instance = form.save(commit=False)
-        destination_ = form.cleaned_data.get('destination')
-        destination = geolocator.geocode(destination_)
-
-        # destination coordinates
-        d_lat = destination.latitude
-        d_lon = destination.longitude
-        pointB = (d_lat, d_lon)
-        # distance calculation
-        distance = round(geodesic(pointA, pointB).km, 2)
-
-        # folium map modification
-        m = folium.Map(width=800, height=500, location=get_center_coordinates(l_lat, l_lon, d_lat, d_lon),
-                       zoom_start=get_zoom(distance))
-        # location marker
-        folium.Marker([l_lat, l_lon], tooltip='click here for more', popup=city['city'],
-                      icon=folium.Icon(color='purple')).add_to(m)
-        # destination marker
-        folium.Marker([d_lat, d_lon], tooltip='click here for more', popup=destination,
-                      icon=folium.Icon(color='red', icon='cloud')).add_to(m)
-
-        # draw the line between location and destination
-        line = folium.PolyLine(locations=[pointA, pointB], weight=5, color='blue')
-        m.add_child(line)
-
-        instance.location = location
-        instance.distance = distance
-        instance.save()
-
-    # m = m._repr_html_()
-
-    context = {
-        'distance': distance,
-        'destination': destination,
-        'form': form,
-        'map': m,
-    }
-
-    # return render(request, 'measurements/main.html', context)
-    return HttpResponse('ip produced')
+# context = {
+#     'distance': distance,
+#     'destination': destination,
+#     'form': form,
+#     'map': m,
+# }
+#
+# # return render(request, 'measurements/main.html', context)
+# return HttpResponse('ip produced')
