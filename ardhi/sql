@@ -7,6 +7,8 @@ create view centroids_json as
         geom))::jsonb,'properties',  to_jsonb(inputs)  -'geom') AS feature, 'geometry' FROM (SELECT * FROM parcels)
         inputs) features;
 
+select ST_AsText(ST_Centroid(a.geom) ) FROM parcels AS a
+select ST_AsText(ST_Centroid(geom) ) FROM parcels where id=84;
 
 -- returning the geojson of parcels
 create view parcels_json as

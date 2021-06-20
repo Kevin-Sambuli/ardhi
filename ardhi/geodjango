@@ -1,0 +1,240 @@
+Show Tables in the Database.
+postgres=# \c Ardhi
+Ardhi=# \dt
+
+Use ogrinfo to examine spatial data¶
+The GDAL ogrinfo utility allows examining the metadata of shapefiles or other vector data sources:
+
+
+provides info bout thee shapefile
+ogrinfo
+    $ ogrinfo world/data/TM_WORLD_BORDERS-0.3.shp
+    ogrinfo tells us that the shapefile has one layer, and that this layer contains polygon data.
+
+    To find out more, we’ll specify the layer name and use the -so option to get only the important summary information:
+    $ ogrinfo -so world/data/TM_WORLD_BORDERS-0.3.shp TM_WORLD_BORDERS-0.3
+
+
+Run migrate¶
+After defining your model, you need to sync it with the database. First, create a database migration:
+    $ python manage.py makemigrations
+
+    Let’s look at the SQL that will generate the table for the WorldBorder model:
+    $ python manage.py sqlmigrate parcels 0001
+
+GDAL Interface¶
+    GeoDjango also includes a Pythonic interface to GDAL’s powerful OGR library that can work with all the vector
+    data sources that OGR supports.
+
+    First, invoke the Django shell to allow django use gis tools:
+    $ python manage.py shell
+
+    from django.contrib.gis.gdal import DataSource
+    >>> ds = DataSource(world_shp)
+    >>> print(ds)       / ... /geodjango/world/data/TM_WORLD_BORDERS-0.3.shp (ESRI Shapefile)
+
+    >>> print(len(ds))
+    >>> lyr = ds[0]
+    >>> print(lyr)
+
+
+    You can see the layer’s geometry type and how many features it contains:
+    >>> print(lyr.geom_type)
+
+    spatial reference system associated with it. If it does, the srs attribute will return a SpatialReference object:
+    >>> srs = lyr.srs
+    >>> print(srs)
+    >>> srs.proj # PROJ representation
+    >>> print(lyr.fields)
+
+
+
+Try ogrinspect¶
+    $ python manage.py ogrinspect [options] <data_source> <model_name> [options]
+    data_source is the path to the GDAL-supported data source and model_name is the name to use for the model.
+    Command-line options may be used to further define how the model is generated.
+
+    reproduces the WorldBorder model and mapping dictionary created above, automatically:
+    $ python manage.py ogrinspect world/data/TM_WORLD_BORDERS-0.3.shp WorldBorder --srid=4326 --mapping --multi
+
+Spatial Queries¶
+Spatial Lookups¶
+    $ python manage.py shell
+
+    >>> pnt_wkt = 'POINT(-95.3385 29.7245)'
+    >>> from world.models import WorldBorder
+    >>> WorldBorder.objects.filter(geom__contains=pnt_wkt)
+
+    Here, you retrieved a QuerySet with only one model: the border of the United States (exactly what you would expect).
+
+    Similarly, you may also use a GEOS geometry object. Here, you can combine the intersects spatial lookup with the get method to retrieve only the WorldBorder instance for San Marino instead of a queryset:
+
+    >>> from django.contrib.gis.geos import Point
+    >>> pnt = Point(12.4604, 43.9420)
+    >>> WorldBorder.objects.get(geom__intersects=pnt)
+
+
+Automatic Spatial Transformations
+    >>> from django.contrib.gis.geos import GEOSGeometry, Point
+    >>> pnt = Point(954158.1, 4215137.1, srid=32140)
+
+    >>> pnt = GEOSGeometry('SRID=32140; POINT(954158.1 4215137.1)')
+    GeoDjango’s ORM will automatically wrap geometry values in transformation SQL, allowing the developer to work at a higher level of abstraction:
+
+    >>> qs = WorldBorder.objects.filter(mpoly__intersects=pnt)
+    >>> print(qs.query) # Generating the SQL
+
+    >>> qs # printing evaluates the queryset
+    <QuerySet [<WorldBorder: United States>]>
+
+Raw queries
+When using raw queries, you must wrap your geometry fields so that the field value can be recognized by GEOS:
+
+    from django.db import connection
+
+    # or if you're querying a non-default database:
+    from django.db import connections
+    connection = connections['your_gis_db_alias']
+
+    City.objects.raw('SELECT id, name, %s as point from myapp_city' % (connection.ops.select % 'point'))
+
+    from django.db import connection
+    >>> cursor = connection.cursor()
+    >>> cursor.execute('''SELECT count(*) FROM people_person''') 1L
+    >>> row = cursor.fetchone()
+    >>> print row (12L,)
+    >>> Person.objects.all().count() 12
+
+
+
+
+
+Geographic Database Functions¶
+    The functions documented on this page allow users to access geographic database functions to be used in
+    annotations, aggregations, or filters in Django.
+
+    >>> from django.contrib.gis.db.models.functions import Length, Area
+    >>> Track.objects.annotate(length=Length('line')).filter(length__gt=100)
+
+    AsGeoJSON
+    class AsGeoJSON(expression, bbox=False, crs=False, precision=8, **extra)¶
+    Accepts a single geographic field or expression and returns a GeoJSON representation of the geometry. Note that the result is not a complete GeoJSON structure but only the geometry key content of a GeoJSON structure. See also GeoJSON Serializer.
+
+    Example:
+        >>> City.objects.annotate(json=AsGeoJSON('point')).get(name='Chicago').json
+            {"type":"Point","coordinates":[-87.65018,41.85039]}
+
+Centroid
+getting the geojson and the centroid of a polygon
+    >>> from parcels.models import Parcels
+    >>> from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid
+    >>> Parcels.objects.annotate(json=AsGeoJSON('geom')).get(id=84).json
+
+    >>> Parcels.objects.annotate(json=AsGeoJSON('geom')).get(id=84).json
+        '{"type":"MultiPolygon","coordinates":[[[[36.82654499,-1.22441608],[36.82716381,-1.22506587],[36.82646735,-1.22485994],[36.82654499,-1.22441608]]]]}'
+
+    >>> Parcels.objects.annotate(json=AsGeoJSON(Centroid('geom'))).get(id=84).json
+    '{"type":"Point","coordinates":[36.82672538,-1.22478063]}'
+    data = Parcels.objects.annotate(json=AsGeoJSON(Centroid('geom'))).get(id=84).json
+    dicts = {}
+    dicts['data'] = data
+   {'dic': '{"type":"Point","coordinates":[36.82672538,-1.22478063]}'}
+   data['dic'] = '{"type":"Point","coordinates":[36.82672538,-1.22478063]}'}
+
+AsGML¶
+class AsGML(expression, version=2, precision=8, **extra)¶
+Availability: Oracle, PostGIS, SpatiaLite
+
+Accepts a single geographic field or expression and returns a Geographic Markup Language (GML) representation of the geometry.
+
+Example:
+
+>>> qs = Zipcode.objects.annotate(gml=AsGML('poly'))
+>>> print(qs[0].gml)
+<gml:Polygon srsName="EPSG:4326"><gml:OuterBoundaryIs>-147.78711,70.245363 ...
+-147.78711,70.245363</gml:OuterBoundaryIs></gml:Polygon>
+
+
+Distance:
+    >>> from django.contrib.gis.db.models.functions import Distance
+    >>> pnt = AustraliaCity.objects.get(name='Hobart').point
+    >>> for city in AustraliaCity.objects.annotate(distance=Distance('point', pnt)):
+    ...     print(city.name, city.distance)
+    Wollongong 990071.220408 m
+    Shellharbour 972804.613941 m
+    Thirroul 1002334.36351 m
+
+
+
+GEOS
+    from django.contrib.gis.geos import Point
+    >>> from django.contrib.gis.geos import GEOSGeometry, LineString, Point
+    >>> pnt = Point(5, 23)
+    >>> print(GEOSGeometry('POINT (0 0)', srid=4326))
+         SRID=4326;POINT (0 0)
+
+    >>> pnt = Point(5, 23)
+    >>> [coord for coord in pnt]
+        [5.0, 23.0]
+
+
+
+
+
+distance
+    pol = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
+    parcel = serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
+    # parcel = Parcels.objects.annotate(geometry=Centroid('geom'))
+
+    parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
+    data1 = []
+    for parc in Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')), distance=Distance('geom', parcels)):
+        # print(parc.lr_no, parc.distance)
+        data1.append(parc.distance)
+
+    print('distance 1', sorted(data1))
+
+    # parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
+    parcels = Parcels.objects.get(id=84).geom
+    data2 = []
+    for parc in Parcels.objects.annotate(distance=Distance('geom', parcels)):
+        # print(parc.lr_no, parc.distance)
+        data2.append(parc.distance)
+
+    sorted(data2)
+    print('distance 2', data2[:10])
+
+from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid, Distance
+from parcels.models import Parcels
+    >>> parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
+    >>> parcels
+
+    returns a list of objects annotate attatches a geometry field to the model
+    <QuerySet [<Parcels: LR12872/26>, <Parcels: LR12872/24>, <Parcels: LR12872/23>, <Parcels: LR12872/22>, ]>
+    >>> for parcel in parcels:
+    ...     print(parcel.geometry)
+
+            {"type":"Point","coordinates":[36.82372926,-1.22277346]}
+            {"type":"Point","coordinates":[36.8235353,-1.22320957]}
+            {"type":"Point","coordinates":[36.82347388,-1.22350889]}
+            {"type":"Point","coordinates":[36.8234118,-1.22380722]}
+
+    >>> parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
+    >>> data=[]
+    >>> for parcel in parcels:
+...     data.append(parcel)
+    >>> data
+    [<Parcels: LR12872/26>, <Parcels: LR12872/24>, <Parcels: LR12872/23>, <Parcels: LR12872/19>, <Parcels: LR12872/18>,]
+
+    for dat in data:
+        print(dat.geometry)
+
+    {"type":"Point","coordinates":[36.82372926,-1.22277346]}
+    {"type":"Point","coordinates":[36.8235353,-1.22320957]}
+
+
+
+
+
+
+

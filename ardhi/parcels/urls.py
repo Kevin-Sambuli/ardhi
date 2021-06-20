@@ -10,9 +10,9 @@ urlpatterns = [
     path('centroids/', views.get_points, name='distance'),
     path('json/', views.parcels, name='json_parcels'),
     path('map/', views.my_parcels, name='map'),
-    # path('distance/', views.parcels_within_3km, name='json_parcels'),
+    path('distance/', views.parcels_within_3km, name='distance'),
     path('rundamap/', TemplateView.as_view(template_name='parcels/parcels.html'), name='rundamap'),
-    # path('map/', TemplateView.as_view(template_name='parcels/parcel2.html'), name='parcels'),
+    path('maps/', TemplateView.as_view(template_name='parcels/parcel2.html'), name='parcels'),
 
 
 

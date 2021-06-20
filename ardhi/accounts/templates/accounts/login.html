@@ -1,13 +1,14 @@
 <!-- templates/registration/login.html -->
 {% extends 'base.html' %}
 {% block title %}Log In{% endblock title %}
+{#{% load crispy_forms_tags %}#}
 {% block content %}
 
     <h2 class="text-center">Login</h2>
     <div class="col-md-6 offset-md-3">
     <form method="post">{% csrf_token %}
 
-        {% for field in login_form %}
+        {% for field in login_form%}
             <p>
                 {{ field.label_tag }}
                 {{ field }}

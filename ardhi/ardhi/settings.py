@@ -29,7 +29,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECRET_KEY = os.environ.get("SECRET_KEY")
 SECRET_KEY ='django-insecure-bejnxzbe$j3mi^zv(z6()3=d9)7_kp-o6trkx+74l17aqkpl$_'
 DEBUG = True
-# DEBUG=os.environ.get("DEBUG")
+# DEBUG = os.environ.get("DEBUG")
 
 # Application definition
 # ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
@@ -244,8 +244,8 @@ LEAFLET_CONFIG = {
 
 # geoip configuration
 GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')
-GEOIP_CITY = os.path.join(BASE_DIR, 'geoip/GeoLite2-City')
-GEOIP_COUNTRY = os.path.join(BASE_DIR, 'geoip/GeoLite2-Country')
+GEOIP_CITY = os.path.join(BASE_DIR, 'geoip/GeoLite2-City/GeoLite2-City.mmdb')
+GEOIP_COUNTRY = os.path.join(BASE_DIR, 'geoip/GeoLite2-Country/GeoLite2-Country.mmdb')
 
 #  serialization class
 SERIALIZATION_MODULES = {

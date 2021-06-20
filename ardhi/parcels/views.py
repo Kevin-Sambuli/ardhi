@@ -1,4 +1,4 @@
-from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid
+from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid, Distance
 from .utils import get_geo, get_center_coordinates, get_zoom
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
@@ -11,6 +11,7 @@ from .database import get_cursor
 from django import forms
 from .map import my_map
 import json
+from django.contrib.gis.geos import GEOSGeometry
 
 
 # from .forms import MeasurementModelForm
@@ -35,9 +36,10 @@ def get_points(request):
 
 def parcels(request):
     """ function that returns parcels in geojson and generate a folium leaflet map"""
+
     points_as_geojson = serialize('geojson', Parcels.objects.all())
     return HttpResponse(points_as_geojson, content_type='json')
-    # return JsonResponse(json.loads(points_as_geojson))
+    # return JsonResponse(json.loads(data))
 
 
 def my_parcels(request):
@@ -46,20 +48,82 @@ def my_parcels(request):
     points_as_geojson = serialize('geojson', Parcels.objects.all())
     parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
 
-    # Generating folium leaflet map using my_map function
-    m = my_map(parcel=parcel, land_parcels=points_as_geojson)
-    m = m._repr_html_()
-    context['map'] = m
+    qu = get_cursor()
+    ids = 84
+
+    # parcels search and returning the centroid then placed on the map
+    try:
+        # qu.execute('select ST_AsText(ST_Centroid(geom) ) FROM parcels;')# where id=84;')
+        qu.execute(f'select ST_AsText(ST_Centroid(geom) ) FROM parcels where id={ids};')
+        mmap = qu.fetchall()
+        # if mmap:
+        print('map =', mmap)
+        print('point', str(mmap[0][0]))
+
+        pnt = GEOSGeometry(str(mmap[0][0]), srid=4326)
+        print('geos point object', pnt)
+
+        print('tuple of coordinates =', pnt.coords)
+        print('list of coordinates =', list(pnt.coords))
+
+        pins = list(pnt.coords)
+        pin1, pin2 = float(pins[0]), float(pins[1])
+        print('lng =', pin1, 'lat =', pin2)
+
+        # Generating folium leaflet map using my_map function
+        m = my_map(land_parcels=points_as_geojson, parcel=parcel, lng=pnt.coords[0], lat=pnt.coords[1])
+        m = m._repr_html_()
+        context['map'] = m
+    except:
+        print('the parcel does not exist')
+
+        # qu = get_cursor()
+        # qu.execute("""SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(features.feature))
+        #     FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(geom)::jsonb,'properties',
+        #     to_jsonb(inputs)  -'geom') AS feature, 'geometry'
+        #     FROM (SELECT * FROM njiruproj) inputs) features;""")
+        # data = qu.fetchall()
+        # m = my_map(land_parcels=data[0][0])
+
+        m = my_map(land_parcels=points_as_geojson)
+        m = m._repr_html_()
+        context['map'] = m
 
     return render(request, 'parcels/map.html', context)
 
 
 def parcels_within_3km(request):
     """Get parcels that are at least 3km or less from a users location"""
-    Pol = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
-    parcel = serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
+    pol = serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
+    # # parcel = Parcels.objects.annotate(geometry=Centroid('geom'))
+    #
+    parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
+    data1 = []
+    for parc in Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')), distance=Distance('geom', parcels)):
+        # print(parc.lr_no, parc.distance)
+        data1.append(parc.distance)
 
-    return HttpResponse(parcel, content_type='json')
+    print('distance 1', sorted(data1))
+
+    # parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
+    parcels = Parcels.objects.get(id=84).geom
+    data2 = []
+    for parc in Parcels.objects.annotate(distance=Distance('geom', parcels)):
+        # print(parc.lr_no, parc.distance)
+        data2.append(parc.distance)
+
+    sorted(data2)
+    # print('distance 2', data2[:10])
+
+    return HttpResponse(pol, content_type='json')
+
+
+
+
+
+
+
+
     # longitude = request.GET.get("lon", None)
     # latitude = request.GET.get("lat", None)
 
@@ -74,6 +138,18 @@ def parcels_within_3km(request):
     #     serialized_hospitals = serializer(closest_hospitals, many=True)
     #     return Response(serialized_hospitals.data, status=status.HTTP_200_OK)
     # return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+parcels_cent = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
+data = []
+for parcel in parcels_cent:
+    data.append(parcel)
+print(data)  # [ < Parcels: LR12872 / 26 >, < Parcels: LR12872 / 24 >, < Parcels: LR12872 / 23 >, ]
+
+for dat in data:
+    print(dat.geometry)
+
+
 
 # from django.contrib.gis.geos import Point
 # from django.contrib.gis.measure import D
