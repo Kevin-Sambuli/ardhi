@@ -1,5 +1,5 @@
 from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid, Distance
-from .utils import get_geo, get_center_coordinates, get_zoom
+from .utils import get_geo, get_center_coordinates, get_zoom, get_ip_address
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.core.serializers import serialize
@@ -10,7 +10,7 @@ from geopy.distance import geodesic
 from .database import get_cursor
 from django import forms
 from .map import my_map
-import json
+import json, folium
 from django.contrib.gis.geos import GEOSGeometry
 
 
@@ -20,6 +20,18 @@ from django.contrib.gis.geos import GEOSGeometry
 def get_points(request):
     cur1 = get_cursor()  # first database connection instance
     cur2 = get_cursor()  # second database connection instance
+
+    parcels_cent = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
+    data = []
+    for parcel in parcels_cent:
+        data.append(parcel)
+    print(data)  # [ < Parcels: LR12872 / 26 >, < Parcels: LR12872 / 24 >, < Parcels: LR12872 / 23 >, ]
+
+    for dat in data:
+        print(dat.geometry)
+        """ ill use zip function to combine the list of coordinates"""
+
+    # ST_X(ST_Centroid(a.the_geom)) and ST_Y(ST_Centroid(a.the_geom))
 
     # return parcel data in geojson format
     query1 = ('SELECT jsonb_build_object FROM public.parcels_json;')
@@ -42,17 +54,59 @@ def parcels(request):
     # return JsonResponse(json.loads(data))
 
 
-def my_parcels(request):
+def my_property(request):
+    """ function that returns parcels of the logged in user  generate a folium leaflet map"""
+    context = {}
+    points_as_geojson = serialize('geojson', Parcels.objects.all())
+
+    try:
+        my_parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
+        parcels = Parcels.objects.filter(owner_id=request.user.id)  # accessing parcels of the logged user
+        print('parcels', parcels)
+
+        # accessing each parcel detail and returning each parcel id
+        parcel_id = list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))
+        print("parcel id", parcel_id)
+
+        details = [det for det in list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))]
+
+        data = [ParcelDetails.objects.get(parcel=det) for det in parcels]
+        print('data', data)
+
+        # Generating folium leaflet map using my_map function
+        m = my_map(land_parcels=points_as_geojson, parcel=my_parcel)
+        m = m._repr_html_()
+
+        context['map'] = m
+        context['details'] = data
+        context['parcels'] = parcels
+
+    except:
+        print('the parcel does not exist')
+        m = my_map(land_parcels=points_as_geojson)
+        m = m._repr_html_()
+        context['map'] = m
+
+    return render(request, 'parcels/map.html', context)
+
+
+def my_parcels_2(request):
     """ function that returns parcels in geojson and generate a folium leaflet map"""
     context = {}
     points_as_geojson = serialize('geojson', Parcels.objects.all())
-    parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
 
     qu = get_cursor()
     ids = 84
 
     # parcels search and returning the centroid then placed on the map
     try:
+
+        parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
+
+        # accessing each parcel detail and returning each parcel id
+        parcel_id = list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))
+        details = [det for det in list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))]
+
         # qu.execute('select ST_AsText(ST_Centroid(geom) ) FROM parcels;')# where id=84;')
         qu.execute(f'select ST_AsText(ST_Centroid(geom) ) FROM parcels where id={ids};')
         mmap = qu.fetchall()
@@ -91,7 +145,6 @@ def my_parcels(request):
 
     return render(request, 'parcels/map.html', context)
 
-
 def parcels_within_3km(request):
     """Get parcels that are at least 3km or less from a users location"""
     pol = serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
@@ -100,10 +153,14 @@ def parcels_within_3km(request):
     parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
     data1 = []
     for parc in Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')), distance=Distance('geom', parcels)):
-        # print(parc.lr_no, parc.distance)
+        print(parc.lr_no, parc.distance)
         data1.append(parc.distance)
 
+    ip = get_ip_address(request)
+
     print('distance 1', sorted(data1))
+    print('ip address', ip)
+
 
     # parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
     parcels = Parcels.objects.get(id=84).geom
@@ -117,6 +174,77 @@ def parcels_within_3km(request):
 
     return HttpResponse(pol, content_type='json')
 
+
+def calculate_distance_view(request):
+    # initial values
+    distance = None
+    destination = None
+
+    # obj = get_object_or_404(Measurement, id=1)
+    # form = MeasurementModelForm(request.POST or None)
+
+    geolocator = Nominatim(user_agent='parcels')
+
+    ip = '192.168.0.1'
+    country, city, lat, lon = get_geo(ip)
+    print('country', country)
+    print('city', city)
+    print('lat', lat)
+    print('lng', lon)
+    location = geolocator.geocode(city)
+
+    # location coordinates
+    l_lat = lat
+    l_lon = lon
+    pointA = (l_lat, l_lon)
+
+    # initial folium map
+    m = folium.Map(width=800, height=500, location=get_center_coordinates(l_lat, l_lon), zoom_start=8)
+    # location marker
+    folium.Marker([l_lat, l_lon], tooltip='click here for more', popup=city['city'],
+                  icon=folium.Icon(color='purple')).add_to(m)
+
+    # if form.is_valid():
+    #     instance = form.save(commit=False)
+    #     destination_ = form.cleaned_data.get('destination')
+    #     destination = geolocator.geocode(destination_)
+    #
+    #     # destination coordinates
+    #     d_lat = destination.latitude
+    #     d_lon = destination.longitude
+    #     pointB = (d_lat, d_lon)
+    #     # distance calculation
+    #     distance = round(geodesic(pointA, pointB).km, 2)
+    #
+    #     # folium map modification
+    #     m = folium.Map(width=800, height=500, location=get_center_coordinates(l_lat, l_lon, d_lat, d_lon),
+    #                    zoom_start=get_zoom(distance))
+    #     # location marker
+    #     folium.Marker([l_lat, l_lon], tooltip='click here for more', popup=city['city'],
+    #                   icon=folium.Icon(color='purple')).add_to(m)
+    #     # destination marker
+    #     folium.Marker([d_lat, d_lon], tooltip='click here for more', popup=destination,
+    #                   icon=folium.Icon(color='red', icon='cloud')).add_to(m)
+    #
+    #     # draw the line between location and destination
+    #     line = folium.PolyLine(locations=[pointA, pointB], weight=5, color='blue')
+    #     m.add_child(line)
+    #
+    #     instance.location = location
+    #     instance.distance = distance
+    #     instance.save()
+    #
+    # m = m._repr_html_()
+    #
+    # context = {
+    #     'distance': distance,
+    #     'destination': destination,
+    #     'form': form,
+    #     'map': m,
+    # }
+
+    return HttpResponse('printed')
+    # return render(request, 'measurements/main.html', context)
 
 
 
@@ -140,14 +268,6 @@ def parcels_within_3km(request):
     # return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
-parcels_cent = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
-data = []
-for parcel in parcels_cent:
-    data.append(parcel)
-print(data)  # [ < Parcels: LR12872 / 26 >, < Parcels: LR12872 / 24 >, < Parcels: LR12872 / 23 >, ]
-
-for dat in data:
-    print(dat.geometry)
 
 
 
@@ -210,68 +330,3 @@ for dat in data:
 #     return render(request, 'poco/poco_js.html', context)
 
 
-# def calculate_distance_view(request):
-#     # initial values
-#     distance = None
-#     destination = None
-#
-#     obj = get_object_or_404(Parcels, id=1)
-#     form = MeasurementModelForm(request.POST or None)
-#     geolocator = Nominatim(user_agent='measurements')
-#
-#     ip = '72.14.207.99'
-#     country, city, lat, lon = get_geo(ip)
-#     location = geolocator.geocode(city)
-#
-#     # location coordinates
-#     l_lat = lat
-#     l_lon = lon
-#     pointA = (l_lat, l_lon)
-#
-#     # initial folium map
-#     m = folium.Map(width=800, height=500, location=get_center_coordinates(l_lat, l_lon), zoom_start=8)
-#     # location marker
-#     folium.Marker([l_lat, l_lon], tooltip='click here for more', popup=city['city'],
-#                   icon=folium.Icon(color='purple')).add_to(m)
-#
-#     if form.is_valid():
-#         instance = form.save(commit=False)
-#         destination_ = form.cleaned_data.get('destination')
-#         destination = geolocator.geocode(destination_)
-#
-#         # destination coordinates
-#         d_lat = destination.latitude
-#         d_lon = destination.longitude
-#         pointB = (d_lat, d_lon)
-#         # distance calculation
-#         distance = round(geodesic(pointA, pointB).km, 2)
-#
-#         # folium map modification
-#         m = folium.Map(width=800, height=500, location=get_center_coordinates(l_lat, l_lon, d_lat, d_lon),
-#                        zoom_start=get_zoom(distance))
-#         # location marker
-#         folium.Marker([l_lat, l_lon], tooltip='click here for more', popup=city['city'],
-#                       icon=folium.Icon(color='purple')).add_to(m)
-#         # destination marker
-#         folium.Marker([d_lat, d_lon], tooltip='click here for more', popup=destination,
-#                       icon=folium.Icon(color='red', icon='cloud')).add_to(m)
-#
-#         # draw the line between location and destination
-#         line = folium.PolyLine(locations=[pointA, pointB], weight=5, color='blue')
-#         m.add_child(line)
-#
-#         instance.location = location
-#         instance.distance = distance
-#         instance.save()
-
-# m = m._repr_html_()
-
-# context = {
-#     'distance': distance,
-#     'destination': destination,
-#     'form': form,
-#     'map': m,
-# }
-#
-# # return render(request, 'measurements/main.html', context)
-# return HttpResponse('ip produced')

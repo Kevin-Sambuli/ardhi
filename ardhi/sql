@@ -7,8 +7,15 @@ create view centroids_json as
         geom))::jsonb,'properties',  to_jsonb(inputs)  -'geom') AS feature, 'geometry' FROM (SELECT * FROM parcels)
         inputs) features;
 
+-- using aliases
 select ST_AsText(ST_Centroid(a.geom) ) FROM parcels AS a
 select ST_AsText(ST_Centroid(geom) ) FROM parcels where id=84;
+
+-- getting the x and y cordinates  of parcels
+select ST_AsText(ST_Centroid(geom) ) FROM parcels where id=84;
+select ST_X(ST_Centroid(geom)) FROM parcels;
+select ST_X(ST_Centroid(geom)) FROM parcels where id=84;
+select ST_Y(ST_Centroid(geom)) FROM parcels where id=84
 
 -- returning the geojson of parcels
 create view parcels_json as

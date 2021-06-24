@@ -2,14 +2,14 @@ from django.contrib.gis.geoip2 import GeoIP2
 
 
 # Helper functions
-# def get_ip_address(request):
-#     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-#     print('ip', x_forwarded_for)
-#     if x_forwarded_for:
-#         ip = x_forwarded_for.split(',')[0]
-#     else:
-#         ip = request.META.get('REMOTE_ADDR')
-#     return ip
+def get_ip_address(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    print('ip', x_forwarded_for)
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 
 def get_geo(ip):

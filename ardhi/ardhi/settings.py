@@ -64,6 +64,7 @@ THIRD_PIRTY_APPS = [
     'rest_framework_gis',
     'leaflet',
     'djgeojson',
+    'crispy_forms',
 ]
 
 PROJECT_APPS = ['accounts', 'regions', 'parcels', 'payments', 'search']
@@ -82,6 +83,8 @@ AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
     # 'accounts.backends.CaseInsensitiveModelBackend',
 )
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -259,17 +262,17 @@ SERIALIZATION_MODULES = {
 #     ]
 # }
 
-# celery url
-
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379")
-
-
 # REST_FRAMEWORK = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': (
 #         'rest_framework.authentication.TokenAuthentication',
 #     )
 # }
+
+
+# celery url
+
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379")
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379")
 
 
 
