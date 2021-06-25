@@ -13,7 +13,7 @@ from .map import my_map
 import json, folium
 from django.contrib.gis.geos import GEOSGeometry
 
-
+import os 
 # from .forms import MeasurementModelForm
 
 
@@ -59,6 +59,8 @@ def my_property(request):
     context = {}
     points_as_geojson = serialize('geojson', Parcels.objects.all())
 
+    print(" environ",  os.environ.get("ALLOWED_HOSTS").split(' '))
+
     try:
         my_parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
         parcels = Parcels.objects.filter(owner_id=request.user.id)  # accessing parcels of the logged user
@@ -90,7 +92,7 @@ def my_property(request):
     return render(request, 'parcels/map.html', context)
 
 
-def my_parcels_2(request):
+def my_parcels(request):
     """ function that returns parcels in geojson and generate a folium leaflet map"""
     context = {}
     points_as_geojson = serialize('geojson', Parcels.objects.all())

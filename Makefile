@@ -79,3 +79,4 @@ docker run i postgres # interactive mode
 docker run it postgres # interactive shell and prompt
 
 docker network ls # checking all networks in the docker
+

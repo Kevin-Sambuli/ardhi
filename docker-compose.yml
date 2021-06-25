@@ -6,20 +6,26 @@ services:
       context: ./ardhi
       dockerfile: Dockerfile
     container_name: ardhi_app
-#    command: gunicorn ardhi.wsgi:application --bind 0.0.0.0:8000
+    hostname: land_app
     command: >
       sh -c "python3 manage.py wait_for_db &&
              python manage.py migrate &&
-             python manage.py runserver 0.0.0.0:8000"
+             python manage.py collectstatic --noinput --clear &&
+             gunicorn ardhi.wsgi:application --bind 0.0.0.0:8000"
+  #          python manage.py collectstatic --noinput --clear &&
+  #          python manage.py runserver 0.0.0.0:8000"
+            
     volumes:
       - ./ardhi:/home/app/web
       - static_volume:/home/app/web/static
       - media_volume:/home/app/web/media
-    ports:
-      - 8000:8000
+    # ports:
+    #   - 8000:8000
+    expose:
+      - 8000
     environment:
       - DEBUG=${DEBUG}
-      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - PG_DB_HOST=${PG_DB_HOST}
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASS=${PG_PASS}
@@ -35,10 +41,12 @@ services:
       # - back-end
       - land_app
 
+
   postgres-db:
     restart: "on-failure"
     image: kartoza/postgis:12.0
     container_name: postgis_db
+    hostname: postgres-db
     ports:
       - 5432:5432
     volumes:
@@ -55,12 +63,14 @@ services:
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
+    hostname: pgadmin
     restart: unless-stopped
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     ports:
-      - "5050:80"
+      - ${PGADMIN_PORT}:80
+
     depends_on:
       - postgres-db
     networks:
@@ -68,37 +78,40 @@ services:
 
 
   geoserver:
-    image: kartoza/geoserver
+    image: kartoza/geoserver:${GS_VERSION}
     build:
       context: ./compose/geoserver
       dockerfile: Dockerfile
-#      args:
-#        IMAGE_VERSION: ${IMAGE_VERSION}
-#        JAVA_HOME: ${JAVA_HOME}
-#        GS_VERSION: ${GS_VERSION}
-#        WAR_URL: ${WAR_URL}
-#        ACTIVATE_ALL_STABLE_EXTENTIONS: ${ACTIVATE_ALL_STABLE_EXTENTIONS}
-#        ACTIVATE_ALL_COMMUNITY_EXTENTIONS: ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
+      args:
+        args:
+          IMAGE_VERSION:${IMAGE_VERSION}
+          JAVA_HOME:${JAVA_HOME}
+          GS_VERSION:${GS_VERSION}
+          WAR_URL:${WAR_URL}
+          ACTIVATE_ALL_STABLE_EXTENTIONS:${ACTIVATE_ALL_STABLE_EXTENTIONS}
+          ACTIVATE_ALL_COMMUNITY_EXTENTIONS:${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
     container_name: geoserver
+    hostname: geoserver
     volumes:
      - geoserver_data:/opt/geoserver/data_dir
+     - /tmp/settings/epsg.properties:/opt/geoserver/data_dir/user_projections/epsg.properties
     ports:
-     - "8600:8080"
+     - ${GEOSERVER_PORT}:8080
     restart: on-failure
     depends_on:
-     - postgres-db
+      - postgres-db 
     networks:
       - land_app
     environment:
-     - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
-     - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
-     - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
-     - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
-     - INITIAL_MEMORY=${INITIAL_MEMORY}
-     - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
-     - RECREATE_DATADIR=${RECREATE_DATADIR}
-     # - HTTP_PROXY_NAME
-     # - HTTP_PROXY_PORT
+       - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
+       - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
+       - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
+       - GEOSERVER_ADMIN_USER=${GEOSERVER_ADMIN_USER}
+       - INITIAL_MEMORY=${INITIAL_MEMORY}
+       - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
+       - RECREATE_DATADIR=${RECREATE_DATADIR}
+       - ACTIVATE_ALL_STABLE_EXTENTIONS:${ACTIVATE_ALL_STABLE_EXTENTIONS}
+       - ACTIVATE_ALL_COMMUNITY_EXTENTIONS:${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
 
   redis:
     restart: unless-stopped
@@ -147,8 +160,8 @@ services:
       dockerfile: Dockerfile
     container_name: nginx
     ports:
-      - 80:80
-      - 443:443
+      - 1337:80
+      # - 443:443
     networks:
       - land_app
 
@@ -170,6 +183,65 @@ volumes:
 
 
 
+
+
+  #   celery:
+  #     restart: always
+  #     build:
+  #       context: .
+  #       dockerfile: ./dockerfile
+  #     container_name: celery
+  #     entrypoint: /bin/sh
+  #     command: ./docker.celery.sh
+  #     volumes:
+  #       - .:/usr/src/app
+  #       - static_volume:/usr/src/app/static
+  #       - media_volume:/usr/src/app/media
+  #     env_file:
+  #       - ./core/env/env.prod
+  #     depends_on:
+  #       - django
+  #       - redis
+  #   redis:
+  #     restart: always
+  #     image: redis:alpine
+  #     container_name: redis
+  #     volumes:
+  #       - redisdata:/data
+  #   nginx-proxy:
+  #     container_name: nginx-proxy
+  #     build: ./nginx
+  #     restart: always
+  #     ports:
+  #       - 443:443
+  #       - 80:80
+  #     volumes:
+  #       - static_volume:/usr/src/app/static
+  #       - media_volume:/usr/src/app/media
+  #       - certs:/etc/nginx/certs
+  #       - html:/usr/share/nginx/html
+  #       - vhost:/etc/nginx/vhost.d
+  #       - /var/run/docker.sock:/tmp/docker.sock:ro
+  #     depends_on:
+  #       - django
+  #   nginx-proxy-letsencrypt:
+  #     image: jrcs/letsencrypt-nginx-proxy-companion
+  #     env_file:
+  #       - ./core/env/env.prod.proxy-companion
+  #     volumes:
+  #       - /var/run/docker.sock:/var/run/docker.sock:ro
+  #       - certs:/etc/nginx/certs
+  #       - html:/usr/share/nginx/html
+  #       - vhost:/etc/nginx/vhost.d
+  #     depends_on:
+  #       - nginx-proxy
+  # volumes:
+  #   redisdata:
+  #   static_volume:
+  #   media_volume:
+  #   certs:
+  #   html:
+  #   vhost:
 
 
 

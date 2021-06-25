@@ -4,8 +4,8 @@
 
 {% block content %}
     <div class="col-md-6 offset-md-3">
-    <form class="form-signin" method="post">{% csrf_token %}
-
+    <form class="registration_form" method="post" autocomplete="off">
+    {% csrf_token %}
         <h1 class="h3 mb-3 font-weight-normal">Account Registration</h1>
 
         {% for field in registration_form %}

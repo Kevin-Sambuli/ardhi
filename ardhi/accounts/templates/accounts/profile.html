@@ -4,8 +4,8 @@
 
     <h2 class="text-center">Profile Information</h2>
     <div class="col-md-6 offset-md-3">
-    <form method="post">{% csrf_token %}
-
+    <form class="profile_form" method="post" autocomplete="off">
+    {% csrf_token %}
         {% for field in profile_form %}
             <p>
                 {{ field.label_tag }}

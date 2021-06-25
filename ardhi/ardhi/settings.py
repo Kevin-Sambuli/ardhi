@@ -20,34 +20,38 @@ from django.contrib import staticfiles
 # BASE_DIR = Path(__file__).resolve().parent.parent
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
-# env = environ.Env(DEBUG=(bool, False))
-# environ.Env.read_env(env_file='.env')
+env = environ.Env(DEBUG=(bool, False))
+environ.Env.read_env(env_file=".env")
+SECRET_KEY = env("SECRET_KEY")
+DEBUG = env("DEBUG")
+ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
+
 # SECRET_KEY = os.environ.get("SECRET_KEY")
-SECRET_KEY ='django-insecure-bejnxzbe$j3mi^zv(z6()3=d9)7_kp-o6trkx+74l17aqkpl$_'
-DEBUG = True
+# SECRET_KEY ='django-insecure-bejnxzbe$j3mi^zv(z6()3=d9)7_kp-o6trkx+74l17aqkpl$_'
+
+# DEBUG = True
 # DEBUG = os.environ.get("DEBUG")
 
 # Application definition
-# ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
-ALLOWED_HOSTS =['ardhi-land-info.herokuapp.com','localhost', '127.0.0.1']
+# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split('')
+# ALLOWED_HOSTS =['ardhi-land-info.herokuapp.com', 'localhost', '127.0.0.1', 'land_app']
 
 # Application definition
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     EMAIL_HOST_USER = 'sambulikevin@gmail.com'
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-# else:
-#     EMAIL_BACKEND = env("EMAIL_BACKEND")
-#     EMAIL_HOST_USER = env("EMAIL_HOST_USER")
-#     EMAIL_HOST = env("EMAIL_HOST")
-#     EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
-#     EMAIL_USE_TLS = env("EMAIL_USE_TLS")
-#     EMAIL_PORT = env("EMAIL_PORT")
-#     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+else:
+    EMAIL_BACKEND = env("EMAIL_BACKEND")
+    EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+    EMAIL_HOST = env("EMAIL_HOST")
+    EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+    EMAIL_USE_TLS = env("EMAIL_USE_TLS")
+    EMAIL_PORT = env("EMAIL_PORT")
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 DJANGO_APPS = [
     'django.contrib.admin',
@@ -56,6 +60,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'whitenoise.runserver_nostatic',
     'django.contrib.gis',
 ]
 
@@ -73,11 +78,10 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PIRTY_APPS + PROJECT_APPS
 
 # user custom model setting
 AUTH_USER_MODEL = 'accounts.Account'
-# sign up form
 SIGNUP_FORM_CLASS = 'accounts.forms.RegistrationForm'
 
-# LOGIN_REDIRECT_URL = "home"
-# LOGOUT_REDIRECT_URL = "home"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
@@ -92,7 +96,7 @@ MIDDLEWARE = [
     # 'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    # 'whitenoise.middleware.WhiteNoiseMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -119,55 +123,32 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ardhi.wsgi.application'
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
+# Database,
 # docker database
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.contrib.gis.db.backends.postgis',
-#         'NAME': 'Ardhi',
-#         'USER': "kevoh",
-#         'PASSWORD': 'kevoh1995',
-#         'HOST': 'postgres-db',
-#         'PORT': '5432',
-#     }
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': env("PG_ENGINE"),
+        'NAME': env("PG_NAME"),
+        'USER': env("PG_USER"),
+        'PASSWORD': env("PG_PASS"),
+        'HOST': env("PG_DB_HOST"),
+        'PORT': env("PG_PORT"),
+    }
+}
 
 # # local database
 # DATABASES = {
 #     'default': {
-#         'ENGINE': os.environ.get("PG_ENGINE"),
-#         'NAME': os.environ.get("PG_NAME"),
-#         'USER': os.environ.get("PG_USER_LOCAL"),
-#         'PASSWORD': os.environ.get("PG_PASS_LOCAL"),
-#         'HOST': os.environ.get("PG_HOST_LOCAL"),
-#         'PORT': os.environ.get("PG_PORT"),
+#         'ENGINE': env("PG_ENGINE"),
+#         'NAME': env("PG_NAME"),
+#         'USER': env("PG_USER_LOCAL"),
+#         'PASSWORD': env("PG_PASS_LOCAL"),
+#         'HOST': env("PG_HOST_LOCAL"),
+#         'PORT': env("PG_PORT"),
 #     },
 # }
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
-        'NAME': 'Ardhi',
-        'USER': 'postgres',
-        'PASSWORD': 'kevoh',
-        'HOST': 'localhost',
-        'PORT': 5432,
-    },
-}
 
-# heroku database
-# DATABASES = {
-#     'default': {
-#         'ENGINE': os.environ.get("PG_ENGINE"),
-#         'NAME': os.environ.get("PG_DATABASE_NAME"),
-#         'USER': os.environ.get("POSTGRES_USER"),
-#         'PASSWORD': os.environ.get("POSTGRES_PASS"),
-#         'HOST': os.environ.get("PG_HOST"),
-#         'PORT': os.environ.get("PG_PORT"),
-#     },
-# }
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -201,14 +182,13 @@ USE_L10N = True
 USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = (os.path.join(BASE_DIR, '/static'),)
+# STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)
 
 # leaflet configuration
 LEAFLET_CONFIG = {
@@ -259,28 +239,21 @@ SERIALIZATION_MODULES = {
 #     'DEFAULT_AUTHENTICATION_CLASSES': [
 #         'rest_framework.authentication.BasicAuthentication',
 #         'rest_framework.authentication.SessionAuthentication',
-#     ]
-# }
-
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': (
 #         'rest_framework.authentication.TokenAuthentication',
-#     )
+#     ]
 # }
 
 
 # celery url
-
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379")
-
 
 
 # REDIS_HOST = 'localhost'
 # REDIS_PORT = 6379
 # redis_host = os.environ.get('REDIS_HOST', 'localhost')
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

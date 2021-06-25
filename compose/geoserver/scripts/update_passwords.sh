@@ -29,13 +29,15 @@ if [ ! -d "${GEOSERVER_DATA_DIR}/security" ]; then
 fi
 
 
+file_env 'GEOSERVER_ADMIN_USER'
+file_env 'GEOSERVER_ADMIN_PASSWORD'
+
+
+# Set random password if none provided
 if [[ -z ${GEOSERVER_ADMIN_PASSWORD} ]]; then
       GEOSERVER_ADMIN_PASSWORD=${random_pass_string}
 fi
 
-
-file_env 'GEOSERVER_ADMIN_USER'
-file_env 'GEOSERVER_ADMIN_PASSWORD'
 
 USERS_XML=${USERS_XML:-${GEOSERVER_DATA_DIR}/security/usergroup/default/users.xml}
 ROLES_XML=${ROLES_XML:-${GEOSERVER_DATA_DIR}/security/role/default/roles.xml}
@@ -64,6 +66,9 @@ cat $ROLES_XML.orig | sed -e "s/ username=\".*\"/ username=\"${GEOSERVER_ADMIN_U
 
 echo $GEOSERVER_ADMIN_PASSWORD >${GEOSERVER_DATA_DIR}/security/pass.txt
 echo -e "[Entrypoint] GENERATED GeoServer  PASSWORD: \e[1;31m $GEOSERVER_ADMIN_PASSWORD"
+echo -e "\033[0m GeoServer PASSWORD listed above: "
+
+echo -e "\033[0m GeoServer PASSWORD listed above: "
 
 # Put lock file to make sure password is not reinitialized on restart
 touch ${SETUP_LOCKFILE}

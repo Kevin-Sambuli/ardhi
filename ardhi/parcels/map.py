@@ -80,7 +80,7 @@ def my_map(land_parcels, parcel=None, lat=None, lng=None):
                            auto_toggle_display=False, minimized=True, ).add_to(m)
 
     # folium.raster_layers.WmsTileLayer(
-    #     url="http://localhost:8080/geoserver/wms",
+    #     url="http://localhost:8600/geoserver/wms/",
     #     name="counties",
     #     fmt="image/png",
     #     layers="counties",

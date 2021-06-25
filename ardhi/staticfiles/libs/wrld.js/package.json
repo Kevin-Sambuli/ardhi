@@ -1,0 +1,37 @@
+{
+  "name": "wrld.js",
+  "version": "0.0.1",
+  "description": "A JavaScript API for beautiful 3D maps",
+  "main": "src/wrld.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run build-min",
+    "build-dist": "npm run clean && mkdir dist && browserify -s WRLD src/wrld.js > dist/wrld.js",
+    "build-min": "npm run build-dist && uglifyjs -c -m < dist/wrld.js > dist/wrld.min.js",
+    "watch": "npm run build-dist && watchify -s WRLD src/wrld.js -o dist/wrld.js -v --debug",
+    "lint": "eslint . --ext .js,.ts",
+    "test": "sh -c './node_modules/jasmine/bin/jasmine.js JASMINE_CONFIG_PATH=tests/jasmine.json'"
+  },
+  "author": "WRLD",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wrld3d/wrld.js.git"
+  },
+  "license": "See license in LICENSE.md",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.8.1",
+    "@typescript-eslint/parser": "^4.8.1",
+    "browserify": "~13.0.0",
+    "eslint": "^6.8.0",
+    "jasmine": "~2.5.2",
+    "sinon": "~1.17.6",
+    "typescript": "^4.0.5",
+    "uglify-js": "~2.6.0",
+    "watchify": "^4.0.0"
+  },
+  "dependencies": {
+    "@types/leaflet": "^1.0.69",
+    "leaflet": "1.0.1"
+  },
+  "types": "types/index.d.ts"
+}

@@ -63,6 +63,9 @@ COPY ./requirements.txt /home/app/web/requirements.txt
 
 RUN pip install -r requirements.txt
 
+# enabling static files
+
+
 # copy entrypoint.sh
 COPY ./entrypoint.sh $APP_HOME
 
