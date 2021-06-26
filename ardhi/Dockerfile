@@ -75,8 +75,14 @@ COPY . $APP_HOME
 # chown all the files to the app user
 #RUN chown -R app:app $APP_HOME
 
+# WORKDIR /usr/src/app
+# RUN addgroup --system admin && adduser --system --no-create-home --group admin && \
+#     chown -R admin:admin /usr && chmod -R 755 /usr
+
 # change to the app user
 #USER app
+
+
 
 #RUN adduser -D kevoh
 #USER kevoh

@@ -4,8 +4,6 @@ from django.conf import settings
 import datetime
 
 
-
-
 # Create your models here.
 class Parcels(models.Model):
     ON_SALE = 'on_sale'
@@ -78,7 +76,6 @@ class ParcelDetails(models.Model):
         # Gives the proper plural name for admin
         db_table = 'parcel_details'
         verbose_name_plural = "parcel_details"
-
 
 # class Centroids(models.Model):
 #     id = models.BigIntegerField(primary_key=True)

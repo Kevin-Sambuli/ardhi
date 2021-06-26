@@ -13,7 +13,9 @@ from .map import my_map
 import json, folium
 from django.contrib.gis.geos import GEOSGeometry
 
-import os 
+import os
+
+
 # from .forms import MeasurementModelForm
 
 
@@ -57,43 +59,43 @@ def parcels(request):
 def my_property(request):
     """ function that returns parcels of the logged in user  generate a folium leaflet map"""
     context = {}
-    points_as_geojson = serialize('geojson', Parcels.objects.all())
-
-    print(" environ",  os.environ.get("ALLOWED_HOSTS").split(' '))
+    parcels_as_geojson = serialize('geojson', Parcels.objects.all())
 
     try:
+        # returning my parcels as geojson to be passed on the map as objects
         my_parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
-        parcels = Parcels.objects.filter(owner_id=request.user.id)  # accessing parcels of the logged user
-        print('parcels', parcels)
+
+        # accessing parcels of the logged user
+        my_own_parcels = Parcels.objects.filter(owner_id=request.user.id)
+
+        #  getting each parcel details
+        details = [ParcelDetails.objects.get(parcel=parcel_id) for parcel_id in my_own_parcels]
 
         # accessing each parcel detail and returning each parcel id
-        parcel_id = list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))
-        print("parcel id", parcel_id)
-
-        details = [det for det in list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))]
-
-        data = [ParcelDetails.objects.get(parcel=det) for det in parcels]
-        print('data', data)
+        # data = [det for det in Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True)]
 
         # Generating folium leaflet map using my_map function
-        m = my_map(land_parcels=points_as_geojson, parcel=my_parcel)
+        m = my_map(land_parcels=parcels_as_geojson, parcel=my_parcel)
         m = m._repr_html_()
 
         context['map'] = m
-        context['details'] = data
-        context['parcels'] = parcels
-
+        context['details'] = details
+        context['parcels'] = my_own_parcels
     except:
-        print('the parcel does not exist')
-        m = my_map(land_parcels=points_as_geojson)
+        print('You dont own parcels in the system')
+        m = my_map(land_parcels=parcels_as_geojson)
         m = m._repr_html_()
         context['map'] = m
 
     return render(request, 'parcels/map.html', context)
 
 
-def my_parcels(request):
-    """ function that returns parcels in geojson and generate a folium leaflet map"""
+def search_parcels(request):
+    """ function that returns parcels in geojson and generate a folium leaflet map
+
+    returning the centroid of the searched parcel calculate the distance to that point
+
+    should also return the parcel details of that parcel and produce the pdf of the parcel, map, and parcel details"""
     context = {}
     points_as_geojson = serialize('geojson', Parcels.objects.all())
 
@@ -147,6 +149,7 @@ def my_parcels(request):
 
     return render(request, 'parcels/map.html', context)
 
+
 def parcels_within_3km(request):
     """Get parcels that are at least 3km or less from a users location"""
     pol = serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
@@ -162,7 +165,6 @@ def parcels_within_3km(request):
 
     print('distance 1', sorted(data1))
     print('ip address', ip)
-
 
     # parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
     parcels = Parcels.objects.get(id=84).geom
@@ -248,12 +250,6 @@ def calculate_distance_view(request):
     return HttpResponse('printed')
     # return render(request, 'measurements/main.html', context)
 
-
-
-
-
-
-
     # longitude = request.GET.get("lon", None)
     # latitude = request.GET.get("lat", None)
 
@@ -268,10 +264,6 @@ def calculate_distance_view(request):
     #     serialized_hospitals = serializer(closest_hospitals, many=True)
     #     return Response(serialized_hospitals.data, status=status.HTTP_200_OK)
     # return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
 
 # from django.contrib.gis.geos import Point
 # from django.contrib.gis.measure import D
@@ -330,5 +322,3 @@ def calculate_distance_view(request):
 #     parcel = Parcels.objects.all()
 #     context = {'object_list': parcel,}
 #     return render(request, 'poco/poco_js.html', context)
-
-

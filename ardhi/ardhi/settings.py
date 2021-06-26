@@ -27,7 +27,7 @@ env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(env_file=".env")
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
-ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
+# ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
 
 # SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECRET_KEY ='django-insecure-bejnxzbe$j3mi^zv(z6()3=d9)7_kp-o6trkx+74l17aqkpl$_'
@@ -36,8 +36,8 @@ ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
 # DEBUG = os.environ.get("DEBUG")
 
 # Application definition
-# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split('')
-# ALLOWED_HOSTS =['ardhi-land-info.herokuapp.com', 'localhost', '127.0.0.1', 'land_app']
+# ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(' ')
+ALLOWED_HOSTS =['localhost', '127.0.0.1', 'land_app']
 
 # Application definition
 if DEBUG:
@@ -125,28 +125,28 @@ WSGI_APPLICATION = 'ardhi.wsgi.application'
 
 # Database,
 # docker database
-DATABASES = {
-    'default': {
-        'ENGINE': env("PG_ENGINE"),
-        'NAME': env("PG_NAME"),
-        'USER': env("PG_USER"),
-        'PASSWORD': env("PG_PASS"),
-        'HOST': env("PG_DB_HOST"),
-        'PORT': env("PG_PORT"),
-    }
-}
-
-# # local database
 # DATABASES = {
 #     'default': {
 #         'ENGINE': env("PG_ENGINE"),
 #         'NAME': env("PG_NAME"),
-#         'USER': env("PG_USER_LOCAL"),
-#         'PASSWORD': env("PG_PASS_LOCAL"),
-#         'HOST': env("PG_HOST_LOCAL"),
+#         'USER': env("PG_USER"),
+#         'PASSWORD': env("PG_PASS"),
+#         'HOST': env("PG_DB_HOST"),
 #         'PORT': env("PG_PORT"),
-#     },
+#     }
 # }
+
+# # local database
+DATABASES = {
+    'default': {
+        'ENGINE': env("PG_ENGINE"),
+        'NAME': env("PG_NAME"),
+        'USER': env("PG_USER_LOCAL"),
+        'PASSWORD': env("PG_PASS_LOCAL"),
+        'HOST': env("PG_HOST_LOCAL"),
+        'PORT': env("PG_PORT"),
+    },
+}
 
 
 
