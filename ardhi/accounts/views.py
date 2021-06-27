@@ -1,7 +1,7 @@
 from .forms import RegisterForm, LoginForm, AccountUpdateForm, AccountProfileForm, AccountAddressForm
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import Profile, GeoLocation, Address
+from .models import Account, Profile, GeoLocation, Address
 from django.shortcuts import render, redirect
 from django.core.mail import send_mail
 from django.http import HttpResponse

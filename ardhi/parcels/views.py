@@ -14,7 +14,11 @@ import json, folium
 from django.contrib.gis.geos import GEOSGeometry
 
 import os
-
+from django.conf import settings
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from django.contrib.staticfiles import finders
 
 # from .forms import MeasurementModelForm
 
@@ -88,6 +92,57 @@ def my_property(request):
         context['map'] = m
 
     return render(request, 'parcels/map.html', context)
+
+
+def parcel_render_pdf(request, *args, **kwargs):
+    context = {}
+    parcels_as_geojson = serialize('geojson', Parcels.objects.all())
+
+    my_parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
+
+    my_own_parcels = Parcels.objects.filter(owner_id=request.user.id)
+
+    details = [ParcelDetails.objects.get(parcel=parcel_id) for parcel_id in my_own_parcels]
+
+    m = my_map(land_parcels=parcels_as_geojson, parcel=my_parcel)
+    m = m._repr_html_()
+
+    context['map'] = m
+    context['details'] = details
+    context['parcels'] = my_own_parcels
+
+    template_path = 'parcels/pdf.html'
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'filename ="report.pdf"'
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # create a pdf
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    # if error then show some funy view
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+
+
+
+def render_pdf_view(request):
+    template_path = 'pdf.html'
+    context = {'myvar': 'this is your template context'}
+    # Create a Django response object, and specify content_type as pdf
+    response = HttpResponse(content_type='application/pdf')
+    # response['Content-Disposition'] = 'attachment; filename="report.pdf"' """in the"""
+    response['Content-Disposition'] = 'filename ="report.pdf"'
+    # find the template and render it.
+    template = get_template(template_path)
+    html = template.render(context)
+
+    # create a pdf
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    # if error then show some funy view
+    if pisa_status.err:
+       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
 
 
 def search_parcels(request):

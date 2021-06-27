@@ -148,6 +148,17 @@ DATABASES = {
     },
 }
 
+# heroku
+# DATABASES = {
+#     'default': {
+#         'ENGINE': env("PG_ENGINE"),
+#         'NAME': env("PG_DATABASE_NAME"),
+#         'USER': env("POSTGRES_USER"),
+#         'PASSWORD': env("POSTGRES_PASS"),
+#         'HOST': env("PG_HOST"),
+#         'PORT': env("PG_PORT"),
+#     },
+# }
 
 
 # Password validation

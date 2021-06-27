@@ -112,6 +112,11 @@ celerybeat.pid
 .idea
 .venv
 env/
+
+shapefile/
+geoip/
+regions/
+
 venv/
 ENV/
 env.bak/

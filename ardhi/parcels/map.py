@@ -1,8 +1,8 @@
 import folium, branca
-
 from folium import plugins, raster_layers, vector_layers
 from branca.element import Figure
 from folium.features import GeoJsonPopup, GeoJsonTooltip
+import os
 
 
 def color_producer(perimeter):
@@ -15,8 +15,6 @@ def color_producer(perimeter):
 
 
 def my_map(land_parcels, parcel=None, lat=None, lng=None):
-
-
     extent = [-1.22488, 36.82467]
     m = folium.Map(location=extent, min_zoom=8, zoom_start=15,
                    max_zoom=18, control_scale=True, tiles="OpenStreetMap")
@@ -53,7 +51,7 @@ def my_map(land_parcels, parcel=None, lat=None, lng=None):
 
     parc = folium.features.GeoJson(land_parcels, name='Map', highlight_function=None, zoom_on_click=True,
                                    control=True, popup=popup, overlay=True, show=True, smooth_factor=None,
-                                   embed=True,).add_to(m)
+                                   embed=True, ).add_to(m)
 
     folium.plugins.Search(layer=parc, geom_type="Polygon", zoom_on_click=True, placeholder="Search for parcel",
                           collapsed=False, search_zoom=18, search_label="lr_no", weight=3, ).add_to(m)
@@ -89,5 +87,16 @@ def my_map(land_parcels, parcel=None, lat=None, lng=None):
     #     overlay=True,
     #     control=True,
     # ).add_to(m)
+
+    # merc = os.path.join("parcels", "map.jpg")
+    # img = "parcels/map.jpg"
+
+    # folium.raster_layers.ImageOverlay(name="map",
+    #                                   image=merc,
+    #                                   bounds=[[-1.22149772193, 36.8221708365], [-1.22929592861, 36.8277197066]],
+    #                                   ).add_to(m)
+
+    # img.add_to(m)
+    # folium.LayerControl().add_to(m)
 
     return m

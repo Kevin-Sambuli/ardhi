@@ -22,33 +22,40 @@
 {% endblock %}
 {% block content %}
     <div class="container">
-        <table style="width:100%">
-          <caption>My Parcel(s)</caption>
-          <tr>
-            <th>Parcel Number</th>
-            <th>Land Use</th>
-            <th>Encumbrances</th>
-            <th>Improvements</th>
-            <th>Purchase Date</th>
-          </tr>
-
-            {% for detail in details %}
-                {% for parcel in parcels %}
-                    {% if detail.parcel_id == parcel.id %}
-                        <tr>
-                        <td> {{ parcel.lr_no }}</td>
-                        <td>{{ detail.land_use.title }}</td>
-                        <td> {{ detail.encumbrances.title }}</td>
-                        <td> {{ detail.improvements.title }}</td>
-                        <td> {{ detail.purchase_date }}</td>
-                        </tr>
-                    {% endif %}
+        <a href="{% url 'pdf' %}"><button class="btn btn-primary"> Print</button></a>
+        <div class="border shadow">
+            <table style="width:100%">
+              <caption>My Parcel(s)</caption>
+              <tr>
+                <th style="align-content: center">Parcel Number</th>
+                <th>Area(ha)</th>
+                <th>Perimeter(m)</th>
+                <th>Land Use</th>
+                <th>Encumbrances</th>
+                <th>Improvements</th>
+                <th>Purchase Date</th>
+              </tr>
+            <!-- looping through the returned objects and displaying them on the map-->
+                {% for detail in details %}
+                    {% for parcel in parcels %}
+                        {% if detail.parcel_id == parcel.id %}
+                            <tr>
+                                <td> {{ parcel.lr_no }} </td>
+                                <td> {{ parcel.area_ha }} </td>
+                                <td> {{ parcel.perimeter }} </td>
+                                <td> {{ detail.land_use.title }} </td>
+                                <td> {{ detail.encumbrances.title }} </td>
+                                <td> {{ detail.improvements.title }}</td>
+                                <td> {{ detail.purchase_date }} </td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
                 {% endfor %}
-            {% endfor %}
-        </table>
-    <hr>
+            </table>
+        </div>
+        <hr>
     <!-- Displaying the parcels on the map-->
-        <div>
+        <div class="border shadow">
             <h3 class="text-justify">Parcels</h3>
             {{ map|safe }}
         </div>

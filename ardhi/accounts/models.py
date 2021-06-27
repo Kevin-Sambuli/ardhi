@@ -165,7 +165,7 @@ def get_profile_image_filepath(self, filename):
 
 
 def get_default_profile_image():
-    return "codingwithmitch/default_profile_image.png"
+    return "profile_images/profile_image.png"
 
 
 class Profile(models.Model):
@@ -182,7 +182,7 @@ class Profile(models.Model):
     id_no = models.CharField('ID NO', max_length=10, unique=True, blank=False)
     dob = models.DateField('Date of Birth', blank=False)
     phone = models.CharField('Contact Phone', max_length=10, blank=False)
-    profile_image = models.ImageField("Profile Image", max_length=255, upload_to=get_profile_image_filepath, null=True, blank=True,
+    profile_image = models.ImageField("Profile Image", max_length=255, upload_to='profile_images', null=True, blank=True,
                                       default=get_default_profile_image)
 
     class Meta:

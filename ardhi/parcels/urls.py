@@ -10,6 +10,7 @@ urlpatterns = [
     path('centroids/', views.get_points, name='distance'),
     path('json/', views.parcels, name='json_parcels'),
     path('property/', views.my_property, name='map'),
+    path('pdf/', views.parcel_render_pdf, name='pdf'),
     # path('distance/', views.parcels_within_3km, name='distance'),
     # path('distance/', views.my_parcels, name='distance'),
     # path('distance2/', views.calculate_distance_view, name='distance2'),
