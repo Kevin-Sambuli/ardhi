@@ -1,18 +1,18 @@
-from .forms import RegisterForm, LoginForm, AccountUpdateForm, AccountProfileForm, AccountAddressForm
+import datetime
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
+from .forms import RegisterForm, LoginForm, AccountUpdateForm, AccountProfileForm
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import Account, Profile, GeoLocation, Address
-from django.shortcuts import render, redirect
+from parcels.utils import get_ip_address, get_geo
+from django.template import RequestContext
 from django.core.mail import send_mail
+from .models import Account, Profile
 from django.http import HttpResponse
 from django.contrib import messages
-from .services import get_location
 from django.conf import settings
 import africastalking
 
-
-
-TEMP_PROFILE_IMAGE_NAME = "temp_profile_image.png"
 
 username = "rundalis"
 api_key = "6fd1032dcebdbc0bf7d29d057238ee443ee8388e871aab6da7234f06ff8893bc"
@@ -41,17 +41,8 @@ def registration_view(request):
             # authenticate the user if information is correct and valid
             account = authenticate(first_name=first_name, last_name=last_name, email=email,
                                    username=username, password=password)
-            # login(request, account)
 
-            # data = get_location()
-            #
-            # location = GeoLocation(owner=request.user.id, ip=data["ip"],
-            #                        country_name=data["country_name"], region_code=data["region_code"],
-            #                        city=data["city"], latitude=data['latitude'],
-            #                        longitude=data['longitude'], zip_code=data['zip'],).
-            # location.save()
-
-            # messages.success(request, f"Hey {username.title}, You have successfully been Registered..")
+            messages.success(request, f"Hey {username.title}, You have successfully been Registered..")
 
             subject = 'Runda LIS Registration.'
             message = f"""
@@ -75,29 +66,35 @@ def registration_view(request):
     return render(request, 'accounts/register.html', context)
 
 
-def profile_view(request):
-    print(request.user.id)
-    context = {}
-    if request.POST:
-        form = AccountProfileForm(request.POST)
-        if form.is_valid():
-            form.save()
+def profile_view(request, *args, **kwargs):
+    log_user = request.user.id
+    user_id = get_object_or_404(Account, id=log_user)
 
+    context = {}
+    # ip_address = get_ip_address(request)
+    # lat, lon = get_geo(ip_address)
+
+    ip = '41.80.98.237'
+    lat, lon = get_geo(ip)
+
+    if request.POST:
+        form = AccountProfileForm(request.POST, request.FILES)
+        if form.is_valid():
             gender = form.cleaned_data.get('gender')
             kra_pin = form.cleaned_data.get('kra_pin')
             id_no = form.cleaned_data.get('id_no')
             dob = form.cleaned_data.get('dob')
             phone = form.cleaned_data.get('phone')
+            profile_image = form.cleaned_data.get('profile_image')
 
-            # update user profile
-            profile = Profile(owner_id=request.user.id, gender=gender, kra_pin=kra_pin, id_no=id_no,
-                              dob=dob, phone=phone)
-            profile.save()
-
-            messages.success(request, f"Hey {request.user}, You have successfully Updated your profile..")
+            # update user address
+            address = Profile(owner_id=user_id.id, gender=gender, kra_pin=kra_pin, id_no=id_no, dob=dob,
+                              phone=phone, ip=ip, latitude=lat, longitude=lon, profile_image=profile_image)
+            address.save()
+            messages.success(request, f"Hey {username}, You Address has been updated..")
 
             # return redirect('success')
-            return redirect('home')
+            return redirect("home")
         else:
             context['profile_form'] = form
     else:
@@ -106,30 +103,25 @@ def profile_view(request):
     return render(request, 'accounts/profile.html', context)
 
 
-def address_view(request):
-    context = {}
-    if request.POST:
-        form = AccountAddressForm(request.POST)
-        if form.is_valid():
-            form.save()
-            street = form.cleaned_data.get('street')
-            city = form.cleaned_data.get('city')
-            code = form.cleaned_data.get('code')
-
-            # update user address
-            address = Address(owner_id=request.user.id, street=street, city=city, code=code)
-            address.save()
-            messages.success(request, f"Hey {username}, You Address has been updated..")
-
-            # return redirect('success')
-            return redirect("home")
-        else:
-            context['address_form'] = form
-    else:
-        form = AccountAddressForm()
-        context['address_form'] = form
-    return render(request, 'accounts/address.html', context)
-
+# def userlogin(request):
+#     username = "not logged in"
+#
+#     if request.method == "POST":
+#         # Get the posted form
+#         form = LoginForm(request.POST)
+#
+#     if form.is_valid():
+#         username = form.cleaned_data['username']
+#     else:
+#         form = LoginForm()
+#
+#     response = render(request, 'loggedin.html', {"username": username},
+#                                   context_instance=RequestContext(request))
+#
+#     response.set_cookie('last_connection', datetime.datetime.now())
+#     response.set_cookie('username', datetime.datetime.now())
+#
+#     return response
 
 def login_view(request):
     context = {}
@@ -138,6 +130,7 @@ def login_view(request):
     if user.is_authenticated:
         messages.success(request, f'Welcome back {request.user}, you have been logged in!')
         return redirect("home")
+
 
     if request.POST:
         form = LoginForm(request.POST)

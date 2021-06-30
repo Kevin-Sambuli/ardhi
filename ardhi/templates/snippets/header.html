@@ -25,6 +25,7 @@
             <a class="p-2 text-dark" href="{% url 'update_password' %}">Password</a>
             <a class="p-2 text-dark" href="{% url 'rundamap' %}">Parcels</a>
             <a class="p-2 text-dark" href="{% url 'map' %}">Map</a>
+            <a class="p-2 text-dark" href="{% url 'profile' %}">Profile</a>
 
             <a class="p-2 text-dark" href="{% url 'logout' %}">Logout</a>
         {% else %}
@@ -36,8 +37,6 @@
             <a class="p-2 text-dark" href="{% url 'home' %}">Home</a>
             <a class="p-2 text-dark" href="{% url 'parcels' %}">Parcels</a>
             <a class="p-2 text-dark" href="{% url 'login' %}">Login</a>
-            <a class="p-2 text-dark" href="{% url 'address' %}">Address</a>
-            <a class="p-2 text-dark" href="{% url 'profile' %}">Profile</a>
             <a class="btn btn-outline-primary" href="{% url 'register' %}">Register</a>
         {% endif %}
     </nav>

@@ -2,7 +2,7 @@
 
 {% load static %}
 
-{% block title %}Home{% endblock title %}
+{% block title %}Parcel Search{% endblock title %}
 
 {% block content %}
     <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
@@ -10,11 +10,11 @@
         <br>
     </div>
 
-    <div style="align-content: center" align="center">
-        <p style="font-weight: bold"> Full Name: {{ full_names }}</p> <hr>
-        <p> Email Address: {{ email.email }}</p>
-        <p> Contact Number: {{ email.phone }}</p>
-
+    <div  class="container" style="align-content: center" align="center">
+        <p> Full Name: {{ owner }}</p>
+        <p> Email Address: {{ owner.email }}</p>
+        <hr>
+        <p> Parcel Number: {{ parcel.lr_no }}</p>
         <p> Tenure: {{ details.tenure }}</p>
         <p> Land Use: {{ details.land_use }}</p>
         <p> Encumbrances: {{ details.encumbrances }}</p>
@@ -22,12 +22,11 @@
         <p> Purchase: {{ details.purchase_date }}</p>
 
     </div>
+
     <hr>
 
-    <div style="align-content: center" align="center">
-      <p style="font-weight: bold">
-        Click the link to view the parcel on A<a href="{% url 'parcel_search' %}" style="font-weight: bold"> Map</a>
-      </p>
+    <div class="container" style="align-content: center" align="center">
+        {{ map|safe }}
     </div>
 
 {% endblock content %}

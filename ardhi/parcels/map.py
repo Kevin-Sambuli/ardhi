@@ -60,6 +60,11 @@ def my_map(land_parcels, parcel=None, lat=None, lng=None):
                                 overlay=True, control=True, popup=parcel, show=True, smooth_factor=None,
                                 tooltip='my parcel', embed=True).add_to(m)
 
+
+    # myIcon = L.divIcon({iconUrl: 'my-ion.png'})
+    img = folium.features.DivIcon(html="<div> <img src='img.jpg' width='500' height='600'></div>",
+                            icon_size=None, icon_anchor=None, popup_anchor=None, class_name='empty')
+
     if lat and lng:
         folium.Marker([lat, lng], icon=folium.Icon(color="red", icon="info-sign"), tooltip='Click for more',
                       popup='parcels', ).add_to(m)

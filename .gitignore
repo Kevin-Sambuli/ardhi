@@ -9,6 +9,9 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+
+compose/
+
 .idea
 .vscode
 develop-eggs/
@@ -112,10 +115,6 @@ celerybeat.pid
 .idea
 .venv
 env/
-
-shapefile/
-geoip/
-regions/
 
 venv/
 ENV/

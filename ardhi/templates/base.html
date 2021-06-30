@@ -4,13 +4,13 @@
     <!-- Required meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+          integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
     <title>Land Information System</title>
     <hr>
 
     {% block stylesheet %}{% endblock stylesheet %}
-
 
 </head>
 
@@ -24,7 +24,7 @@
                 <button class="close" data-dismiss="alert">
                     <small><sup>x</sup></small>
                 </button>
-            {{ message }}
+                {{ message }}
             </div>
 
         {% endfor %}
@@ -32,24 +32,23 @@
 
     <!-- Body -->
     <style type="text/css">
-        .main{
+        .main {
             min-height: 100vh;
             height: 100%;
         }
     </style>
-        <div class="main">
-            {% block content %}
-            {% endblock content %}
-        </div>
+    <div class="main">
+        {% block content %}
+        {% endblock content %}
+    </div>
 
-            {% include "snippets/footer.html" %}
+    {% include "snippets/footer.html" %}
 
     <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
     <script src='https://code.jquery.com/jquery-3.2.1.min.js'></script>
     <script src='https://maxcdn.bootstrapcdn.com/bootstrap/4.5.3/js/bootstrap.min.js'></script>
 
-    {% block javascript %}
-    {% endblock javascript%}
+    {% block javascript %} {% endblock javascript %}
 </body>
 
 </html>

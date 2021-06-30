@@ -91,4 +91,7 @@ COPY . $APP_HOME
 #ENTRYPOINT ["home/app/web/entrypoint.sh"]
 
 #CMD gunicorn ardhi.wsgi:application --bind 0.0.0.0:8000
+
+# define the default command to run when starting the container
+# CMD ["gunicorn", "--chdir", "hello", "--bind", ":8000", "hello.wsgi:application"]
 #CMD python manage.py runserver 0.0.0.0:8000

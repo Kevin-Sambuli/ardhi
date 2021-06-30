@@ -5,7 +5,7 @@ from django.core.mail import send_mail
 from django.dispatch import receiver
 from django.conf import settings
 from django.db import models
-
+import geocoder
 
 
 class UserManager(BaseUserManager):
@@ -62,7 +62,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     # unique parameter that will be used to login in the user
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'username' ]
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'username']
 
     # hooking the New customized Manager to our Model
     objects = UserManager()
@@ -114,52 +114,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
 #     instance.account.save()
 
 
-class Address(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
-                              null=True, default=None)
-    street = models.CharField('Street', max_length=20, blank=True, null=True,)
-    city = models.CharField('City', max_length=20, blank=False, null=False,)
-    code = models.CharField('Code', max_length=20, blank=False, null=False,)
-
-    class Meta:
-        db_table = 'addresses'
-        verbose_name = "Address"
-        verbose_name_plural = "Addresses"
-
-    def __str__(self):
-        return '{}'.format(self.get_full_address())
-
-    def get_full_address(self):
-        """ Returns the full address plus the last_name, with a space in between. """
-        full_address = '%s %s %s' % (self.code, self.street, self.city)
-        return full_address.strip()
-
-
-class GeoLocation(models.Model):
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
-                              null=True, default=None)
-    ip = models.CharField("Ip Address", max_length=255)
-    country_name = models.CharField("Country", max_length=255)
-    region_code = models.CharField("Region code", max_length=255)
-    city = models.CharField("City", max_length=255)
-    latitude = models.DecimalField("Latitude", max_digits=9, decimal_places=6)
-    longitude = models.DecimalField("Longitude", max_digits=9, decimal_places=6)
-    zip_code = models.CharField("Zip code", max_length=255, null=True, blank=True)
-
-    class Meta:
-        db_table = 'geolocations'
-        verbose_name = "Geo location"
-        verbose_name_plural = "Geo locations"
-
-    def __str__(self):
-        return '{}'.format(self.get_user_ip())
-
-    def get_user_ip(self):
-        """ Returns the first_name plus the last_name, with a space in between. """
-        user_ip = '%s %s' % (self.owner, self.ip)
-        return user_ip.strip()
-
-
 def get_profile_image_filepath(self, filename):
     return 'profile_images/' + str(self.pk) + '/profile_image.png'
 
@@ -177,21 +131,25 @@ class Profile(models.Model):
     ]
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
                               null=True, default=None)
-    gender = models.CharField('Gender', max_length=1, choices=GENDER, default=MALE)
-    kra_pin = models.CharField('KRA PIN', max_length=20, unique=True, blank=False)
-    id_no = models.CharField('ID NO', max_length=10, unique=True, blank=False)
-    dob = models.DateField('Date of Birth', blank=False)
-    phone = models.CharField('Contact Phone', max_length=10, blank=False)
-    profile_image = models.ImageField("Profile Image", max_length=255, upload_to='profile_images', null=True, blank=True,
-                                      default=get_default_profile_image)
+    gender = models.CharField('Gender', max_length=5, choices=GENDER)
+    kra_pin = models.CharField('KRA PIN', max_length=20, unique=True, null=True, blank=False)
+    id_no = models.CharField('ID NO', max_length=10, unique=True, blank=False, null=True,)
+    dob = models.DateField('Date of Birth', blank=False, null=True)
+    phone = models.CharField('Contact Phone', max_length=10, null=True, blank=True, unique=True)
+    profile_image = models.ImageField("Profile Image", max_length=255, upload_to='profile_images', null=True,
+                                      blank=True, default=get_default_profile_image)
+    ip = models.CharField("Ip Address", max_length=20, null=True, blank=True, )
+    latitude = models.DecimalField("Latitude", max_digits=10, decimal_places=6, null=True, blank=True, )
+    longitude = models.DecimalField("Longitude", max_digits=10, decimal_places=6, null=True, blank=True,)
 
     class Meta:
         db_table = 'profile'
         verbose_name = "Profile"
-        verbose_name_plural = "Profile"
+        verbose_name_plural = "User Profile"
 
     def __str__(self):
-        return self.owner
+        return '{}'.format(self.ip)
+
 
     def baby_boomer_status(self):
         """Returns the person's baby-boomer status."""
@@ -202,6 +160,7 @@ class Profile(models.Model):
             return "You are not legible to own a land"
         else:
             return "Post-boomer"
+
     # elif dob < datetime.date(1920, 1, 1):
     #     print("your age is invalid enter the correct birth date")
     # elif (datetime.date.today() - dob).days // 365 <= 18:

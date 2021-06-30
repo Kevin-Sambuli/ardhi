@@ -13,7 +13,6 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.registration_view, name='register'),
     path('profile/', views.profile_view, name='profile'),
-    path('address/', views.address_view, name='address'),
     path('edit_account/', views.edit_account, name='edit_account'),
     path('update_password/', views.update_password, name='update_password'),
     # path('my_parcels_map/', TemplateView.as_view(template_name='accounts/realtime_location.html'), name='location'),

@@ -1,8 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Account, GeoLocation, Address, Profile
+from .models import Account, Profile
 from .forms import RegisterForm, AccountUpdateForm
 from django.utils.translation import gettext_lazy as _
+
 
 class AccountAdmin(UserAdmin):
     ordering = ["email"]
@@ -18,25 +19,17 @@ class AccountAdmin(UserAdmin):
     list_per_page = 10
     list_filter = ('is_staff', 'is_admin', 'is_superuser', 'is_active')
     fieldsets = (
-        (_("Login Credentials"),{"fields": ("email","password",) },),
+        (_("Login Credentials"), {"fields": ("email", "password",)},),
 
-        (_("Personal Information"),{"fields": ("username","first_name", "last_name")},),
+        (_("Personal Information"), {"fields": ("username", "first_name", "last_name")},),
 
-        ( _("Permissions and Groups"), {"fields": ("is_active", "is_staff","is_superuser","groups","user_permissions",)},),
+        (_("Permissions and Groups"),
+         {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions",)},),
 
-        (_("Important Dates"),  {"fields": ( "last_login","date_joined",)},),)
+        (_("Important Dates"), {"fields": ("last_login", "date_joined",)},),)
 
-    add_fieldsets = (None, {"classes": ("wide",), "fields": ( "email", "password1", "password2", "is_staff", "is_active",),},)
-    
-
-
-class AddressAdmin(admin.ModelAdmin):
-    list_display = ('owner', 'street', 'city', 'code',)
-    search_fields = ('owner',)
-    readonly_fields = ('street', 'city', 'code',)
-    list_display_links = ('owner',)
-    filter_horizontal = ()
-    list_per_page = 10
+    add_fieldsets = (
+    None, {"classes": ("wide",), "fields": ("email", "password1", "password2", "is_staff", "is_active",), },)
 
 
 class ProfileAdmin(admin.ModelAdmin):
@@ -48,17 +41,6 @@ class ProfileAdmin(admin.ModelAdmin):
     list_per_page = 10
 
 
-class GeoLocationAdmin(admin.ModelAdmin):
-    list_display = ('owner', 'city', 'latitude', 'longitude')
-    search_fields = ('country_name', 'city')
-    readonly_fields = ('country_name', 'city', 'latitude', 'longitude')
-    list_display_links = ('owner',)
-    filter_horizontal = ()
-    list_per_page = 10
-
-
 # Register your models here.
 admin.site.register(Account, AccountAdmin)
-admin.site.register(Address, AddressAdmin)
 admin.site.register(Profile, ProfileAdmin)
-admin.site.register(GeoLocation, GeoLocationAdmin)

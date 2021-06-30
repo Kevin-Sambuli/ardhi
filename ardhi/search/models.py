@@ -17,5 +17,5 @@ class PropertySearch(models.Model):
         verbose_name_plural = "Land Search"
 
     def __str__(self):
-        return self.owner
+        return self.parcel
 

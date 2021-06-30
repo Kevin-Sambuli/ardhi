@@ -1,35 +1,48 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags crispy_forms_field%}
 {% block title %}Profile{% endblock title %}
 {% block content %}
 
-    <h2 class="text-center">Profile Information</h2>
+
     <div class="col-md-6 offset-md-3">
-    <form class="profile_form" method="post" autocomplete="off">
+    <form action="{% url 'profile'  %}" class="profile_form" method="post" autocomplete="off">
     {% csrf_token %}
-        {% for field in profile_form %}
-            <p>
-                {{ field.label_tag }}
-                {{ field }}
+            <div style = "max-width:470px;">
+                <h2 class="text-center">Profile Information</h2>
+                {% for field in profile_form %}
+                    <p>
+                        {{ field.label_tag }}
+                        {{ field }}
 
-                {% if field.help_text %}
-                    <small style="color: grey;">{{ field.help_text }}</small>
+                        {% if field.help_text %}
+                            <small style="color: grey;">{{ field.help_text }}</small>
+                        {% endif %}
+                    </p>
+                {% endfor %}
+                {% for field in login_form %}
+                    {% for error in field.errors %}
+                        <p style="color: red;">{{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+
+                {% if profile_form.non_field_errors %}
+                    <div style="color: red;">
+                        <p>{{ profile_form.non_field_errors }}</p>
+                    </div>
                 {% endif %}
-            </p>
-        {% endfor %}
-        {% for field in login_form %}
-            {% for error in field.errors %}
-                <p style="color: red;">{{ error }}</p>
-            {% endfor %}
-        {% endfor %}
+                <div style = "max-width:470px;">
+                    <center>
 
-        {% if profile_form.non_field_errors %}
-            <div style="color: red;">
-                <p>{{ profile_form.non_field_errors }}</p>
+                       <button style = "border:0px; background-color:#4285F4; margin-top:8%;
+                          height:35px; width:80%;" type = "submit"
+                          value = "Login" >
+                          <strong>Save</strong>
+                       </button>
+
+                    </center>
+                </div>
             </div>
-        {% endif %}
-
-        <button class="btn btn-secondary" type="submit">Save</button>
-    </form>
+        </form>
     </div>
 
 {% endblock content %}

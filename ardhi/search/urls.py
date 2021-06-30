@@ -6,5 +6,4 @@ from . import views
 
 urlpatterns = [
     path('search/', views.search_view, name='search'),
-    # path('logout/', views.logout_view, name='logout'),
 ]

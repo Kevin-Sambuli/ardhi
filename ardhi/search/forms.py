@@ -1,18 +1,18 @@
 from django import forms
+from django.forms import widgets
+
 from .models import PropertySearch
 
 
 class SearchForm(forms.ModelForm):
     class Meta:
         model = PropertySearch
-        # fields = ("parcel", "purpose")
-        fields = ("owner", "parcel", "purpose")
+        fields = ("parcel", "purpose")
+        # publish = forms.ModelChoiceField(queryset=Publish.objects.all())
+        # authors = forms.ModelMultipleChoiceField(queryset=Author.objects.all())
 
     def __init__(self, *args, **kwargs):
         super(SearchForm, self).__init__(*args, **kwargs)
-
-
-        # self.fields['owner'].widget.attrs['class'] = 'hidden'
 
         self.fields['parcel'].widget.attrs['class'] = 'form-control'
         self.fields['parcel'].widget.attrs['placeholder'] = 'LR NUmber(LR12872/2)'

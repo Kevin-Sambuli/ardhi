@@ -1,16 +1,19 @@
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth import authenticate
-from .models import Account, Profile, Address
+from .models import Account, Profile
+from parcels.models import Parcels
 from django import forms
+from django.forms import widgets
 
 
 class RegisterForm(UserCreationForm):
     first_name = forms.CharField(label="", max_length=100, widget=forms.TextInput())
-    last_name  = forms.CharField(label="", max_length=100,widget=forms.TextInput())
-    username   = forms.CharField(label="", max_length=100,widget=forms.TextInput())
-    email      = forms.EmailField(label="", max_length=100,widget=forms.TextInput())
-    password1  = forms.CharField(label='', widget=forms.PasswordInput)
-    password2  = forms.CharField(label='', widget=forms.PasswordInput)
+    last_name = forms.CharField(label="", max_length=100, widget=forms.TextInput())
+    username = forms.CharField(label="", max_length=100, widget=forms.TextInput())
+    email = forms.EmailField(label="", max_length=100, widget=forms.TextInput())
+    password1 = forms.CharField(label='', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='', widget=forms.PasswordInput)
+
     # attrs={'class': 'form_control', 'placeholder': 'Last Name'})
 
     class Meta:
@@ -31,7 +34,6 @@ class RegisterForm(UserCreationForm):
         self.fields['email'].widget.attrs['class'] = 'form-control'
         self.fields['email'].widget.attrs['placeholder'] = 'Email'
         self.fields['email'].label = ""
-
 
         self.fields['username'].widget.attrs['class'] = 'form-control'
         self.fields['username'].widget.attrs['placeholder'] = 'User Name'
@@ -63,6 +65,10 @@ class RegisterForm(UserCreationForm):
 
 
 class AccountProfileForm(forms.ModelForm):
+    profile_image = forms.ImageField()
+    dob = forms.DateField(input_formats=['%Y--%m--%d', '%m%d/%Y', '%m/%d/%y'], )
+    gender = forms.Select()
+
     class Meta:
         model = Profile
         fields = ("kra_pin", "dob", "id_no", "phone", "gender", "profile_image",)
@@ -82,34 +88,18 @@ class AccountProfileForm(forms.ModelForm):
         self.fields['phone'].widget.attrs['placeholder'] = 'Telephone'
         self.fields['phone'].label = ""
 
+        self.fields['gender'].widget.attrs['class'] = 'form-control'
+        self.fields['gender'].widget.attrs['placeholder'] = 'gender'
+        self.fields['gender'].label = ""
+
         self.fields['dob'].widget.attrs['class'] = 'form-control'
+        self.fields['dob'].widget.attrs['type'] = 'date'
         self.fields['dob'].widget.attrs['placeholder'] = 'Date of Birth'
         self.fields['dob'].label = ""
 
 
-class AccountAddressForm(forms.ModelForm):
-    class Meta:
-        model = Address
-        fields = ("street", "city", "code")
-
-    def __init__(self, *args, **kwargs):
-        super(AccountAddressForm, self).__init__(*args, **kwargs)
-
-        self.fields['street'].widget.attrs['class'] = 'form-control'
-        self.fields['street'].widget.attrs['placeholder'] = 'Street'
-        self.fields['street'].label = ""
-
-        self.fields['city'].widget.attrs['class'] = 'form-control'
-        self.fields['city'].widget.attrs['placeholder'] = 'City'
-        self.fields['city'].label = ""
-
-        self.fields['code'].widget.attrs['class'] = 'form-control'
-        self.fields['code'].widget.attrs['placeholder'] = 'Code'
-        self.fields['code'].label = ""
-
-
 class LoginForm(forms.ModelForm):
-    email      = forms.EmailField(label="", max_length=100,widget=forms.TextInput())
+    email = forms.EmailField(label="", max_length=100, widget=forms.TextInput())
     password = forms.CharField(label='', widget=forms.PasswordInput)
 
     class Meta:

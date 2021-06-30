@@ -61,12 +61,12 @@ var Terrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
 });
 
 // Raster WMS layers
-// var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
-//     layers: 'counties',
-//     format: 'image/png',
-//     transparent: true,
-//     attribution: "WMS"
-// });
+var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms", {
+    layers: 'counties',
+    format: 'image/png',
+    transparent: true,
+    attribution: "WMS"
+});
 
 var baseMaps = {
     "Topo": OpenTopoMap,

@@ -2,25 +2,19 @@ from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid, Distance
 from .utils import get_geo, get_center_coordinates, get_zoom, get_ip_address
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse, HttpResponse
+from django.contrib.gis.geos import GEOSGeometry
+from django.template.loader import get_template
+from django.contrib.staticfiles import finders
 from django.core.serializers import serialize
-from djgeojson.views import GeoJSONLayerView
 from .models import Parcels, ParcelDetails
 from geopy.geocoders import Nominatim
-from geopy.distance import geodesic
+# from geopy.distance import geodesic
 from .database import get_cursor
-from django import forms
+from django.conf import settings
+from xhtml2pdf import pisa
 from .map import my_map
 import json, folium
-from django.contrib.gis.geos import GEOSGeometry
-
 import os
-from django.conf import settings
-from django.http import HttpResponse
-from django.template.loader import get_template
-from xhtml2pdf import pisa
-from django.contrib.staticfiles import finders
-
-# from .forms import MeasurementModelForm
 
 
 def get_points(request):
@@ -74,6 +68,8 @@ def my_property(request):
 
         #  getting each parcel details
         details = [ParcelDetails.objects.get(parcel=parcel_id) for parcel_id in my_own_parcels]
+        # details = [ParcelDetails.objects.get(parcel=parcel_id) for parcel_id in
+        #            Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True)]
 
         # accessing each parcel detail and returning each parcel id
         # data = [det for det in Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True)]
@@ -190,14 +186,6 @@ def search_parcels(request):
     except:
         print('the parcel does not exist')
 
-        # qu = get_cursor()
-        # qu.execute("""SELECT jsonb_build_object('type','FeatureCollection','features', jsonb_agg(features.feature))
-        #     FROM ( SELECT jsonb_build_object( 'type','Feature','geometry', ST_AsGeoJSON(geom)::jsonb,'properties',
-        #     to_jsonb(inputs)  -'geom') AS feature, 'geometry'
-        #     FROM (SELECT * FROM njiruproj) inputs) features;""")
-        # data = qu.fetchall()
-        # m = my_map(land_parcels=data[0][0])
-
         m = my_map(land_parcels=points_as_geojson)
         m = m._repr_html_()
         context['map'] = m
@@ -244,7 +232,7 @@ def calculate_distance_view(request):
 
     geolocator = Nominatim(user_agent='parcels')
 
-    ip = '192.168.0.1'
+    ip = '41.80.98.237'
     country, city, lat, lon = get_geo(ip)
     print('country', country)
     print('city', city)

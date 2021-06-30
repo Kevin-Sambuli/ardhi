@@ -3,34 +3,61 @@
 {% block title %}Search{% endblock title %}
 
 {% block content %}
+
+    <!-- Modal -->
+{#    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"#}
+{#         aria-hidden="true">#}
+{#        <div class="modal-dialog">#}
+{#            <div class="modal-content">#}
+{#                <div class="modal-header">#}
+{#                    <h5 class="modal-title" id="exampleModalLabel">Parcel Number {{ destination }} is:</h5>#}
+{#                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">#}
+{#                        <span aria-hidden="true">&times;</span>#}
+{#                    </button>#}
+{#                </div>#}
+{#                <div class="modal-body">#}
+{#                    {{ distance }} km#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+
     <div class="col-md-6 offset-md-3">
-    <form class="form-signin" method="post">{% csrf_token %}
+        <form class="form-signin" method="post">{% csrf_token %}
 
-        <h1 class="h3 mb-3 font-weight-normal">Property Search</h1>
+            <h1 class="h3 mb-3 font-weight-normal">Property Search</h1>
 
 
-        {% for field in search_form %}
-            <p>
-                {{ field.label_tag }}
-                {{ field }}
+            {% for field in search_form %}
+                <p>
+                    {{ field.label_tag }}
+                    {{ field }}
 
-                {% if field.help_text %}
-                    <small style="color: grey;">{{ field.help_text }}</small>
-                {% endif %}
+                    {% if field.help_text %}
+                        <small style="color: grey;">{{ field.help_text }}</small>
+                    {% endif %}
 
-                {% for error in field.errors %}
-                    <p style="color: red;">{{ error }}</p>
-                {% endfor %}
-            </p>
-        {% endfor %}
+                    {% for error in field.errors %}
+                        <p style="color: red;">{{ error }}</p>
+                    {% endfor %}
+                </p>
+            {% endfor %}
 
-        {% if search_form.non_field_errors %}
-            <div style="color: red">
-                <p>{{ search_form.non_field_errors }}</p>
-            </div>
+            {% if search_form.non_field_errors %}
+                <div style="color: red">
+                    <p>{{ search_form.non_field_errors }}</p>
+                </div>
 
-        {% endif %}
-        <button class="btn btn-secondary" type="submit">Search</button>
-    </form>
-</div>
+            {% endif %}
+            <button class="btn btn-secondary" type="submit">Search</button>
+        </form>
+
+    </div>
+{#    {% if request.POST and distance is not None %}#}
+{#        <script>#}
+{#            $(window).on('load', function () {#}
+{#                $('#exampleModal').modal('show')#}
+{#            })#}
+{#        </script>#}
+{#    {% endif %}#}
 {% endblock content %}

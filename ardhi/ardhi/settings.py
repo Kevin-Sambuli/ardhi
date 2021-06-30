@@ -27,16 +27,11 @@ env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(env_file=".env")
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
-# ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
 
-# SECRET_KEY = os.environ.get("SECRET_KEY")
-# SECRET_KEY ='django-insecure-bejnxzbe$j3mi^zv(z6()3=d9)7_kp-o6trkx+74l17aqkpl$_'
 
-# DEBUG = True
-# DEBUG = os.environ.get("DEBUG")
 
 # Application definition
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS").split(' ')
+ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
 # ALLOWED_HOSTS =['localhost', '127.0.0.1', 'land_app']
 
 # Application definition
@@ -85,7 +80,7 @@ LOGOUT_REDIRECT_URL = "home"
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
-    # 'accounts.backends.CaseInsensitiveModelBackend',
+    'accounts.backends.CaseInsensitiveModelBackend',
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -137,28 +132,28 @@ WSGI_APPLICATION = 'ardhi.wsgi.application'
 # }
 
 # # local database
-# DATABASES = {
-#     'default': {
-#         'ENGINE': env("PG_ENGINE"),
-#         'NAME': env("PG_NAME"),
-#         'USER': env("PG_USER_LOCAL"),
-#         'PASSWORD': env("PG_PASS_LOCAL"),
-#         'HOST': env("PG_HOST_LOCAL"),
-#         'PORT': env("PG_PORT"),
-#     },
-# }
-
-# heroku
 DATABASES = {
     'default': {
         'ENGINE': env("PG_ENGINE"),
-        'NAME': env("PG_DATABASE_NAME"),
-        'USER': env("POSTGRES_USER"),
-        'PASSWORD': env("POSTGRES_PASS"),
-        'HOST': env("PG_HOST"),
+        'NAME': env("PG_NAME"),
+        'USER': env("PG_USER_LOCAL"),
+        'PASSWORD': env("PG_PASS_LOCAL"),
+        'HOST': env("PG_HOST_LOCAL"),
         'PORT': env("PG_PORT"),
     },
 }
+
+# heroku
+# DATABASES = {
+#     'default': {
+#         'ENGINE': env("PG_ENGINE"),
+#         'NAME': env("PG_DATABASE_NAME"),
+#         'USER': env("POSTGRES_USER"),
+#         'PASSWORD': env("POSTGRES_PASS"),
+#         'HOST': env("PG_HOST"),
+#         'PORT': env("PG_PORT"),
+#     },
+# }
 
 
 # Password validation
@@ -195,6 +190,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# as declared in NginX conf, it must match /opt/services/djangoapp/static/
+# STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
+#
+# # do the same for media files, it must match /opt/services/djangoapp/media/
+# MEDIA_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'media')
 
 STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
@@ -256,13 +257,22 @@ SERIALIZATION_MODULES = {
 
 
 # celery url
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379")
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://127.0.0.1:6379")
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", "redis://redis:6379")
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Africa/Nairobi'
+# CELERY_RESULT_BACKEND = 'django-db'
+# CELERY_RESULT_BACKEND = 'django-cache'
+
+#CELERY BEAT
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 
-# REDIS_HOST = 'localhost'
-# REDIS_PORT = 6379
-# redis_host = os.environ.get('REDIS_HOST', 'localhost')
+REDIS_HOST = 'localhost'
+REDIS_PORT = 6379
+redis_host = os.environ.get('REDIS_HOST', 'localhost')
 
 
 # Default primary key field type

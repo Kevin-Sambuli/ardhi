@@ -1,40 +1,108 @@
 <!-- templates/registration/login.html -->
 {% extends 'base.html' %}
 {% block title %}Log In{% endblock title %}
-{#{% load crispy_forms_tags %}#}
+{% load crispy_forms_tags %}
+{% load static %}
+
+
+{% block stylesheet %}
+    <link href="{% static 'css/account.css' %}" rel="stylesheet">
+    <script src="{% static 'js/account.js' %}" type="text/javascript"></script>
+{% endblock %}
+
 {% block content %}
+    <div class="col-md-6 offset-md-3" style="background-color: #5a6268">
+        <form action="{% url 'login' %}" class="login_form" method="post" autocomplete="off">
+            {% csrf_token %}
+            <div class="form-group" style="max-width:470px; align-content: center">
+                <h2 class="text-center">Login</h2>
+                <center>
+                    {% for field in login_form %}
+                        <p>
+                            {{ field.label_tag }}
+                            {{ field }}
 
-    <h2 class="text-center">Login</h2>
-    <div class="col-md-6 offset-md-3">
-    <form class="login_form" method="post" autocomplete="off">
-    {% csrf_token %}
-        {% for field in login_form%}
-            <p>
-                {{ field.label_tag }}
-                {{ field }}
+                            {% if field.help_text %}
+                                <small style="color: grey;">{{ field.help_text }}</small>
+                            {% endif %}
+                        </p>
+                    {% endfor %}
 
-                {% if field.help_text %}
-                    <small style="color: grey;">{{ field.help_text }}</small>
-                {% endif %}
-            </p>
-        {% endfor %}
-        {% for field in login_form %}
-            {% for error in field.errors %}
-                <p style="color: red;">{{ error }}</p>
-            {% endfor %}
-        {% endfor %}
+                    {% for field in login_form %}
+                        {% for error in field.errors %}
+                            <p style="color: red;">{{ error }}</p>
+                        {% endfor %}
+                    {% endfor %}
 
-        {% if login_form.non_field_errors %}
-            <div style="color: red;">
-                <p>{{ login_form.non_field_errors }}</p>
+                    {% if login_form.non_field_errors %}
+                        <div style="color: red;">
+                            <p>{{ login_form.non_field_errors }}</p>
+                        </div>
+                    {% endif %}
+
+                    <div style="max-width:470px;">
+
+                        <button style="border:0px; background-color:#4285F4; margin-top:8%;
+                                      height:35px; width:80%;" type="submit"
+                                value="Login">
+                            <strong>Login</strong>
+                        </button>
+                    </div>
+                </center>
             </div>
-        {% endif %}
 
-        <button type="submit">Log In</button>
-    </form>
+        </form>
     </div>
 
-    <div class="d-flex flex-column">
+    <div class="d-flex flex-column md-5">
         <a class="m-auto" href="{% url 'password_reset' %}">Reset password</a>
     </div>
+
 {% endblock content %}
+
+
+{#<script>#}
+{#    // Map initialization#}
+{#    var map = L.map('map').setView([14.0860746, 100.608406], 6);#}
+{##}
+{#    //osm layer#}
+{#    var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {#}
+{#        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'#}
+{#    });#}
+{#    osm.addTo(map);#}
+{##}
+{#    if(!navigator.geolocation) {#}
+{#        console.log("Your browser doesn't support geolocation feature!")#}
+{#    } else {#}
+{#        setInterval(() => {#}
+{#            navigator.geolocation.getCurrentPosition(getPosition)#}
+{#        }, 5000);#}
+{#    }#}
+{##}
+{#    var marker, circle;#}
+{##}
+{#    function getPosition(position){#}
+{#        // console.log(position)#}
+{#        var lat = position.coords.latitude#}
+{#        var long = position.coords.longitude#}
+{#        var accuracy = position.coords.accuracy#}
+{##}
+{#        if(marker) {#}
+{#            map.removeLayer(marker)#}
+{#        }#}
+{##}
+{#        if(circle) {#}
+{#            map.removeLayer(circle)#}
+{#        }#}
+{##}
+{#        marker = L.marker([lat, long])#}
+{#        circle = L.circle([lat, long], {radius: accuracy})#}
+{##}
+{#        var featureGroup = L.featureGroup([marker, circle]).addTo(map)#}
+{##}
+{#        map.fitBounds(featureGroup.getBounds())#}
+{##}
+{#        console.log("Your coordinate is: Lat: "+ lat +" Long: "+ long+ " Accuracy: "+ accuracy)#}
+{#    }#}
+{##}
+{#</script>#}

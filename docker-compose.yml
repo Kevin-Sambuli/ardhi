@@ -12,8 +12,8 @@ services:
              python manage.py migrate &&
              python manage.py collectstatic --noinput --clear &&
              gunicorn ardhi.wsgi:application --bind 0.0.0.0:8000"
-  #          python manage.py collectstatic --noinput --clear &&
   #          python manage.py runserver 0.0.0.0:8000"
+  # docker-compose run djangoapp hello/manage.py collectstatic --no-input
             
     volumes:
       - ./ardhi:/home/app/web
@@ -23,6 +23,8 @@ services:
     #   - 8000:8000
     expose:
       - 8000
+    env_file:
+      - ./ardhi/.env
     environment:
       - DEBUG=${DEBUG}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
@@ -51,6 +53,8 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql
+    env_file:
+      - ./ardhi/.env
     environment:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASS=${PG_PASS}
@@ -65,6 +69,8 @@ services:
     image: dpage/pgadmin4
     hostname: pgadmin
     restart: unless-stopped
+    env_file:
+      - ./ardhi/.env
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
@@ -92,6 +98,8 @@ services:
           ACTIVATE_ALL_COMMUNITY_EXTENTIONS:${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
     container_name: geoserver
     hostname: geoserver
+    env_file:
+      - ./ardhi/.env
     volumes:
      - geoserver_data:/opt/geoserver/data_dir
      - /tmp/settings/epsg.properties:/opt/geoserver/data_dir/user_projections/epsg.properties
@@ -125,28 +133,30 @@ services:
       - land_app
       # - back-end
 
-  # celery:
-  #   restart: always
-  #   container_name: celery
-  #   build:
-  #     context: ./ardhi
-  #   command: celery -A app worker -l info
-  #   volumes:
-  #     - ./ardhi:/home/app/web
-  #   environment:
-  #     - DEBUG=${DEBUG}
-  #     - PG_DB_HOST=${PG_DB_HOST}
-  #     - POSTGRES_USER=${PG_USER}
-  #     - POSTGRES_PASS=${PG_PASS}
-  #     - POSTGRES_DB=${PG_NAME}
-  #     - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS}
-  #     - CELERY_BROKER=${CELERY_BROKER}
-  #     - CELERY_BACKEND=${CELERY_BACKEND}
-  #   depends_on:
-  #     - postgres-db
-  #     - redis
-  #     - land_app
-  #     - nginx
+  celery:
+    restart: always
+    container_name: celery
+    build:
+      context: ./ardhi
+    command: celery -A ardhi worker -l info
+    env_file:
+      - ./ardhi/.env
+    volumes:
+      - ./ardhi:/home/app/web
+    # environment:
+    #   - DEBUG=${DEBUG}
+    #   - PG_DB_HOST=${PG_DB_HOST}
+    #   - POSTGRES_USER=${PG_USER}
+    #   - POSTGRES_PASS=${PG_PASS}
+    #   - POSTGRES_DB=${PG_NAME}
+    #   - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+    #   # - CELERY_BROKER=${CELERY_BROKER}
+    #   # - CELERY_BACKEND=${CELERY_BACKEND}
+    depends_on:
+      - postgres-db
+      - redis
+      - land_app
+      - nginx
 
   nginx:
     restart: unless-stopped
@@ -172,6 +182,13 @@ networks:
 # networks:
 #   front-end:
 #   back-end:
+
+
+  # networks:
+  #   nginx_network:
+  #     driver: bridge
+  #   database1_network:  # <-- add the bridge
+  #     driver: bridge
 
 
 volumes:
