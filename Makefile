@@ -63,21 +63,53 @@ container:
 inspect:
 	docker inspect 977654323456 # returning container information
 
+postgis:
+	docker exec -it postgis /bin/bash -c \
+	"PGPASSWORD=<PASSWORD> psql -d <DBNAME> -U <USERNAME> -h localhost -c \"create schema <USERNAME>;\""
+
+	docker run --name "postgrest_tut" -p 5432:5432 -e POSTGRES_MULTIPLE_EXTENSIONS=postgis -d -t kartoza/postgis
+	docker exec -it postgrest_tut bash
+	docker exec -it postgis_db bash
+	root= pwd # prints working directory
+	root= ls # lists all folders in the working directory
+	root= ls --color -F
+	root = psql --help
+	root=  psql - U kevoh # connecting to psql inside the container
+	root= \du    # getting the database user
+	root= \l    # list of databases
+	root= \c Ardhi;  # connecting to ardhi databases
+	root = \q
+	root = psql Ardhi kevoh
+	Ardhi=# CREATE EXTENSION postgis;
+	Ardhi=# \d
+	Ardhi=# \q
+	Ardhi=# \dt;
+	Ardhi=# \d parcels;
+	docker exec -it postgrest_tut bash -c "apt-get update && apt-get install postgis"
+	docker exec -it postgrest_tut psql -U postgres
+	docker exec -it postgis_db psql -U kevoh
+
 
 # container commands
-docker run postgres
-docker up 
-docker images
-docker config
-docker pull image
-docker logs container name or image
-docker inspect container name # check container details
-docker exec container name
-docker ps #checking running container
-docker ps -a # checking all containers
-docker stop container id or name # stopping container
-docker run i postgres # interactive mode
-docker run it postgres # interactive shell and prompt
+docker:
+	docker run postgres
+	docker up
+	docker images
+	docker config
+	docker pull image
+	docker logs container name or image
+	docker inspect container name # check container details
+	docker exec container name
+	docker ps #checking running container
+	docker ps -a # checking all containers
+	docker stop container id or name # stopping container
+	docker run i postgres # interactive mode
+	docker run it postgres # interactive shell and prompt
 
-docker network ls # checking all networks in the docker
+	docker network ls # checking all networks in the docker
+
+	# copying to local disk and replacing it
+	docker exec -ti --user root <container-id> /bin/bash
+	docker cp <container>:/path/to/file.ext .
+	docker cp file.ext <container>:/path/to/file.ext
 

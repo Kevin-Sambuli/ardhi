@@ -5,7 +5,8 @@
 
 
     <div class="col-md-6 offset-md-3">
-    <form action="{% url 'profile'  %}" class="profile_form" method="post" autocomplete="off">
+    <form action="{% url 'profile'  %}" class="profile_form" method="post"
+          enctype="multipart/form-data" autocomplete="off">
     {% csrf_token %}
             <div style = "max-width:470px;">
                 <h2 class="text-center">Profile Information</h2>

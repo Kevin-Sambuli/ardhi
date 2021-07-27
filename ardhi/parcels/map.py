@@ -47,7 +47,7 @@ def my_map(land_parcels, parcel=None, lat=None, lng=None):
         aliases=["Parcel id :", "Owner id :", "Area (ha):", "Perimeter(m):", "Status:", "LR No:"],
         localize=True, labels=True,
         style="background-color: green;",
-    )
+        )
 
     parc = folium.features.GeoJson(land_parcels, name='Map', highlight_function=None, zoom_on_click=True,
                                    control=True, popup=popup, overlay=True, show=True, smooth_factor=None,

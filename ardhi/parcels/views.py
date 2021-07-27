@@ -17,6 +17,14 @@ import json, folium
 import os
 
 
+# Survey.objects.filter(pk=survey.pk).update(active=True)
+# get_name = UserInfo.objects.filter(owner=user).update(username='your data')
+
+# u = User.objects.get(id=1)
+# u.last_seen = timezone.now()
+# u = User.objects.get(id=1)
+# u.last_seen
+
 def get_points(request):
     cur1 = get_cursor()  # first database connection instance
     cur2 = get_cursor()  # second database connection instance
@@ -53,6 +61,11 @@ def parcels(request):
     return HttpResponse(points_as_geojson, content_type='json')
     # return JsonResponse(json.loads(data))
 
+def parcels2(request):
+    """ function that returns parcels in geojson and generate a folium leaflet map"""
+
+    data = serialize('geojson', Parcels.objects.all())
+    return render(request, 'parcels/leaflet.html', {'data': data})
 
 def my_property(request):
     """ function that returns parcels of the logged in user  generate a folium leaflet map"""
@@ -65,6 +78,7 @@ def my_property(request):
 
         # accessing parcels of the logged user
         my_own_parcels = Parcels.objects.filter(owner_id=request.user.id)
+        # Parcels.objects.filter(owner_id=request.user.id).update(owner_id=1)
 
         #  getting each parcel details
         details = [ParcelDetails.objects.get(parcel=parcel_id) for parcel_id in my_own_parcels]
@@ -121,7 +135,6 @@ def parcel_render_pdf(request, *args, **kwargs):
     return response
 
 
-
 def render_pdf_view(request):
     template_path = 'pdf.html'
     context = {'myvar': 'this is your template context'}
@@ -137,7 +150,7 @@ def render_pdf_view(request):
     pisa_status = pisa.CreatePDF(html, dest=response)
     # if error then show some funy view
     if pisa_status.err:
-       return HttpResponse('We had some errors <pre>' + html + '</pre>')
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
     return response
 
 

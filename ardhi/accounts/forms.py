@@ -11,14 +11,27 @@ class RegisterForm(UserCreationForm):
     last_name = forms.CharField(label="", max_length=100, widget=forms.TextInput())
     username = forms.CharField(label="", max_length=100, widget=forms.TextInput())
     email = forms.EmailField(label="", max_length=100, widget=forms.TextInput())
-    password1 = forms.CharField(label='', widget=forms.PasswordInput)
-    password2 = forms.CharField(label='', widget=forms.PasswordInput)
+    password1 = forms.CharField(label='', widget=forms.PasswordInput())
+    password2 = forms.CharField(label='', widget=forms.PasswordInput())
 
     # attrs={'class': 'form_control', 'placeholder': 'Last Name'})
 
     class Meta:
         model = Account
         fields = ('first_name', 'last_name', 'email', 'username', 'password1', 'password2',)
+
+        # widgets = {
+        #     'name': forms.TextInput(attrs={
+        #         'class': "form-control",
+        #         'style': 'max-width: 300px;',
+        #         'placeholder': 'Name'
+        #     }),
+        #     'email': forms.EmailInput(attrs={
+        #         'class': "form-control",
+        #         'style': 'max-width: 300px;',
+        #         'placeholder': 'Email'
+        #     })
+        # }
 
     def __init__(self, *args, **kwargs):
         super(RegisterForm, self).__init__(*args, **kwargs)

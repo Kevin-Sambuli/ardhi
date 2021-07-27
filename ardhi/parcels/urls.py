@@ -9,6 +9,7 @@ urlpatterns = [
                                            properties=('id', 'owner', 'area_ha', 'perimeter', 'lr_no','status')), name='data'),
     path('centroids/', views.get_points, name='distance'),
     path('json/', views.parcels, name='json_parcels'),
+    path('try/', views.parcels2, name='jparcels'),
     path('property/', views.my_property, name='map'),
     path('pdf/', views.parcel_render_pdf, name='pdf'),
     path('search/', views.search_parcels, name='search'),

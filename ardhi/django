@@ -1,0 +1,48 @@
+python manage.py createcachetable
+python manage.py syncdb
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py shell
+python manage.py collectstatic
+
+# install psycopg2 dependencies
+# RUN apt-get update \
+#   && apt-get -y install netcat gcc postgresql \
+#   && apt-get clean
+
+# # install psycopg2 dependencies using alpine images
+# RUN apk update \
+#     && apk add postgresql-dev gcc python3-dev musl-dev
+
+
+# create the app user
+#RUN addgroup -S app && adduser -S app -G app
+
+
+# chown all the files to the app user
+#RUN chown -R app:app $APP_HOME
+
+# WORKDIR /usr/src/app
+# RUN addgroup --system admin && adduser --system --no-create-home --group admin && \
+#     chown -R admin:admin /usr && chmod -R 755 /usr
+
+# change to the app user
+#USER app
+
+
+
+#RUN adduser -D kevoh
+#USER kevoh
+
+
+CREATE EXTENSION postgis WITH SCHEMA postgis;
+The WITH SCHEMA clause of the CREATE EXTENSION statement instructs
+PostgreSQL to install PostGIS and its objects in the postgis schema.
+
+
+ALTER DATABASE chapter10 SET search_path = public, postgis;
+All future connections and queries of chapter10 will result in PostgreSQL
+automatically using both public and postgis schemas
+
+REVOKE ALL ON DATABASE chapter10 FROM public;

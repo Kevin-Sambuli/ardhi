@@ -23,8 +23,8 @@ services:
     #   - 8000:8000
     expose:
       - 8000
-    env_file:
-      - ./ardhi/.env
+#    env_file:
+#      - ./ardhi/.env
     environment:
       - DEBUG=${DEBUG}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
@@ -53,8 +53,8 @@ services:
       - 5432:5432
     volumes:
       - postgres_data:/var/lib/postgresql
-    env_file:
-      - ./ardhi/.env
+#    env_file:
+#      - ./ardhi/.env
     environment:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASS=${PG_PASS}
@@ -63,6 +63,58 @@ services:
     networks:
       # - back-end
       - land_app
+
+#  imposm:
+#    image: kartoza/docker-osm:imposm-latest
+#    build: docker-imposm3
+#    container_name: dockerosm_imposm
+#    volumes:
+#      - ./settings:/home/settings
+#      - import_done:/home/import_done
+#      - import_queue:/home/import_queue
+#      - cache:/home/cache
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#    environment:
+#      - POSTGRES_USER=${POSTGRES_USER}
+#      - POSTGRES_PASS=${POSTGRES_PASS}
+#      - POSTGRES_DBNAME=${POSTGRES_DBNAME}
+#      - POSTGRES_PORT=${POSTGRES_PORT}
+#      - POSTGRES_HOST=${POSTGRES_HOST}
+#      - TIME=${TIME}
+#      - SETTINGS=${SETTINGS}
+#      - CACHE=${CACHE}
+#      - IMPORT_DONE=${IMPORT_DONE}
+#      - IMPORT_QUEUE=${IMPORT_QUEUE}
+#      - SRID=${SRID}
+#      - OPTIMIZE=${OPTIMIZE}
+#      - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
+#      - DBSCHEMA_IMPORT=${DBSCHEMA_IMPORT}
+#      - DBSCHEMA_BACKUP=${DBSCHEMA_BACKUP}
+#      - QGIS_STYLE=${QGIS_STYLE}
+#      - CLIP=${CLIP}
+#    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
+#
+#    osmupdate:
+#      build: docker-osmupdate
+#      image: kartoza/docker-osm:osmupdate-latest
+#      container_name: dockerosm_osmupdate
+#      volumes_from:
+#        - imposm
+#      depends_on:
+#        db:
+#          condition: service_healthy
+#      environment:
+#        - MAX_DAYS=${MAX_DAYS}
+#        - DIFF=${DIFF}
+#        - MAX_MERGE=${MAX_MERGE}
+#        - COMPRESSION_LEVEL=${COMPRESSION_LEVEL}
+#        - BASE_URL=${BASE_URL}
+#        - IMPORT_QUEUE=${IMPORT_QUEUE}
+#        - IMPORT_DONE=${IMPORT_DONE}
+#        - TIME=${TIME}
+
 
   pgadmin:
     container_name: pgadmin
@@ -98,8 +150,8 @@ services:
           ACTIVATE_ALL_COMMUNITY_EXTENTIONS:${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
     container_name: geoserver
     hostname: geoserver
-    env_file:
-      - ./ardhi/.env
+#    env_file:
+#      - ./ardhi/.env
     volumes:
      - geoserver_data:/opt/geoserver/data_dir
      - /tmp/settings/epsg.properties:/opt/geoserver/data_dir/user_projections/epsg.properties
@@ -139,17 +191,17 @@ services:
     build:
       context: ./ardhi
     command: celery -A ardhi worker -l info
-    env_file:
-      - ./ardhi/.env
+#    env_file:
+#      - ./ardhi/.env
     volumes:
       - ./ardhi:/home/app/web
-    # environment:
-    #   - DEBUG=${DEBUG}
-    #   - PG_DB_HOST=${PG_DB_HOST}
-    #   - POSTGRES_USER=${PG_USER}
-    #   - POSTGRES_PASS=${PG_PASS}
-    #   - POSTGRES_DB=${PG_NAME}
-    #   - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+    environment:
+      - DEBUG=${DEBUG}
+      - PG_DB_HOST=${PG_DB_HOST}
+      - POSTGRES_USER=${PG_USER}
+      - POSTGRES_PASS=${PG_PASS}
+      - POSTGRES_DB=${PG_NAME}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
     #   # - CELERY_BROKER=${CELERY_BROKER}
     #   # - CELERY_BACKEND=${CELERY_BACKEND}
     depends_on:

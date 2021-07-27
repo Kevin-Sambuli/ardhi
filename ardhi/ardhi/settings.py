@@ -141,6 +141,14 @@ DATABASES = {
         'HOST': env("PG_HOST_LOCAL"),
         'PORT': env("PG_PORT"),
     },
+    # 'openstreetmap': {
+    #     'ENGINE': env("PG_ENGINE"),
+    #     'NAME': env("PG_NAME_OSM"),
+    #     'USER': env("PG_USER_LOCAL"),
+    #     'PASSWORD': env("PG_PASS_LOCAL"),
+    #     'HOST': env("PG_HOST_LOCAL"),
+    #     'PORT': env("PG_PORT"),
+    # },
 }
 
 # heroku
@@ -200,7 +208,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'staticfiles'),)
 
 # leaflet configuration
 LEAFLET_CONFIG = {

@@ -1,3 +1,16 @@
+from django import forms
+from .models import PropertyTransfer
+
+
+class TransferForm(forms.ModelForm):
+    buyer_email = forms.EmailField(max_length=100, help_text='Buyer email.')
+
+    class Meta:
+        model = PropertyTransfer
+        fields = ['parcel_no', 'amount', 'file_upload']
+
+
+
 # # kill = forms.ModelChoiceField(queryset=Parcels.objects.filter(owner_id=self.owner)
 # #         fields = ("kra_pin", "dob", "id_no", "phone", "gender", "profile_image",)
 # #         exclude = 'owner'
@@ -20,7 +33,6 @@
 #
 # SkillForm.base_fields['skill'] = forms.ModelChoiceField(queryset= ...)
 # form = SkillForm()
-
 
 
 # formset = AuthorFormSet(

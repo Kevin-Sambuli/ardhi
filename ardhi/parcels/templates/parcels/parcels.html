@@ -25,20 +25,6 @@
 
     <script>
         var dataurl = '{% url "data" %}';
-    
-            // function highlightFeature(e)
-            // var layer = e.target;layer.setStyle(
-            //             weight: 5,
-            //             color: '#666',
-            //             fillOpacity: 0.7
-            //             );
-            
-            // if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) 
-            //    layer.bringToFront();
-            //     function resetHighlight(e) {geojson.resetStyle(e.target);}
-            //     function zoomToFeature(e) {map.fitBounds(e.target.getBounds());}
-
-
 
         window.addEventListener("map:init", function (event)
         {
@@ -61,17 +47,8 @@
                                     '<p>Status: ' + feature.properties.status + '</p> ' +
                                     '<p>Area: ' + feature.properties.area_ha + ' Ha</p>' +
                                     '<p>Perimeter: ' + feature.properties.perimeter + ' M</p>').openPopup();
-                                // layer.on({
-                                //     mouseover: highlightFeature,
-                                //     mouseout: resetHighlight,
-                                //     click: zoomToFeature });
+
                             },
-                            // style:
-                            //     {
-                            //         fillColor: 'yellow',
-                            //         fillOpacity: 0.2,
-                            //         color: '#c0c0c0',
-                            //     }
                         }).addTo(map);
                });
         });
@@ -93,9 +70,9 @@
             Click to return to the <a href=" {% url 'login' %}" style="font-weight: bold">Login</a>
         </p>
     </div>
-{#    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>#}
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-{#    <script src= {% static 'libs/browser_print/leaflet.browser.print.min.js'%}></script>#}
+<!--   <script src= {% static 'libs/browser_print/leaflet.browser.print.min.js'%}></script>-->
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>

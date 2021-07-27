@@ -15,10 +15,10 @@
         <p> Email Address: {{ owner.email }}</p>
         <hr>
         <p> Parcel Number: {{ parcel.lr_no }}</p>
-        <p> Tenure: {{ details.tenure }}</p>
+        <p> Tenure: {{ details.tenure|title }}</p>
         <p> Land Use: {{ details.land_use }}</p>
-        <p> Encumbrances: {{ details.encumbrances }}</p>
-        <p> Improvements: {{ details.improvements }}</p>
+        <p> Encumbrances: {{ details.encumbrances|title }}</p>
+        <p> Improvements: {{ details.improvements|title }}</p>
         <p> Purchase: {{ details.purchase_date }}</p>
 
     </div>

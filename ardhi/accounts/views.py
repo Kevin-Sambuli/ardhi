@@ -103,26 +103,6 @@ def profile_view(request, *args, **kwargs):
     return render(request, 'accounts/profile.html', context)
 
 
-# def userlogin(request):
-#     username = "not logged in"
-#
-#     if request.method == "POST":
-#         # Get the posted form
-#         form = LoginForm(request.POST)
-#
-#     if form.is_valid():
-#         username = form.cleaned_data['username']
-#     else:
-#         form = LoginForm()
-#
-#     response = render(request, 'loggedin.html', {"username": username},
-#                                   context_instance=RequestContext(request))
-#
-#     response.set_cookie('last_connection', datetime.datetime.now())
-#     response.set_cookie('username', datetime.datetime.now())
-#
-#     return response
-
 def login_view(request):
     context = {}
 
@@ -138,6 +118,8 @@ def login_view(request):
             email = request.POST['email']
             password = request.POST['password']
             user = authenticate(email=email, password=password)
+            # data = 'http://localhost:8080/geoserver/kenya/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=kenya%3Acounties&maxFeatures=50&outputFormat=application%2Fjson'
+            # print('geojson', data)
 
             if user:
                 login(request, user)
