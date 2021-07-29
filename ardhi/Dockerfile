@@ -47,7 +47,7 @@ RUN pip install numpy scipy pandas geopandas sqlalchemy networkx osmnx shapely \
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel
 #RUN pip install pipwin
 #RUN pipwin refresh
-RUN pip install geoserver-rest
+#RUN pip install geoserver-rest
 
 # RUN pip install flake8
 # COPY . .
