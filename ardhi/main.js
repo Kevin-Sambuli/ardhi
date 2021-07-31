@@ -132,6 +132,7 @@ var county_style = `<?xml version="1.0" encoding="UTF-8"?>
 </StyledLayerDescriptor>
 `
 
+// var wfsLayer = L.tileLayer.wfs("http://localhost:8080/geoserver/wfs",{
 var wfsLayer = L.Geoserver.wfs("http://localhost:8080/geoserver/wfs", {
     layers: "kenya:parks",
     style:
@@ -150,12 +151,12 @@ var wfsLayer = L.Geoserver.wfs("http://localhost:8080/geoserver/wfs", {
 // wfsLayer.addTo(map);
 
 // Raster WMS layers
-var wms = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
-// var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
+// var wms = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
+var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
     {
         layers: 'counties',
         format: 'image/png',
-        // style : county_style,
+        style : county_style,
         // CQL_FILTER: "countycode=='47'",
         transparent: true,
         attribution: "Map by Kevin Sambuli Amuhaya"

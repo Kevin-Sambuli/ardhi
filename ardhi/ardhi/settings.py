@@ -148,7 +148,7 @@ DATABASES = {
     #     'PASSWORD': env("PG_PASS_LOCAL"),
     #     'HOST': env("PG_HOST_LOCAL"),
     #     'PORT': env("PG_PORT"),
-    # },
+    # }
 }
 
 # heroku
