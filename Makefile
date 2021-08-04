@@ -71,6 +71,7 @@ postgis:
 	docker run --name "postgrest_tut" -p 5432:5432 -e POSTGRES_MULTIPLE_EXTENSIONS=postgis -d -t kartoza/postgis
 	docker exec -it postgrest_tut bash
 	docker exec -it postgis_db bash
+	su postgres # change to posgres user
 	root= pwd # prints working directory
 	root= ls # lists all folders in the working directory
 	root= ls --color -F

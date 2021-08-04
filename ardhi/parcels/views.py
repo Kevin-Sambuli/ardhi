@@ -61,11 +61,13 @@ def parcels(request):
     return HttpResponse(points_as_geojson, content_type='json')
     # return JsonResponse(json.loads(data))
 
+
 def parcels2(request):
     """ function that returns parcels in geojson and generate a folium leaflet map"""
 
     data = serialize('geojson', Parcels.objects.all())
     return render(request, 'parcels/leaflet.html', {'data': data})
+
 
 def my_property(request):
     """ function that returns parcels of the logged in user  generate a folium leaflet map"""
