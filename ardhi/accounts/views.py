@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from django.contrib import messages
 from django.conf import settings
 import africastalking
+# from django.contrib.auth.decorators import user_passes_test, login_required
 
 
 username = "rundalis"

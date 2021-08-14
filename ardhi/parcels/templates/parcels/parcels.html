@@ -1,13 +1,11 @@
-
 <html>
 <head>
     {% load leaflet_tags %}
-    {% load static %}
     {% leaflet_js plugins="ALL" %}
     {% leaflet_css plugins="ALL" %}
 
     <style>
-        /* .leaflet-container { height: 80%; width: 90%; padding-left: 0.5%; padding-right: 0.5%} */
+        /*.leaflet-container { height: 80%; width: 90%; padding-left: 0.5%; padding-right: 0.5%}*/
         .leaflet-container { /* all maps */
             width: 800px;
             height: 500px;
@@ -26,8 +24,7 @@
     <script>
         var dataurl = '{% url "data" %}';
 
-        window.addEventListener("map:init", function (event)
-        {
+        window.addEventListener("map:init", function (event) {
             var map = event.detail.map;
             // Download GeoJSON data with Ajax
             fetch(dataurl)
@@ -35,7 +32,7 @@
                     return resp.json();
                 })
                 .then(function (data)
-               {
+                 {
                     L.geoJson(data,
                         {
                             onEachFeature: function onEachFeature(feature, layer)
@@ -50,31 +47,20 @@
 
                             },
                         }).addTo(map);
-               });
+                });
         });
-        //browser print
-        main.control.browserPrint().addTo("map");
-        main.Control.geocoder().addTo("map");
     </script>
 
 </head>
-<body>
-    <div style="align-content: center">
-        <h1 style="align-content: center">Ardhi Land Parcels</h1>
-        {% leaflet_map "main" %}
-    </div>
-    <br><hr>
-
+<body style="align-content: center">
+    <h1>Ardhi Land Parcels</h1>
+    {% leaflet_map "main" %}
+    <br>
+    <hr>
     <div style="padding-left: 10px">
         <p style="font-weight: bold; font-size: 14px;">
             Click to return to the <a href=" {% url 'login' %}" style="font-weight: bold">Login</a>
         </p>
     </div>
-  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<!--   <script src= {% static 'libs/browser_print/leaflet.browser.print.min.js'%}></script>-->
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 </body>
 </html>

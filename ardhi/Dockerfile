@@ -11,6 +11,7 @@ ENV PYTHONUNBUFFERED 1
 RUN apt-get update && apt-get upgrade -y
 
 
+
 # install psycopg2 dependencies
 RUN apt-get update \
     && apt-get install -y build-essential libpq-dev gcc \

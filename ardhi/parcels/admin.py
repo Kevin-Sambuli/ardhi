@@ -7,7 +7,7 @@ from leaflet.admin import LeafletGeoAdmin
 # Register your models here.
 from .models import Parcels, ParcelDetails
 
-# admin.site.register(Parcels, admin.GeoModelAdmin)  # using django openlayers
+admin.site.register(Parcels, admin.GeoModelAdmin)  # using django openlayers
 # admin.site.register(Parcels, admin.OSMGeoAdmin)  # using open street map
 # admin.site.register(Parcels, LeafletGeoAdmin)  # using leaflet_lib
 # admin.site.register(Centroids, LeafletGeoAdmin)  # using leaflet_lib
@@ -38,6 +38,6 @@ class ParcelDetailsAdmin(admin.ModelAdmin):
 
 
 # Register your models here.
-admin.site.register(Parcels, ParcelAdmin)
+# admin.site.register(Parcels, ParcelAdmin)
 admin.site.register(ParcelDetails, ParcelDetailsAdmin)
 

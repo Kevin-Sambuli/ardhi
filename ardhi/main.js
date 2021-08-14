@@ -18,7 +18,7 @@ let map = L.map('map', mapOptions);
 map.zoomControl.setPosition('topright');
 
 //addding map tile layers
-var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {});
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
 
 var Osm_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19,});
 
@@ -30,7 +30,7 @@ var Dark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{
 
 // var Dark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {maxZoom: 20});
 
-var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {maxZoom: 17}).addTo(map);
+var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {maxZoom: 17})
 
 // streets
 var googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
@@ -49,9 +49,7 @@ var Terrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']});
 
 //minimap
-var osm2 = new L.TileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 20,
-    subdomains: ['mt0', 'mt1', 'mt2', 'mt3']});
-var miniMap = new L.Control.MiniMap(osm2, {toggleDisplay: true}).addTo(map);
+var miniMap = new L.Control.MiniMap(Dark, {toggleDisplay: true}).addTo(map);
 
 
 //Leaflet browser print function
@@ -143,12 +141,22 @@ var wfsLayer = L.Geoserver.wfs("http://localhost:8080/geoserver/wfs", {
             opacity: "0.5",
         },
     onEachFeature: function (feature, layer) {
+        area = (turf.area(feature)/1000000).toFixed(2);
+        // cent= turf.center(feature),
+        // bbox= turf.BBOX(feature),
+        
+        // lat = turf.center(feature).geometry.coordinates[1]
+        // long = turf.center(feature).geometry.coordinates[0]
         layer.bindPopup('<h3 style="align-content: center">Parcel Details</h3>' +
                                     '<p>Fid: ' + feature.properties.fid + '</p> ' +
+                                    '<p>Area: ' + area + ' ' + 'sqkm' + '</p>' +
+                                    // '<p>Lat: ' + lat +'</p>' +
+                                    // '<p>Long: ' + long + '</p>' +
                                     '<p>Park: ' + feature.properties.parkname + '</p> ');
-            },
-    }).addTo(map);
-// wfsLayer.addTo(map);
+    },
+
+    });
+wfsLayer.addTo(map);
 
 // Raster WMS layers
 // var wms = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
@@ -169,13 +177,14 @@ var legend = L.Geoserver.legend("http://localhost:8080/geoserver/wfs",
     {
         layers: 'counties',
         // style: stylefile,
-    }).addTo(map);
+    })
+// legend.addTo(map);
 
 
 //adding the tiles to the map
 var baseMaps = {
+    "OSM": osm,
     "Topo": OpenTopoMap,
-    "osm": osm,
     "Satellite": Satellite,
     "Terrain": Terrain,
     "Hybrid": Hybrid,
@@ -184,30 +193,29 @@ var baseMaps = {
     "Dark": Dark,
 };
 
-
-// adding a marker
+// adding a markers to the map
 let marker = L.marker([lat, lng], {
     draggable: true,
     title: "marker",
     opacity: 0.8,
-}).addTo(map).bindPopup('My place');
+})
+// marker.addTo(map).bindPopup('My place');
 
 
 
 var overLays = {
-    "Marker": marker,
+    // "Marker": marker,
     // " geojson": geojson
     "Kenya": wms
 };
 
-L.control.layers(baseMaps, overLays, {collapsed: false, position: 'topleft'}).addTo(map);
+L.control.layers(baseMaps, overLays, {collapsed: true, position: 'topleft'}).addTo(map);
 
 
 // coordinate display function Map coordinate display
 map.on('mousemove', function (e) {
     $('.coordinate').html(`Lat: ${e.latlng.lat} Lng: ${e.latlng.lng}`)
 });
-
 
 //zoom to layer
 $('.zoom-to-layer').click(function () {
@@ -225,6 +233,13 @@ function fullScreenView() {
     }
 }
 
+// add Leaflet-Geoman controls with some options to the map
+map.pm.addControls({
+  position: 'topleft',
+  drawCircle: false,
+    snappingOption: true,
+});
+
 
 // getting geolocation and real time tacker
 var marker2, circle
@@ -241,7 +256,7 @@ if (!navigator.geolocation) {
 };
 
 function getPosition(position) {
-    console.log(position)
+    // console.log(position)
     var lat = position.coords.latitude;
     var long = position.coords.longitude;
     var accuracy = position.coords.accuracy;
@@ -262,18 +277,15 @@ function getPosition(position) {
         }).bindPopup('My place');
 
     var circle = L.circle([lat, long], {radius: accuracy});
-    var featureGroup = L.featureGroup([marker2, circle]).addTo(map);
+    var featureGroup = L.featureGroup([marker2, circle])
+    // featureGroup.addTo(map);
 
     map.fitBounds(featureGroup.getBounds());
 }
 
-
-
 // getfeatureinfo event
-
 var ms_url = "http://localhost/geoserver/kenya/ows?"
 map.addEventListener('click', Identify);
-
 
 //getting wmf features from geoserver using ajax
 function Identify(e) {
@@ -375,26 +387,26 @@ var srsName= "epsg:4326";
 
 // var wfs = L.Geoserver.wfs("http://localhost:8080/geoserver/wfs",
 //     {
-//         layers: 'sublocations',
+//         layers: 'counties',
 //         style :
 //             {
-//                 color:"black",
+//                 // color:"black",
 //                 fillOPacity:"0.3",
 //                 fillColor:"green"
 //                 opacity:"o.5"
 //             },
-//         onEachfeature: function (feature, layer)
-//                             {
-//                                 layer.bindPopup('<h3 style="align-content: center">Counties</h3>' +
-//                                         '<p>Owner: ' + feature.properties.countyname + '</p> ' +
-//                                         '<p>Parcel ID: ' + feature.properties.id + '</p> ' +
-//                                         '<p>Parcel Number: ' + feature.properties.lr_no + '</p> ' +
-//                                         '<p>Status: ' + feature.properties.status + '</p> ' +
-//                                         '<p>Area: ' + feature.properties.area_ha + ' Ha</p>' +
-//                                         '<p>Perimeter: ' + feature.properties.perimeter + ' M</p>').openPopup();
-//                             },
-//         CQL_FILTER: "countycode=='47'",
-//     }).addTo(map);
+        // onEachfeature: function (feature, layer)
+        //                     {
+        //                         layer.bindPopup('<h3 style="align-content: center">Counties</h3>' +
+        //                                 '<p>Owner: ' + feature.properties.countyname + '</p> ' +
+        //                                 '<p>Parcel ID: ' + feature.properties.id + '</p> ' +
+        //                                 '<p>Parcel Number: ' + feature.properties.lr_no + '</p> ' +
+        //                                 '<p>Status: ' + feature.properties.status + '</p> ' +
+        //                                 '<p>Area: ' + feature.properties.area_ha + ' Ha</p>' +
+        //                                 '<p>Perimeter: ' + feature.properties.perimeter + ' M</p>').openPopup();
+        //                     },
+        // CQL_FILTER: "countycode=='47'",
+    // }).addTo(map);
 
 
 
@@ -406,3 +418,5 @@ var srsName= "epsg:4326";
 //         marker:'#000000',
 //         topojsonSrc: './world.json'
 //     });
+
+
