@@ -21,14 +21,11 @@ from django.contrib import staticfiles
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # SECURITY WARNING: don't run with debug turned on in production!
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(env_file=".env")
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
-
-
 
 # Application definition
 ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
@@ -131,7 +128,7 @@ WSGI_APPLICATION = 'ardhi.wsgi.application'
 #     }
 # }
 
-# # local database
+# local database
 DATABASES = {
     'default': {
         'ENGINE': env("PG_ENGINE"),
@@ -141,14 +138,14 @@ DATABASES = {
         'HOST': env("PG_HOST_LOCAL"),
         'PORT': env("PG_PORT"),
     },
-    # 'openstreetmap': {
-    #     'ENGINE': env("PG_ENGINE"),
-    #     'NAME': env("PG_NAME_OSM"),
-    #     'USER': env("PG_USER_LOCAL"),
-    #     'PASSWORD': env("PG_PASS_LOCAL"),
-    #     'HOST': env("PG_HOST_LOCAL"),
-    #     'PORT': env("PG_PORT"),
-    # }
+    'openstreetmap': {
+        'ENGINE': env("PG_ENGINE"),
+        'NAME': env("PG_NAME_OSM"),
+        'USER': env("PG_USER_LOCAL"),
+        'PASSWORD': env("PG_PASS_LOCAL"),
+        'HOST': env("PG_HOST_LOCAL"),
+        'PORT': env("PG_PORT"),
+    }
 }
 
 # heroku
@@ -274,14 +271,12 @@ CELERY_TIMEZONE = 'Africa/Nairobi'
 # CELERY_RESULT_BACKEND = 'django-db'
 # CELERY_RESULT_BACKEND = 'django-cache'
 
-#CELERY BEAT
+# CELERY BEAT
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-
 
 REDIS_HOST = 'localhost'
 REDIS_PORT = 6379
 redis_host = os.environ.get('REDIS_HOST', 'localhost')
-
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

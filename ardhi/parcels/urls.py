@@ -18,7 +18,4 @@ urlpatterns = [
     path('distance2/', views.calculate_distance_view, name='distance2'),
     path('rundamap/', TemplateView.as_view(template_name='parcels/parcels.html'), name='rundamap'),
     path('maps/', TemplateView.as_view(template_name='parcels/parcel2.html'), name='parcels'),
-
-
-
 ]

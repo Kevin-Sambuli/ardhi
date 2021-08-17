@@ -170,6 +170,18 @@ var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
         attribution: "Map by Kevin Sambuli Amuhaya"
     }).addTo(map);
 
+// var wms = L.tileLayer.wms("http://localhost:8600/geoserver/wms",
+// var wms = L.Geoserver.wms("http://localhost:8600/geoserver/wms",
+//     {
+//         layers: 'parcels',
+//         format: 'image/png',
+//         style : county_style,
+//         // CQL_FILTER: "countycode=='47'",
+//         transparent: true,
+//         attribution: "Map by Kevin Sambuli Amuhaya"
+//     }).addTo(map);
+
+
 
 
 //legend request

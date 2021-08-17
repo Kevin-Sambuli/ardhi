@@ -1,0 +1,180 @@
+# Install GeoServer on cloud server
+________________
+
+## 1. Install Java JDK
+
+    apt install openjdk-11-jdk
+
+You can check the installation using `$ java -version`. Now you can see something like this:
+
+    openjdk version "11.0.7" 2020-04-14
+    OpenJDK Runtime Environment (build 11.0.7+10-post-Ubuntu-3ubuntu1)
+    OpenJDK 64-Bit Server VM (build 11.0.7+10-post-Ubuntu-3ubuntu1, mixed mode, sharing)
+
+## 2. Install and configure Tomcat
+### 2.1 Create the tomcat user and its folder
+
+    useradd -m -U -d /opt/tomcat -s /bin/false tomcat
+
+### 2.2 Download Tomcat
+
+    wget http://mirror.nohup.it/apache/tomcat/tomcat-9/v9.0.37/bin/apache-tomcat-9.0.37.tar.gz -O apache-tomcat-9.0.37.tar.gz
+
+Find the latest version of tomcat from the link belove ad use it
+http://mirror.nohup.it/apache/tomcat/tomcat-9/
+
+### 2.3 Uncompress the archive
+
+    tar -xf apache-tomcat-9.0.37.tar.gz -C /opt/tomcat/
+
+Then create a symbolik link to have more control on over versions and updates
+
+    ln -s /opt/tomcat/apache-tomcat-9.0.37 /opt/tomcat/latest
+
+### 2.4 Assign to tomcat's user the Tomcat folder and make executable the shell scripts
+
+    chown -R tomcat: /opt/tomcat
+    sh -c 'chmod +x /opt/tomcat/latest/bin/*.sh'
+
+### 2.5 Setting up the automatic restart of the webserver
+Open tomcat.service
+
+    nano /etc/systemd/system/tomcat.service
+
+Paste the text belove:
+
+    [Unit]
+    Description=Tomcat 9 servlet container
+    After=network.target
+
+    [Service]
+    Type=forking
+
+    User=tomcat
+    Group=tomcat
+
+    Environment="JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
+    Environment="JAVA_OPTS=-Djava.security.egd=file:///dev/urandom -Djava.awt.headless=true"
+
+    Environment="CATALINA_BASE=/opt/tomcat/latest"
+    Environment="CATALINA_HOME=/opt/tomcat/latest"
+    Environment="CATALINA_PID=/opt/tomcat/latest/temp/tomcat.pid"
+    Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC"
+
+    ExecStart=/opt/tomcat/latest/bin/startup.sh
+    ExecStop=/opt/tomcat/latest/bin/shutdown.sh
+
+    [Install]
+    WantedBy=multi-user.target
+
+Reload the services
+
+    systemctl daemon-reload
+
+Enable Tomcat
+
+    systemctl enable --now tomcat
+
+Check service status
+
+    systemctl status tomcat
+
+Now you are be able to stop, start and restart tomcat
+
+    systemctl stop tomcat
+    systemctl start tomcat
+    systemctl restart tomcat
+
+## 3. Configure Nginx Proxy for Tomcat
+### 3.1 Install Nginx
+
+    apt install nginx -y
+
+### 3.2 Create a new virtual host configuration file for Tomcat
+
+    nano /etc/nginx/sites-available/tomcat.conf
+
+Add the following lines:
+
+    server {
+      listen 80;
+
+      server_name    example.com www.example.com;
+      access_log /var/log/nginx/tomcat-access.log;
+      error_log /var/log/nginx/tomcat-error.log;
+
+      location / {
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Forwarded-Server $host;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_pass http://127.0.0.1:8080/;
+      }
+    }
+
+Then enable virtual host file and restart Nginx
+
+    ln -s /etc/nginx/sites-available/tomcat.conf /etc/nginx/sites-enabled/
+    systemctl restart nginx
+
+Now, you can access your Tomcat web interface using the URL http://example.com.
+
+## 4. Install Geoserver
+### 4.1. Download GeoServer
+
+    mkdir Downloads
+    cd Downloads/
+    wget http://sourceforge.net/projects/geoserver/files/GeoServer/2.17.1/geoserver-2.17.1-war.zip
+    apt install unzip
+    unzip geoserver-2.17.1-war.zip
+
+### 4.2 Move GeoServer inside Tomcat
+
+    mv geoserver.war /opt/tomcat/apache-tomcat-9.0.37/webapps
+
+### 4.3 Restart Tomcat and access to GeoServer
+
+    systemctl restart tomcat
+
+You can log-in into GeoServer using the link belove: example.com/geoserver
+
+Default access data:
+
+user -> admin <br>
+password -> geoserver
+
+## 5. Allow CORS Origin
+
+Edit `$CATALINA_HOME/conf/web.xml` adding this rows:
+
+    <filter>
+      <filter-name>CorsFilter</filter-name>
+      <filter-class>org.apache.catalina.filters.CorsFilter</filter-class>
+      <init-param>
+        <param-name>cors.allowed.origins</param-name>
+        <param-value>*</param-value>
+      </init-param>
+    </filter>
+    <filter-mapping>
+      <filter-name>CorsFilter</filter-name>
+      <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+Save the file and restart tomcat.
+
+## 6. Generate certificate for HTTPS [OPTIONAL]
+
+If you want you can use https using a certificate. You can use the wizard of [*certbot*](https://certbot.eff.org/) to do this in a few steps.
+At the end you must setup the [*CSRF Protection*](https://docs.geoserver.org/latest/en/user/security/webadmin/csrf.html)
+
+
+
+
+
+FROM consol/tomcat-8.0
+
+RUN apt-get update && apt-get -y install unzip
+RUN wget -q http://sourceforge.net/projects/geoserver/files/GeoServer/2.6.2/geoserver-2.6.2-war.zip -O /tmp/geoserver.zip
+RUN unzip -q /tmp/geoserver.zip -d /tmp
+RUN mv /tmp/geoserver.war /opt/tomcat/webapps/geoserver.war
+
+CMD /opt/tomcat/bin/deploy-and-run.sh
