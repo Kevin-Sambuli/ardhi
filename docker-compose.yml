@@ -13,7 +13,7 @@ services:
              python manage.py collectstatic --noinput --clear &&
              gunicorn ardhi.wsgi:application --bind 0.0.0.0:8000"
   #          python manage.py runserver 0.0.0.0:8000"
-  #          docker-compose run djangoapp hello/manage.py collectstatic --no-input
+
             
     volumes:
       - ./ardhi:/home/app/web
@@ -23,8 +23,6 @@ services:
     #   - 8000:8000
     expose:
       - 8000
-#    env_file:
-#      - ./ardhi/.env
     environment:
       - DEBUG=${DEBUG}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
@@ -42,7 +40,6 @@ services:
       # - front-end
       # - back-end
       - land_app
-
 
   postgres-db:
     restart: "on-failure"
@@ -64,58 +61,6 @@ services:
       # - back-end
       - land_app
 
-#  imposm:
-#    image: kartoza/docker-osm:imposm-latest
-#    build: docker-imposm3
-#    container_name: dockerosm_imposm
-#    volumes:
-#      - ./settings:/home/settings
-#      - import_done:/home/import_done
-#      - import_queue:/home/import_queue
-#      - cache:/home/cache
-#    depends_on:
-#      db:
-#        condition: service_healthy
-#    environment:
-#      - POSTGRES_USER=${POSTGRES_USER}
-#      - POSTGRES_PASS=${POSTGRES_PASS}
-#      - POSTGRES_DBNAME=${POSTGRES_DBNAME}
-#      - POSTGRES_PORT=${POSTGRES_PORT}
-#      - POSTGRES_HOST=${POSTGRES_HOST}
-#      - TIME=${TIME}
-#      - SETTINGS=${SETTINGS}
-#      - CACHE=${CACHE}
-#      - IMPORT_DONE=${IMPORT_DONE}
-#      - IMPORT_QUEUE=${IMPORT_QUEUE}
-#      - SRID=${SRID}
-#      - OPTIMIZE=${OPTIMIZE}
-#      - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
-#      - DBSCHEMA_IMPORT=${DBSCHEMA_IMPORT}
-#      - DBSCHEMA_BACKUP=${DBSCHEMA_BACKUP}
-#      - QGIS_STYLE=${QGIS_STYLE}
-#      - CLIP=${CLIP}
-#    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
-#
-#    osmupdate:
-#      build: docker-osmupdate
-#      image: kartoza/docker-osm:osmupdate-latest
-#      container_name: dockerosm_osmupdate
-#      volumes_from:
-#        - imposm
-#      depends_on:
-#        db:
-#          condition: service_healthy
-#      environment:
-#        - MAX_DAYS=${MAX_DAYS}
-#        - DIFF=${DIFF}
-#        - MAX_MERGE=${MAX_MERGE}
-#        - COMPRESSION_LEVEL=${COMPRESSION_LEVEL}
-#        - BASE_URL=${BASE_URL}
-#        - IMPORT_QUEUE=${IMPORT_QUEUE}
-#        - IMPORT_DONE=${IMPORT_DONE}
-#        - TIME=${TIME}
-
-
   pgadmin:
     container_name: pgadmin
     image: dpage/pgadmin4
@@ -127,14 +72,15 @@ services:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     ports:
-#      - ${PGADMIN_PORT}:80
       - "5050:80"
 
+#    volumes:
+#      - pgadmin:/root/.pgadmin
+#
     depends_on:
       - postgres-db
     networks:
       - land_app
-
 
   geoserver:
     image: kartoza/geoserver:${GS_VERSION}
@@ -151,14 +97,11 @@ services:
           ACTIVATE_ALL_COMMUNITY_EXTENTIONS:${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
     container_name: geoserver
     hostname: geoserver
-#    env_file:
-#      - ./ardhi/.env
     volumes:
      - geoserver_data:/opt/geoserver/data_dir
      - /tmp/settings/epsg.properties:/opt/geoserver/data_dir/user_projections/epsg.properties
     ports:
-#     - ${GEOSERVER_PORT}:8080
-     - "8600:8080"
+      - "8600:8080"
     restart: on-failure
     depends_on:
       - postgres-db 
@@ -198,10 +141,10 @@ services:
     build:
       context: ./ardhi
     command: celery -A ardhi worker -l info
-#    env_file:
-#      - ./ardhi/.env
     volumes:
       - ./ardhi:/home/app/web
+      - static_volume:/home/app/web/static
+      - media_volume:/home/app/web/media
     environment:
       - DEBUG=${DEBUG}
       - PG_DB_HOST=${PG_DB_HOST}
@@ -256,34 +199,63 @@ volumes:
   media_volume:
   redisdata:
   geoserver_data:
+#  pgadmin:
 
 
 
+#  imposm:
+#    image: kartoza/docker-osm:imposm-latest
+#    build: docker-imposm3
+#    container_name: dockerosm_imposm
+#    volumes:
+#      - ./settings:/home/settings
+#      - import_done:/home/import_done
+#      - import_queue:/home/import_queue
+#      - cache:/home/cache
+#    depends_on:
+#      db:
+#        condition: service_healthy
+#    environment:
+#      - POSTGRES_USER=${POSTGRES_USER}
+#      - POSTGRES_PASS=${POSTGRES_PASS}
+#      - POSTGRES_DBNAME=${POSTGRES_DBNAME}
+#      - POSTGRES_PORT=${POSTGRES_PORT}
+#      - POSTGRES_HOST=${POSTGRES_HOST}
+#      - TIME=${TIME}
+#      - SETTINGS=${SETTINGS}
+#      - CACHE=${CACHE}
+#      - IMPORT_DONE=${IMPORT_DONE}
+#      - IMPORT_QUEUE=${IMPORT_QUEUE}
+#      - SRID=${SRID}
+#      - OPTIMIZE=${OPTIMIZE}
+#      - DBSCHEMA_PRODUCTION=${DBSCHEMA_PRODUCTION}
+#      - DBSCHEMA_IMPORT=${DBSCHEMA_IMPORT}
+#      - DBSCHEMA_BACKUP=${DBSCHEMA_BACKUP}
+#      - QGIS_STYLE=${QGIS_STYLE}
+#      - CLIP=${CLIP}
+#    command: bash -c "while [ ! -f /home/settings/country.pbf ] ; do sleep 1; done && python3 -u /home/importer.py"
+#
+#    osmupdate:
+#      build: docker-osmupdate
+#      image: kartoza/docker-osm:osmupdate-latest
+#      container_name: dockerosm_osmupdate
+#      volumes_from:
+#        - imposm
+#      depends_on:
+#        db:
+#          condition: service_healthy
+#      environment:
+#        - MAX_DAYS=${MAX_DAYS}
+#        - DIFF=${DIFF}
+#        - MAX_MERGE=${MAX_MERGE}
+#        - COMPRESSION_LEVEL=${COMPRESSION_LEVEL}
+#        - BASE_URL=${BASE_URL}
+#        - IMPORT_QUEUE=${IMPORT_QUEUE}
+#        - IMPORT_DONE=${IMPORT_DONE}
+#        - TIME=${TIME}
 
 
-  #   celery:
-  #     restart: always
-  #     build:
-  #       context: .
-  #       dockerfile: ./dockerfile
-  #     container_name: celery
-  #     entrypoint: /bin/sh
-  #     command: ./docker.celery.sh
-  #     volumes:
-  #       - .:/usr/src/app
-  #       - static_volume:/usr/src/app/static
-  #       - media_volume:/usr/src/app/media
-  #     env_file:
-  #       - ./core/env/env.prod
-  #     depends_on:
-  #       - django
-  #       - redis
-  #   redis:
-  #     restart: always
-  #     image: redis:alpine
-  #     container_name: redis
-  #     volumes:
-  #       - redisdata:/data
+
   #   nginx-proxy:
   #     container_name: nginx-proxy
   #     build: ./nginx

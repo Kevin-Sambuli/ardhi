@@ -9,70 +9,86 @@ let mapOptions =
     {
         center: [lat, lng],
         zoom: 13,
-        measureControl: true
+        // measureControl: true,
+        // zoomsliderControl: true,
     };
 
 //create the map object
 let map = L.map('map', mapOptions);
 
-map.zoomControl.setPosition('topright');
+map.zoomControl.setPosition('topleft');
+
+
+var sidebar = L.control.sidebar('sidebar', {
+            closeButton: true,
+            position: 'left'
+        });
+        map.addControl(sidebar);
+
+        setTimeout(function () {
+            sidebar.show();
+        }, 500);
+
+        var marker2 = L.marker([lat, lng]).addTo(map).on('click', function () {
+            sidebar.toggle();
+        });
+
+        map.on('click', function () {
+            sidebar.hide();
+        })
+
+        sidebar.on('show', function () {
+            console.log('Sidebar will be visible.');
+        });
+
+        sidebar.on('shown', function () {
+            console.log('Sidebar is visible.');
+        });
+
+        sidebar.on('hide', function () {
+            console.log('Sidebar will be hidden.');
+        });
+
+        sidebar.on('hidden', function () {
+            console.log('Sidebar is hidden.');
+        });
+
+        L.DomEvent.on(sidebar.getCloseButton(), 'click', function () {
+            console.log('Close button clicked.');
+        });
 
 //addding map tile layers
-var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {}).addTo(map);
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {});
 
 var Osm_Mapnik = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19,});
 
 var Stadia_AlidadeSmooth = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
     maxZoom: 20});
 
-var Dark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {
-	maxZoom: 20,});
-
-// var Dark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {maxZoom: 20});
+var Dark = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png', {maxZoom: 20});
 
 var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {maxZoom: 17})
 
-// streets
+// // streets
 var googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
     maxZoom: 20, subdomains: ['mt0', 'mt1', 'mt2', 'mt3']});
 
-//hybrid
+// //hybrid
 var Hybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {maxZoom: 20,
     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']});
 
 //satellite
 var Satellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {maxZoom: 20,
-    subdomains: ['mt0', 'mt1', 'mt2', 'mt3']});
+    subdomains: ['mt0', 'mt1', 'mt2', 'mt3']}).addTo(map);
 
 //terrain
 var Terrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {maxZoom: 20,
     subdomains: ['mt0', 'mt1', 'mt2', 'mt3']});
 
 //minimap
-var miniMap = new L.Control.MiniMap(Dark, {toggleDisplay: true}).addTo(map);
+var miniMap = new L.Control.MiniMap(osm, {toggleDisplay: true}).addTo(map);
 
 
-//Leaflet browser print function
-L.control.browserPrint({position: 'topright'}).addTo(map);
-
-//Leaflet search
-L.Control.geocoder().addTo(map);
-
-// leaflet locate user location
-L.control.locate().addTo(map);
-
-// scale control layer
-L.control.scale().addTo(map);
-
-
-// //Leaflet measure
-// L.control.measure({
-//         position: 'topleft',
-//         primaryLengthUnit: 'kilometers',
-//         secondaryLengthUnit: 'meter',
-//         primaryAreaUnit: 'sqmeters',
-//         secondaryAreaUnit: undefined
-//     }).addTo(map);
 
 
 
@@ -156,38 +172,61 @@ var wfsLayer = L.Geoserver.wfs("http://localhost:8080/geoserver/wfs", {
     },
 
     });
-wfsLayer.addTo(map);
+// wfsLayer.addTo(map);
 
 // Raster WMS layers
-// var wms = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
-var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
+var forests = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
+// var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
+    {
+        layers: 'forests',
+        format: 'image/png',
+        transparent: true,
+        attribution: "Map by Kevin Sambuli Amuhaya"
+    }).addTo(map);
+
+
+var airports = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
+// var airports = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
+    {
+        layers: 'airports',
+        format: 'image/png',
+        // transparent: true,
+        // attribution: "Map by Kevin Sambuli Amuhaya"
+    }).addTo(map);
+
+// var wms = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
+var counties = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
     {
         layers: 'counties',
         format: 'image/png',
-        style : county_style,
+        // style : county_style,
         // CQL_FILTER: "countycode=='47'",
         transparent: true,
         attribution: "Map by Kevin Sambuli Amuhaya"
     }).addTo(map);
 
-// var wms = L.tileLayer.wms("http://localhost:8600/geoserver/wms",
-// var wms = L.Geoserver.wms("http://localhost:8600/geoserver/wms",
-//     {
-//         layers: 'parcels',
-//         format: 'image/png',
-//         style : county_style,
-//         // CQL_FILTER: "countycode=='47'",
-//         transparent: true,
-//         attribution: "Map by Kevin Sambuli Amuhaya"
-//     }).addTo(map);
+var soils = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
+    {
+        layers: 'soils',
+        format: 'image/png',
+        transparent: true,
+        attribution: "Map by Kevin Sambuli Amuhaya"
+    }).addTo(map);
 
+var population = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
+    {
+        layers: 'population',
+        format: 'image/png',
+        transparent: true,
+        attribution: "Map by Kevin Sambuli Amuhaya"
+    }).addTo(map);
 
 
 
 //legend request
 var legend = L.Geoserver.legend("http://localhost:8080/geoserver/wfs",
     {
-        layers: 'counties',
+        layers: 'population',
         // style: stylefile,
     })
 // legend.addTo(map);
@@ -205,23 +244,52 @@ var baseMaps = {
     "Dark": Dark,
 };
 
-// adding a markers to the map
-let marker = L.marker([lat, lng], {
-    draggable: true,
-    title: "marker",
-    opacity: 0.8,
-})
+// // adding a markers to the map
+// let marker = L.marker([lat, lng], {
+//     draggable: true,
+//     title: "marker",
+//     opacity: 0.8,
+// })
 // marker.addTo(map).bindPopup('My place');
 
 
 
 var overLays = {
-    // "Marker": marker,
-    // " geojson": geojson
-    "Kenya": wms
+    "County": counties,
+    "Population": population,
+    "Forests": forests,
+    "Parks": wfsLayer,
+    "Soils": soils,
+    "Airports": airports,
 };
 
-L.control.layers(baseMaps, overLays, {collapsed: true, position: 'topleft'}).addTo(map);
+L.control.layers(baseMaps, overLays, {collapsed: true, position: 'topright'}).addTo(map);
+
+//Leaflet browser print function
+L.control.browserPrint({position: 'topright'}).addTo(map);
+
+//Leaflet search
+L.Control.geocoder().addTo(map);
+
+// leaflet locate user location
+L.control.locate().addTo(map);
+
+// scale control layer
+L.control.scale().addTo(map);
+
+
+
+
+// //Leaflet measure
+L.control.measure({
+        // position: 'topleft',
+        primaryLengthUnit: 'kilometers',
+        secondaryLengthUnit: 'meter',
+        primaryAreaUnit: 'sqmeters',
+        secondaryAreaUnit: undefined
+    }).addTo(map);
+
+
 
 
 // coordinate display function Map coordinate display
@@ -246,6 +314,7 @@ function fullScreenView() {
 }
 
 // add Leaflet-Geoman controls with some options to the map
+
 map.pm.addControls({
   position: 'topleft',
   drawCircle: false,

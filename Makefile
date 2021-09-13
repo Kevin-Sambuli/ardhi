@@ -11,6 +11,7 @@ build:
 	docker-compose -f docker-compose.yml up -d --build --remove-orphans
 	docker-compose -f docker-compose.yml exec land_app python manage.py migrate --noinput
 	docker-compose -f docker-compose.yml exec land_app python manage.py collectstatic --noinput --clear
+#	docker-compose run djangoapp hello/manage.py collectstatic --no-input
 
 up:
 	docker-compose up

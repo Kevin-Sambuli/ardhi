@@ -34,3 +34,16 @@
     top: 260px;
 }
 
+
+.lorem {
+        font-style: italic;
+        /*color: #AAA;*/
+        }
+
+body > #sidebar {
+            display: none;
+}
+
+#sidebar{
+    background-color: rgba(255, 128, 0, 0.3);
+}
