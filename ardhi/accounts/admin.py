@@ -11,7 +11,7 @@ class AccountAdmin(UserAdmin):
     form = RegisterForm
     model = Account
 
-    list_display = ('email', 'username', 'date_joined', 'last_login', 'is_admin', 'is_staff')
+    list_display = ('email', 'username', 'date_joined', 'last_login', 'is_active', 'is_admin', 'is_staff')
     search_fields = ('email', 'username')
     readonly_fields = ('date_joined', 'last_login',)
     list_display_links = ('email',)
@@ -30,6 +30,22 @@ class AccountAdmin(UserAdmin):
 
     add_fieldsets = (
     None, {"classes": ("wide",), "fields": ("email", "password1", "password2", "is_staff", "is_active",), },)
+
+    def active(self, obj):
+        return obj.is_active == 1
+
+    active.boolean = True
+
+    def make_active(modeladmin, request, queryset):
+        queryset.update(is_active=1)
+        messages.success(request, "Selected Record(s) Marked as Active Successfully !!")
+
+    def make_inactive(modeladmin, request, queryset):
+        queryset.update(is_active=0)
+        messages.success(request, "Selected Record(s) Marked as Inactive Successfully !!")
+
+    admin.site.add_action(make_active, "Make Active")
+    admin.site.add_action(make_inactive, "Make Inactive")
 
 
 class ProfileAdmin(admin.ModelAdmin):

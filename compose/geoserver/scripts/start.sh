@@ -5,15 +5,19 @@
 source /scripts/functions.sh
 source /scripts/env-data.sh
 GS_VERSION=$(cat /scripts/geoserver_version.txt)
-CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
-MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+generate_random_string 14
+export CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_${RAND}"
+export MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_${RAND}"
+export CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+generate_random_string 20
+export INSTANCE_STRING=${RAND}
+
 
 web_cors
 
 # Useful for development - We need a clean state of data directory
 if [[ "${RECREATE_DATADIR}" =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -rf ${GEOSERVER_DATA_DIR}/*
-
 fi
 
 # install Font files in resources/fonts if they exists
@@ -28,7 +32,12 @@ fi
 
 # Add custom espg properties file or the default one
 create_dir ${GEOSERVER_DATA_DIR}/user_projections
-epsg_codes
+
+setup_custom_crs
+
+create_dir ${GEOSERVER_DATA_DIR}/logs
+export GEOSERVER_LOG_LEVEL
+geoserver_logging
 
 # Activate sample data
 if [[ ${SAMPLE_DATA} =~ [Tt][Rr][Uu][Ee] ]]; then
@@ -38,8 +47,30 @@ fi
 
 
 
+function postgres_ssl_setup() {
+  if [[ ${SSL_MODE} == 'verify-ca' || ${SSL_MODE} == 'verify-full' ]]; then
+        if [[ -z ${SSL_CERT_FILE} || -z ${SSL_KEY_FILE} || -z ${SSL_CA_FILE} ]]; then
+                exit 0
+        else
+          export PARAMS="sslmode=${SSL_MODE}&sslcert=${SSL_CERT_FILE}&sslkey=${SSL_KEY_FILE}&sslrootcert=${SSL_CA_FILE}"
+        fi
+  elif [[ ${SSL_MODE} == 'disable' || ${SSL_MODE} == 'allow' || ${SSL_MODE} == 'prefer' || ${SSL_MODE} == 'require' ]]; then
+       export PARAMS="sslmode=${SSL_MODE}"
+  fi
+
+}
+
+export DISK_QUOTA_SIZE
 if [[  ${DB_BACKEND} =~ [Pp][Oo][Ss][Tt][Gg][Rr][Ee][Ss] ]]; then
-  disk_quota_config
+  postgres_ssl_setup
+  export DISK_QUOTA_BACKEND=JDBC
+  export SSL_PARAMETERS=${PARAMS}
+  default_disk_quota_config
+  jdbc_disk_quota_config
+else
+  export DISK_QUOTA_BACKEND=H2
+  default_disk_quota_config
+
 fi
 
 create_dir ${MONITOR_AUDIT_PATH}
@@ -61,10 +92,20 @@ else
   done
 fi
 
+if [[ ${ACTIVATE_ALL_STABLE_EXTENTIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+  pushd /plugins/
+  for val in `ls *.zip`; do
+      ext=${val%.*}
+      echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+      install_plugin /plugins ${ext}
+  done
+  pushd ${GEOSERVER_HOME}
+fi
+
+
 # Function to install community extensions
 export S3_SERVER_URL S3_USERNAME S3_PASSWORD
-file_env 'S3_USERNAME'
-file_env 'S3_PASSWORD'
+
 function community_config() {
     if [[ ${ext} == 's3-geotiff-plugin' ]]; then
         s3_config
@@ -92,23 +133,32 @@ else
   done
 fi
 
+
+if [[ ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} =~ [Tt][Rr][Uu][Ee] ]];then
+   pushd /community_plugins/
+    for val in `ls *.zip`; do
+        ext=${val%.*}
+        echo "Enabling ${ext} for GeoServer ${GS_VERSION}"
+        community_config
+    done
+    pushd ${GEOSERVER_HOME}
+fi
+
 # Setup clustering
-export CLUSTER_CONFIG_DIR INSTANCE_STRING READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
+export  READONLY CLUSTER_DURABILITY BROKER_URL EMBEDDED_BROKER TOGGLE_MASTER TOGGLE_SLAVE BROKER_URL
 
 if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
-  CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
-  CLUSTER_LOCKFILE="${CLUSTER_CONFIG_DIR}/.cluster.lock"
+  ext=jms-cluster-plugin
+  if [[ ! -f /community_plugins/${ext}.zip ]]; then
+    community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
+    download_extension ${community_plugins_url} ${ext} /community_plugins
+    install_plugin /community_plugins ${ext}
+  else
+    install_plugin /community_plugins ${ext}
+  fi
   if [[ ! -f $CLUSTER_LOCKFILE ]]; then
       create_dir ${CLUSTER_CONFIG_DIR}
-      cp /build_data/broker.xml ${CLUSTER_CONFIG_DIR}
-      ext=jms-cluster-plugin
-      if [[ ! -f /community_plugins/${ext}.zip ]]; then
-        community_plugins_url="https://build.geoserver.org/geoserver/${GS_VERSION:0:5}x/community-latest/geoserver-${GS_VERSION:0:4}-SNAPSHOT-${ext}.zip"
-        download_extension ${community_plugins_url} ${ext} /community_plugins
-        community_config
-      else
-        community_config
-      fi
+      broker_xml_config
       touch ${CLUSTER_LOCKFILE}
   fi
   cluster_config
@@ -116,28 +166,52 @@ if [[ ${CLUSTERING} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 fi
 
-export REQUEST_TIMEOUT PARARELL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
+export REQUEST_TIMEOUT PARALLEL_REQUEST GETMAP REQUEST_EXCEL SINGLE_USER GWC_REQUEST WPS_REQUEST
 # Setup control flow properties
 setup_control_flow
 
 # Setup tomcat apps manager
-export TOMCAT_PASS TOMCAT_USER
-file_env 'TOMCAT_USER'
-file_env 'TOMCAT_PASS'
-if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
-    unzip -qq /tomcat_apps.zip -d /tmp/tomcat &&
-    cp -r  /tmp/tomcat/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
-    rm -r /tmp/tomcat &&
-    cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF &&
-    tomcat_user_config
+export TOMCAT_PASSWORD TOMCAT_USER
 
+
+
+if [[ ${POSTGRES_JNDI} =~ [Tt][Rr][Uu][Ee] ]];then
+  postgres_ssl_setup
+  export SSL_PARAMETERS=${PARAMS}
+  POSTGRES_JAR_COUNT=`ls -1 ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-* 2>/dev/null | wc -l`
+  if [ $POSTGRES_JAR_COUNT != 0 ]; then
+    rm ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/postgresql-*
+  fi
+  cp ${CATALINA_HOME}/postgres_config/postgresql-* ${CATALINA_HOME}/lib/ &&
+  envsubst < /build_data/context.xml > ${CATALINA_HOME}/conf/context.xml
 else
-    rm -rf "${CATALINA_HOME}"/webapps/ROOT &&
-    rm -rf "${CATALINA_HOME}"/webapps/docs &&
-    rm -rf "${CATALINA_HOME}"/webapps/examples &&
-    rm -rf "${CATALINA_HOME}"/webapps/host-manager &&
-    rm -rf "${CATALINA_HOME}"/webapps/manager
+  cp ${CATALINA_HOME}/postgres_config/postgresql-* ${CATALINA_HOME}/webapps/geoserver/WEB-INF/lib/
 fi
+
+
+if [[ "${TOMCAT_EXTRAS}" =~ [Tt][Rr][Uu][Ee] ]]; then
+    unzip -qq /tomcat_apps.zip -d /tmp/ &&
+    cp -r  /tmp/tomcat_apps/webapps.dist/* ${CATALINA_HOME}/webapps/ &&
+    rm -r /tmp/tomcat_apps
+    if [[ ${POSTGRES_JNDI} =~ [Ff][Aa][Ll][Ss][Ee] ]]; then
+      cp /build_data/context.xml ${CATALINA_HOME}/webapps/manager/META-INF/
+      sed -i -e '19,36d' ${CATALINA_HOME}/webapps/manager/META-INF/context.xml
+    fi
+    if [[ -z ${TOMCAT_PASSWORD} ]]; then
+        generate_random_string 18
+        export TOMCAT_PASSWORD=${RAND}
+        echo -e "[Entrypoint] GENERATED tomcat  PASSWORD: \e[1;31m $TOMCAT_PASSWORD"
+        echo -e "\033[0m "
+    fi
+    tomcat_user_config
+else
+    delete_folder "${CATALINA_HOME}"/webapps/ROOT &&
+    delete_folder "${CATALINA_HOME}"/webapps/docs &&
+    delete_folder "${CATALINA_HOME}"/webapps/examples &&
+    delete_folder "${CATALINA_HOME}"/webapps/host-manager &&
+    delete_folder "${CATALINA_HOME}"/webapps/manager
+fi
+
 
 if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
@@ -149,9 +223,15 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
   rm -f "$P12_FILE"
   rm -f "$JKS_FILE"
 
+  export PKCS12_PASSWORD
+
+  # Copy PFX file if it exists in the extra config directory
+  if [ -f ${EXTRA_CONFIG_DIR}/certificate.pfx ]; then
+    cp ${EXTRA_CONFIG_DIR}/certificate.pfx  ${CERT_DIR}/certificate.pfx
+  fi
+
   if [[ -f ${CERT_DIR}/certificate.pfx ]]; then
     # Generate private key
-    file_env 'PKCS12_PASSWORD'
     openssl pkcs12 -in ${CERT_DIR}/certificate.pfx -nocerts \
       -out ${CERT_DIR}/privkey.pem -nodes -password pass:$PKCS12_PASSWORD -passin pass:$PKCS12_PASSWORD
     # Generate certificate only
@@ -175,9 +255,8 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
     -password pass:"$PKCS12_PASSWORD"
 
   # import PKCS12 into JKS
+  export JKS_KEY_PASSWORD JKS_STORE_PASSWORD
 
-  file_env 'JKS_KEY_PASSWORD'
-  file_env 'JKS_STORE_PASSWORD'
 
   keytool -importkeystore \
     -noprompt \
@@ -194,7 +273,7 @@ if [[ ${SSL} =~ [Tt][Rr][Uu][Ee] ]]; then
 
 else
     cp ${CATALINA_HOME}/conf/ssl-tomcat.xsl ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
-    sed -i -e '77,114d' ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
+    sed -i -e '83,120d' ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
     SSL_CONF=${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
 
 fi
@@ -223,6 +302,10 @@ fi
 
 if [ -n "$HTTP_COMPRESSION" ]; then
   HTTP_COMPRESSION_PARAM="--stringparam http.compression $HTTP_COMPRESSION "
+fi
+
+if [ -n "$HTTP_SCHEME" ]; then
+  HTTP_SCHEME_PARAM="--stringparam http.scheme $HTTP_SCHEME "
 fi
 
 if [ -n "$HTTP_MAX_HEADER_SIZE" ]; then
@@ -272,8 +355,6 @@ if [ -n "$JKS_STORE_PASSWORD" ]; then
   JKS_STORE_PASSWORD_PARAM="--stringparam https.keyPass $JKS_STORE_PASSWORD "
 fi
 
-
-
 transform="xsltproc \
   --output ${CATALINA_HOME}/conf/server.xml \
   $HTTP_PORT_PARAM \
@@ -282,6 +363,7 @@ transform="xsltproc \
   $HTTP_REDIRECT_PORT_PARAM \
   $HTTP_CONNECTION_TIMEOUT_PARAM \
   $HTTP_COMPRESSION_PARAM \
+  $HTTP_SCHEME_PARAM \
   $HTTP_MAX_HEADER_SIZE_PARAM \
   $HTTPS_PORT_PARAM \
   $HTTPS_MAX_THREADS_PARAM \
@@ -297,7 +379,14 @@ transform="xsltproc \
   ${SSL_CONF} \
   ${CATALINA_HOME}/conf/server.xml"
 
-eval "$transform"
+
+if [[ -f ${EXTRA_CONFIG_DIR}/server.xml ]]; then
+  cp -f ${EXTRA_CONFIG_DIR}/server.xml ${CATALINA_HOME}/conf/
+else
+  # default value
+  eval "$transform"
+fi
+
 
 if [[ -f ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl ]];then
   rm ${CATALINA_HOME}/conf/ssl-tomcat_no_https.xsl
@@ -308,3 +397,4 @@ if [[ -z "${EXISTING_DATA_DIR}" ]]; then
   /scripts/update_passwords.sh
 fi
 
+setup_logging

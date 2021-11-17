@@ -2,8 +2,10 @@ from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth import authenticate
 from .models import Account, Profile
 from parcels.models import Parcels
-from django import forms
 from django.forms import widgets
+from django import forms
+
+
 
 
 class RegisterForm(UserCreationForm):
@@ -79,7 +81,8 @@ class RegisterForm(UserCreationForm):
 
 class AccountProfileForm(forms.ModelForm):
     profile_image = forms.ImageField()
-    dob = forms.DateField(input_formats=['%Y--%m--%d', '%m%d/%Y', '%m/%d/%y'], )
+    dob = forms.DateField(widget=widgets.NumberInput(attrs={'type': 'date'}),
+                          input_formats=['%Y--%m--%d', '%m%d/%Y', '%m/%d/%y'], )
     gender = forms.Select()
 
     class Meta:
@@ -114,6 +117,7 @@ class AccountProfileForm(forms.ModelForm):
 class LoginForm(forms.ModelForm):
     email = forms.EmailField(label="", max_length=100, widget=forms.TextInput())
     password = forms.CharField(label='', widget=forms.PasswordInput)
+    remember = forms.BooleanField(label="Remember Me", required=False)
 
     class Meta:
         model = Account
@@ -127,7 +131,7 @@ class LoginForm(forms.ModelForm):
         self.fields['email'].label = ""
 
         self.fields['password'].widget.attrs['class'] = 'form-control'
-        self.fields['password'].widget.attrs['placeholder'] = 'password'
+        self.fields['password'].widget.attrs['placeholder'] = 'Password'
         self.fields['password'].label = ""
 
     def clean(self):

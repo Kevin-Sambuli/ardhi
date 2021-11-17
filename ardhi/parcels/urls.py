@@ -13,7 +13,7 @@ urlpatterns = [
     path('property/', views.my_property, name='map'),
     path('pdf/', views.parcel_render_pdf, name='pdf'),
     path('search/', views.search_parcels, name='search'),
-    # path('distance/', views.parcels_within_3km, name='distance'),
+    path('distance/', views.parcels_within_3km, name='distance'),
     # path('distance/', views.my_parcels, name='distance'),
     path('distance2/', views.calculate_distance_view, name='distance2'),
     path('rundamap/', TemplateView.as_view(template_name='parcels/parcels.html'), name='rundamap'),

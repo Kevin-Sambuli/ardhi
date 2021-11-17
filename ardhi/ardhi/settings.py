@@ -28,8 +28,10 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 
 # Application definition
-ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
-# ALLOWED_HOSTS =['localhost', '127.0.0.1', 'land_app']
+# ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
+ALLOWED_HOSTS = ['land_app', 'localhost', '127.0.0.1', 'ardhi-land-info.herokuapp.com']
+
+# ADMIN = [('kevin Sambuli', 'sambulikevin@outlook.com'), ('kevin Sambuli', 'sambulikevin@gmail.com')]
 
 # Application definition
 if DEBUG:
@@ -44,6 +46,8 @@ else:
     EMAIL_USE_TLS = env("EMAIL_USE_TLS")
     EMAIL_PORT = env("EMAIL_PORT")
     DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# SERVER_EMAIL = 'ardhiland@lis.com'
 
 DJANGO_APPS = [
     'django.contrib.admin',
@@ -77,7 +81,7 @@ LOGOUT_REDIRECT_URL = "home"
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.AllowAllUsersModelBackend',
-    'accounts.backends.CaseInsensitiveModelBackend',
+    # 'accounts.backends.CaseInsensitiveModelBackend',
 )
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
@@ -148,6 +152,8 @@ DATABASES = {
     }
 }
 
+# PASSWORD_RESET_TIMEOUT = 10
+
 # heroku
 # DATABASES = {
 #     'default': {
@@ -203,8 +209,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 STATIC_URL = '/static/'
 # STATIC_ROOT = os.path.join(os.path.dirname(os.path.dirname(BASE_DIR)), 'static')
-# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 # leaflet configuration
 LEAFLET_CONFIG = {

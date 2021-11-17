@@ -1,20 +1,19 @@
 #!/bin/bash
 set -e
 
-SETUP_LOCKFILE="${GEOSERVER_DATA_DIR}/.bash.lock"
-if [[ ! -f ${SETUP_LOCKFILE} ]]; then
-  echo 'figlet -t "Kartoza Docker GeoServer"' >> ~/.bashrc
-  touch ${SETUP_LOCKFILE}
-fi
 
 figlet -t "Kartoza Docker GeoServer"
 
+source /scripts/functions.sh
 source /scripts/env-data.sh
 
 /bin/bash /scripts/start.sh
 
+
+RANDOMSTRING=$(cat /scripts/.pass_14.txt)
 CLUSTER_CONFIG_DIR="${GEOSERVER_DATA_DIR}/cluster/instance_$RANDOMSTRING"
 MONITOR_AUDIT_PATH="${GEOSERVER_DATA_DIR}/monitoring/monitor_$RANDOMSTRING"
+
 
 export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -Xmx${MAXIMUM_MEMORY} \
        -XX:PerfDataSamplingInterval=500 -Dorg.geotools.referencing.forceXY=true \
@@ -24,6 +23,7 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        -Djts.overlay=ng \
        -Dfile.encoding=${ENCODING} \
        -Duser.timezone=${TIMEZONE} \
+       -DALLOW_ENV_PARAMETRIZATION=${PROXY_BASE_URL_PARAMETRIZATION} \
        -Djavax.servlet.request.encoding=${CHARACTER_ENCODING} \
        -Djavax.servlet.response.encoding=${CHARACTER_ENCODING} \
        -DCLUSTER_CONFIG_DIR=${CLUSTER_CONFIG_DIR} \
@@ -37,14 +37,14 @@ export GEOSERVER_OPTS="-Djava.awt.headless=true -server -Xms${INITIAL_MEMORY} -X
        --patch-module java.desktop=${CATALINA_HOME}/marlin-0.9.4.2-Unsafe-OpenJDK9.jar  \
        -Dsun.java2d.renderer=org.marlin.pisces.PiscesRenderingEngine \
        -Dgeoserver.login.autocomplete=${LOGIN_STATUS} \
-       -DGEOSERVER_CONSOLE_DISABLED=${WEB_INTERFACE} \
+       -DGEOSERVER_CONSOLE_DISABLED=${DISABLE_WEB_INTERFACE} \
        -DGEOSERVER_CSRF_WHITELIST=${CSRF_WHITELIST} \
        -Dgeoserver.xframe.shouldSetPolicy=${XFRAME_OPTIONS} "
 
 ## Prepare the JVM command line arguments
 export JAVA_OPTS="${JAVA_OPTS} ${GEOSERVER_OPTS}"
 
-if ls /geoserver/start.jar >/dev/null 2>&1; then
+if [[ -f ${GEOSERVER_HOME}/start.jar ]]; then
   exec java $JAVA_OPTS  -jar start.jar
 else
   exec /usr/local/tomcat/bin/catalina.sh run

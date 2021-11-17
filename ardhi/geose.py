@@ -28,3 +28,34 @@ geo.create_workspace('demo2')
 # geo.create_outline_featurestyle('polygon-style', workspace='demo')
 # geo.publish_style(layer_name='jamoat-db',
 #                   style_name='polygon-style', workspace='demo')
+
+
+
+
+# Here's some Python code I'm using to import osm data to a certain schema -
+# params
+dbname = 'mydb'
+username = 'postgres'
+schema = 'austin'
+osmfile = 'austin.osm'
+style = 'all.style'
+
+# change search path to new schema
+# osm2pgsql will import the osm data to the first schema in the search path
+
+# sql = f"CREATE SCHEMA {metro}; ALTER ROLE {username} SET search_path TO {metro},public;"
+cmd = f'psql --dbname {dbname} --command "{sql}"' # windows needs double quotes around sql
+print(cmd)
+os.system(cmd)
+
+# import osm data
+# uses slim mode - see https://wiki.openstreetmap.org/wiki/Osm2pgsql#Slim_mode
+cmd = f"osm2pgsql --create --latlong --slim --hstore --style {style} --database {dbname} --username {username} {osmfile}"
+print(cmd)
+os.system(cmd)
+
+# change search path back to public schema
+sql = f"ALTER ROLE {username} SET search_path TO public;"
+cmd = f'psql --dbname {dbname} --command "{sql}"'
+print(cmd)
+os.system(cmd)

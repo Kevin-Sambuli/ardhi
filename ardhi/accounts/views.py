@@ -1,19 +1,24 @@
-import datetime
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from .forms import RegisterForm, LoginForm, AccountUpdateForm, AccountProfileForm
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.tokens import default_token_generator
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_bytes, force_text
+from django.core.mail import send_mail, BadHeaderError
+from django.template.loader import render_to_string
 from parcels.utils import get_ip_address, get_geo
+from django.db.models.query_utils import Q
 from django.template import RequestContext
-from django.core.mail import send_mail
 from .models import Account, Profile
 from django.http import HttpResponse
 from django.contrib import messages
 from django.conf import settings
+from django.views import View
 import africastalking
-# from django.contrib.auth.decorators import user_passes_test, login_required
-
+import datetime
 
 username = "rundalis"
 api_key = "6fd1032dcebdbc0bf7d29d057238ee443ee8388e871aab6da7234f06ff8893bc"
@@ -22,7 +27,49 @@ africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 
 
-# Create your views here.
+# def activate(request, uidb64, token):
+#     try:
+#         uid = urlsafe_base64_decode(uidb64).decode()
+#         user = Account.objects.get(pk=uid)
+#     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+#         user = None
+#     if user is not None and default_token_generator.check_token(user, token):
+#         user.is_active = True
+#         user.save()
+#         return HttpResponse('Thank you for your email confirmation. Now you can login your account.')
+#     else:
+#         return HttpResponse('Activation link is invalid!')
+
+
+class ActivateAccount(View):
+    def get(self, request, uidb64, token, *args, **kwargs):
+        try:
+            uid = force_text(urlsafe_base64_decode(uidb64))
+            user = Account.objects.get(pk=uid)
+        except (TypeError, ValueError, OverflowError, Account.DoesNotExist):
+            user = None
+
+        if user is not None and default_token_generator.check_token(user, token):
+            user.is_active = True
+            user.save()
+            # return redirect('login')
+
+            login(request, user)
+            messages.success(request, 'Your account have been confirmed.')
+
+            messages.success(request, f"Hey {user.username.title}, You have successfully been Registered..")
+            subject = 'Runda LIS Registration.'
+            message = f""" Hi {user.first_name} {user.last_name},Thank you for registering to our services. 
+            Please find the attached certificate of registration.
+            """
+            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False, )
+
+            return redirect('home')
+        else:
+            messages.warning(request, 'The confirmation link was invalid, possibly because it has already been used.')
+            return redirect('home')
+
+
 def registration_view(request):
     user = request.user
     if user.is_authenticated:
@@ -32,32 +79,23 @@ def registration_view(request):
     if request.POST:
         form = RegisterForm(request.POST)
         if form.is_valid():
-            form.save()
-            first_name = form.cleaned_data.get('first_name')
-            last_name = form.cleaned_data.get('last_name')
-            email = form.cleaned_data.get('email')
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
+            user = form.save(commit=False)
+            user.save()
 
-            # authenticate the user if information is correct and valid
-            account = authenticate(first_name=first_name, last_name=last_name, email=email,
-                                   username=username, password=password)
+            current_site = get_current_site(request)
+            subject = 'Activate Your MySite Account'
+            message = render_to_string('accounts/account_activation_email.html',
+                                       {
+                                           'user': user,
+                                           'domain': current_site.domain,
+                                           'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                                           "token": default_token_generator.make_token(user),
+                                       })
+            user.email_user(subject, message)
 
-            messages.success(request, f"Hey {username.title}, You have successfully been Registered..")
+            messages.info(request, 'Please Confirm your email to complete registration.')
 
-            subject = 'Runda LIS Registration.'
-            message = f"""
-            Hi {first_name} {last_name},Thank you for registering to our services. 
-            Please find the attached certificate of registration"""
-
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, )
-
-            if account:
-                login(request, account)
-
-            messages.success(request, "Hey, You have been registered please update your profile and address")
-            return redirect('home')
-
+            return redirect('login')
         else:
             context['registration_form'] = form
 
@@ -112,20 +150,21 @@ def login_view(request):
         messages.success(request, f'Welcome back {request.user}, you have been logged in!')
         return redirect("home")
 
-
     if request.POST:
         form = LoginForm(request.POST)
         if form.is_valid():
             email = request.POST['email']
             password = request.POST['password']
             user = authenticate(email=email, password=password)
-            # data = 'http://localhost:8080/geoserver/kenya/ows?service=WFS&version=1.0.0&request=GetFeature&typeName=kenya%3Acounties&maxFeatures=50&outputFormat=application%2Fjson'
-            # print('geojson', data)
 
-            if user:
+            if user.is_active:
                 login(request, user)
                 messages.success(request, f"{request.user}, Welcome back..")
                 return redirect("home")
+            else:
+                messages.success(request, f"{request.user}, Your account is not activated. Please reactivate")
+                return redirect("login")
+
 
         else:
             messages.success(request, 'Error while logging in. Please try again')
@@ -163,6 +202,41 @@ def edit_account(request):
     return render(request, "accounts/edit_account.html", context)
 
 
+def password_reset_request(request):
+    if request.method == 'POST':
+        pass_form = PasswordResetForm(request.POST)
+        if pass_form.is_valid():
+            data = pass_form.cleaned_data['email']
+
+            user_mail = Account.objects.filter(Q(email=data))
+            if user_mail.exists():
+                current_site = get_current_site(request)
+                for user in user_mail:
+                    subject = "Password Request"
+                    email_template_name = "accounts/password_message.txt"
+                    parameters = {
+                        "email": user.email,
+                        "domain": current_site.domain,
+                        "user": user,
+                        "site_name": 'Ardhi Land Info',
+                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                        "token": default_token_generator.make_token(user),
+                        "protocol": 'http',
+                    }
+                    email = render_to_string(email_template_name, parameters)
+                    try:
+                        send_mail(subject, email, '', [user.email], fail_silently=False)
+                    except:
+                        return HttpResponse('Invali Header')
+                    return redirect('password_reset_done')
+    else:
+        pass_form = PasswordResetForm(request.POST)
+    context = {
+        "pass_form": pass_form,
+    }
+    return render(request, 'accounts/password_reset_form.html', context)
+
+
 def update_password(request):
     context = {}
     if request.POST:
@@ -186,3 +260,46 @@ def logout_view(request):
     messages.success(request, f'You {request.user.username} have been logged out!')
 
     return redirect('home')
+
+# Create your views here.
+# def registration_view(request):
+#     user = request.user
+#     if user.is_authenticated:
+#         return HttpResponse("You are already authenticated as " + str(user.email))
+#     context = {}
+#     if request.POST:
+#         form = RegisterForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             first_name = form.cleaned_data.get('first_name')
+#             last_name = form.cleaned_data.get('last_name')
+#             email = form.cleaned_data.get('email')
+#             username = form.cleaned_data.get('username')
+#             password = form.cleaned_data.get('password1')
+#
+#             # authenticate the user if information is correct and valid
+#             account = authenticate(first_name=first_name, last_name=last_name, email=email,
+#                                    username=username, password=password)
+#
+#             messages.success(request, f"Hey {username.title}, You have successfully been Registered..")
+#
+#             subject = 'Runda LIS Registration.'
+#             message = f"""
+#             Hi {first_name} {last_name},Thank you for registering to our services.
+#             Please find the attached certificate of registration"""
+#
+#             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, )
+#
+#             if account:
+#                 login(request, account)
+#
+#             messages.success(request, "Hey, You have been registered please update your profile and address")
+#             return redirect('home')
+#
+#         else:
+#             context['registration_form'] = form
+#
+#     else:
+#         form = RegisterForm()
+#         context['registration_form'] = form
+#     return render(request, 'accounts/register.html', context)

@@ -94,6 +94,7 @@ def my_property(request):
         m = my_map(land_parcels=parcels_as_geojson, parcel=my_parcel)
         m = m._repr_html_()
 
+
         context['map'] = m
         context['details'] = details
         context['parcels'] = my_own_parcels
@@ -170,7 +171,6 @@ def search_parcels(request):
 
     # parcels search and returning the centroid then placed on the map
     try:
-
         parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
 
         # accessing each parcel detail and returning each parcel id
@@ -227,12 +227,13 @@ def parcels_within_3km(request):
     # parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
     parcels = Parcels.objects.get(id=84).geom
     data2 = []
+
     for parc in Parcels.objects.annotate(distance=Distance('geom', parcels)):
         # print(parc.lr_no, parc.distance)
         data2.append(parc.distance)
 
     sorted(data2)
-    # print('distance 2', data2[:10])
+    print('distance 2', data2[:10])
 
     return HttpResponse(pol, content_type='json')
 

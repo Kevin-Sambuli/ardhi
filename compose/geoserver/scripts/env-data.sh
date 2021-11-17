@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source /scripts/functions.sh
+
 if [ -z ${ENABLE_JSONP} ]; then
     ENABLE_JSONP=true
 fi
@@ -10,6 +12,10 @@ fi
 
 if [ -z ${OPTIMIZE_LINE_WIDTH} ]; then
   OPTIMIZE_LINE_WIDTH=false
+fi
+
+if [ -z ${DISK_QUOTA_SIZE} ]; then
+  DISK_QUOTA_SIZE=20
 fi
 
 if [ -z ${SSL} ]; then
@@ -30,6 +36,10 @@ fi
 
 if [ -z ${HTTP_PROXY_PORT} ]; then
   HTTP_PROXY_PORT=
+fi
+
+if [ -z ${HTTP_SCHEME} ]; then
+  HTTP_SCHEME=http
 fi
 
 if [ -z ${HTTP_REDIRECT_PORT} ]; then
@@ -64,6 +74,7 @@ if [ -z ${JKS_FILE} ]; then
   JKS_FILE=letsencrypt.jks
 fi
 
+file_env 'JKS_KEY_PASSWORD'
 if [ -z ${JKS_KEY_PASSWORD} ]; then
   JKS_KEY_PASSWORD='geoserver'
 fi
@@ -72,6 +83,7 @@ if [ -z ${KEY_ALIAS} ]; then
   KEY_ALIAS=letsencrypt
 fi
 
+file_env 'JKS_STORE_PASSWORD'
 if [ -z ${JKS_STORE_PASSWORD} ]; then
     JKS_STORE_PASSWORD='geoserver'
 fi
@@ -80,10 +92,10 @@ if [ -z ${P12_FILE} ]; then
     P12_FILE=letsencrypt.p12
 fi
 
+file_env 'PKCS12_PASSWORD'
 if [ -z ${PKCS12_PASSWORD} ]; then
     PKCS12_PASSWORD='geoserver'
 fi
-
 
 if [ -z ${GEOSERVER_CSRF_DISABLED} ]; then
     GEOSERVER_CSRF_DISABLED=true
@@ -117,13 +129,6 @@ if [ -z ${READONLY} ]; then
     READONLY=disabled
 fi
 
-if [ -z ${RANDOMSTRING} ]; then
-    RANDOMSTRING=23bd87cfa327d47e
-fi
-
-if [ -z ${INSTANCE_STRING} ]; then
-    INSTANCE_STRING=ac3bcba2fa7d989678a01ef4facc4173010cd8b40d2e5f5a8d18d5f863ca976f
-fi
 
 if [ -z ${TOGGLE_MASTER} ]; then
     TOGGLE_MASTER=true
@@ -145,12 +150,16 @@ if [ -z ${LOGIN_STATUS} ]; then
     LOGIN_STATUS=on
 fi
 
-if [ -z ${WEB_INTERFACE} ]; then
-    WEB_INTERFACE=false
+if [ -z ${DISABLE_WEB_INTERFACE} ]; then
+    DISABLE_WEB_INTERFACE=false
 fi
 
 if [ -z ${RECREATE_DATADIR} ]; then
     RECREATE_DATADIR=false
+fi
+
+if [ -z ${RESET_ADMIN_CREDENTIALS} ]; then
+  RESET_ADMIN_CREDENTIALS=false
 fi
 
 if [ -z ${INITIAL_MEMORY} ]; then
@@ -169,8 +178,8 @@ if [ -z ${REQUEST_TIMEOUT} ]; then
     REQUEST_TIMEOUT=60
 fi
 
-if [ -z ${PARARELL_REQUEST} ]; then
-    PARARELL_REQUEST=100
+if [ -z ${PARALLEL_REQUEST} ]; then
+    PARALLEL_REQUEST=100
 fi
 
 if [ -z ${GETMAP} ]; then
@@ -197,10 +206,12 @@ if [ -z ${S3_SERVER_URL} ]; then
     S3_SERVER_URL=''
 fi
 
+file_env 'S3_USERNAME'
 if [ -z ${S3_USERNAME} ]; then
     S3_USERNAME=''
 fi
 
+file_env 'S3_PASSWORD'
 if [ -z ${S3_PASSWORD} ]; then
     S3_PASSWORD=''
 fi
@@ -213,20 +224,40 @@ if [ -z ${GEOSERVER_FILEBROWSER_HIDEFS} ]; then
     GEOSERVER_FILEBROWSER_HIDEFS=false
 fi
 
-if [ -z ${TOMCAT_PASSWORD} ]; then
-    TOMCAT_PASSWORD='tomcat'
+if [ -z ${PROXY_BASE_URL_PARAMETRIZATION} ]; then
+    PROXY_BASE_URL_PARAMETRIZATION=false
 fi
 
+if [ -z ${GEOSERVER_LOG_LEVEL} ]; then
+    GEOSERVER_LOG_LEVEL=DEFAULT_LOGGING
+fi
+
+
+if [ -z ${ACTIVATE_ALL_COMMUNITY_EXTENTIONS} ]; then
+    ACTIVATE_ALL_COMMUNITY_EXTENTIONS=FALSE
+fi
+
+if [ -z ${ACTIVATE_ALL_STABLE_EXTENTIONS} ]; then
+    ACTIVATE_ALL_STABLE_EXTENTIONS=FALSE
+fi
+
+file_env 'TOMCAT_PASSWORD'
+
+
+file_env 'TOMCAT_USER'
 if [ -z ${TOMCAT_USER} ]; then
     TOMCAT_USER='tomcat'
 fi
 
-
+file_env 'GEOSERVER_ADMIN_USER'
 if [ -z ${GEOSERVER_ADMIN_USER} ]; then
     GEOSERVER_ADMIN_USER='admin'
 fi
 
-
+file_env 'GEOSERVER_ADMIN_PASSWORD'
+# if [ -z ${GEOSERVER_ADMIN_PASSWORD} ]; then
+#     GEOSERVER_ADMIN_PASSWORD='geoserver'
+# fi
 
 if [ -z ${CSRF_WHITELIST} ]; then
     CSRF_WHITELIST=
@@ -238,4 +269,12 @@ fi
 
 if [ -z ${CSRF_WHITELIST} ]; then
     CSRF_WHITELIST=
+fi
+
+if [ -z ${POSTGRES_JNDI} ]; then
+    POSTGRES_JNDI=FALSE
+fi
+
+if [ -z ${SSL_MODE} ]; then
+    SSL_MODE=disable
 fi

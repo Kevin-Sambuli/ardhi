@@ -4,13 +4,10 @@ LABEL maintainer=kevoh
 LABEL description="Web based geodjango Land Information application"
 
 # set environment variables Prevents Python from writing .pyc files to disc
-ENV PYTHONDONTWRITEBYTECODE 1 
-# Prevents Python from buffering stdout and stderr
-ENV PYTHONUNBUFFERED 1
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1 #Prevents Python from buffering stdout and stderr
 
 RUN apt-get update && apt-get upgrade -y
-
-
 
 # install psycopg2 dependencies
 RUN apt-get update \

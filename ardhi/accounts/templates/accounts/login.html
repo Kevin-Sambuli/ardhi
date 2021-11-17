@@ -4,33 +4,38 @@
 {% load crispy_forms_tags  crispy_forms_filters %}
 {% load static %}
 
-
 {% block stylesheet %}
 
 {% endblock %}
 
 
 {% block content %}
-    <div class="col-md-6 offset-md-3" style="background-color: #5a6268">
-        <center>
-            <form action="{% url 'login' %}" class="login_form" method="post" autocomplete="off">
-                {% csrf_token %}
-                <div class="form-group" style="max-width:470px; align-content: center">
-                    <h2 class="text-center">Login</h2>
-                    <p>{{ login_form| crispy}}</p>
-
-                    <div style="max-width:470px;">
-                        <button style="border:0px; background-color:#4285F4; margin-top:8%;height:35px; width:80%;"
-                                type="submit" value="Login"> <strong>Login</strong>
-                        </button>
+<div class="cover">
+    <div class="container">
+        <div class="row mt-5 pt-3">
+            <div class="col-md-5 offset-md-6">
+                <div class="card my-3 shadow">
+                    <div class="card-body">
+                        <h4>Login Page</h4>
+                        <hr>
+                        <form class="login-form" method="POST" autocomplete="off">
+                            {% csrf_token %}
+                            {{ login_form|crispy }}
+                            <input class="btn btn-primary btn-block" type="submit" value="Login">
+                        </form>
+                        <hr>
+                        <div class="text-center my-3">
+                            <a href="{% url 'password_reset' %}">Forget Password</a>
+                        </div>
+                        <hr>
+                        <div class="text-center">
+                            <a class="btn btn-success" href="{% url 'register' %}">Create An Account</a>
+                        </div>
                     </div>
                 </div>
-
-            </form>
-        </center>
+            </div>
+        </div>
     </div>
-
-    <div class="d-flex flex-column md-5">
-        <a class="m-auto" href="{% url 'password_reset' %}">Reset password</a>
-    </div>
+</div>
 {% endblock %}
+

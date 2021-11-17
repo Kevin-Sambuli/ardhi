@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
 from rest_framework.authtoken.models import Token
 from django.db.models.signals import post_save
 from django.core.mail import send_mail
@@ -37,8 +37,8 @@ class UserManager(BaseUserManager):
             first_name=first_name,
             last_name=last_name,
         )
-
         user.is_admin = True
+        user.is_active = True
         user.is_staff = True
         user.is_superuser = True
         user.save(using=self._db)
@@ -55,7 +55,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     # permissions
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
     is_admin = models.BooleanField('admin', default=False)
-    is_active = models.BooleanField('active', default=True)
+    is_active = models.BooleanField('active', default=False)
     is_staff = models.BooleanField('staff', default=False)
     is_superuser = models.BooleanField('superuser', default=False)
 
@@ -89,11 +89,11 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def has_module_perms(self, app_label):
         return True
 
-    def email_user(self):
+    def email_user(self, subject, message):
         """Sends an email to this User. """
-        message = f"""Hi {self.first_name}{self.last_name}, You have successfully been Registered to Ardhi Land
-                  Information System. Please find the attached certificate of registration. """
-        subject = "Ardhi LIS Registration"
+        # message = f"""Hi {self.first_name}{self.last_name}, You have successfully been Registered to Ardhi Land
+        #           Information System. Please find the attached certificate of registration. """
+        # subject = "Ardhi LIS Registration"
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email], fail_silently=False)
 
 

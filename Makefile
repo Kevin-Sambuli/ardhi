@@ -4,8 +4,7 @@ ifneq (,$(wildcard .env))
    ENV_FILE_PARAM = --env-file .env
 endif
 
-build:
-# 	docker-compose  up --build --remove-orphans
+build:# 	docker-compose  up --build --remove-orphans
 	docker-compose -f docker-compose.yml down -v
 	docker-compose up --build
 	docker-compose -f docker-compose.yml up -d --build --remove-orphans

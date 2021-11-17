@@ -12,9 +12,6 @@ services:
              python manage.py migrate &&
              python manage.py collectstatic --noinput --clear &&
              gunicorn ardhi.wsgi:application --bind 0.0.0.0:8000"
-  #          python manage.py runserver 0.0.0.0:8000"
-
-            
     volumes:
       - ./ardhi:/home/app/web
       - static_volume:/home/app/web/static
@@ -25,7 +22,7 @@ services:
       - 8000
     environment:
       - DEBUG=${DEBUG}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+#      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - PG_DB_HOST=${PG_DB_HOST}
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASS=${PG_PASS}
@@ -50,13 +47,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
-#    env_file:
-#      - ./ardhi/.env
     environment:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASS=${PG_PASS}
       - POSTGRES_DB=${PG_NAME}
-      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting,
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting
     networks:
       # - back-end
       - land_app
@@ -66,17 +61,15 @@ services:
     image: dpage/pgadmin4
     hostname: pgadmin
     restart: unless-stopped
-    env_file:
-      - ./ardhi/.env
+#    env_file:
+#      - ./ardhi/.env
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     ports:
       - "5050:80"
-
-#    volumes:
-#      - pgadmin:/root/.pgadmin
-#
+    volumes:
+      - pgadmin:/root/.pgadmin
     depends_on:
       - postgres-db
     networks:
@@ -88,13 +81,13 @@ services:
       context: ./compose/geoserver
       dockerfile: Dockerfile
       args:
-        args:
-          IMAGE_VERSION:${IMAGE_VERSION}
-          JAVA_HOME:${JAVA_HOME}
-          GS_VERSION:${GS_VERSION}
-          WAR_URL:${WAR_URL}
-          ACTIVATE_ALL_STABLE_EXTENTIONS:${ACTIVATE_ALL_STABLE_EXTENTIONS}
-          ACTIVATE_ALL_COMMUNITY_EXTENTIONS:${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
+        IMAGE_VERSION: ${IMAGE_VERSION}
+        JAVA_HOME: ${JAVA_HOME}
+        GS_VERSION: ${GS_VERSION}
+        WAR_URL: ${WAR_URL}
+#        STABLE_PLUGIN_URL: ${STABLE_PLUGIN_URL}
+        DOWNLOAD_ALL_STABLE_EXTENTIONS: ${DOWNLOAD_ALL_STABLE_EXTENTIONS}
+        DOWNLOAD_ALL_COMMUNITY_EXTENTIONS: ${DOWNLOAD_ALL_COMMUNITY_EXTENTIONS}
     container_name: geoserver
     hostname: geoserver
     volumes:
@@ -104,15 +97,15 @@ services:
       - "8600:8080"
     restart: on-failure
     depends_on:
-      - postgres-db 
+      - postgres-db
     networks:
       - land_app
     environment:
-#       - DB_BACKEND=${DB_BACKEND}
-#       - POSTGRES_PORT=${PG_PORT}
-#       - POSTGRES_USER=${POSTGRES_USER}
-#       - POSTGRES_PASS=${POSTGRES_PASS}
-#       - POSTGRES_DB=${POSTGRES_DB}
+       - DB_BACKEND=${DB_BACKEND}
+       - POSTGRES_PORT=${PG_PORT}
+       - POSTGRES_USER=${PG_USER}
+       - POSTGRES_PASS=${PG_PASS}
+       - POSTGRES_DB=${PG_NAME}
        - GEOSERVER_DATA_DIR=${GEOSERVER_DATA_DIR}
        - GEOWEBCACHE_CACHE_DIR=${GEOWEBCACHE_CACHE_DIR}
        - GEOSERVER_ADMIN_PASSWORD=${GEOSERVER_ADMIN_PASSWORD}
@@ -120,8 +113,7 @@ services:
        - INITIAL_MEMORY=${INITIAL_MEMORY}
        - MAXIMUM_MEMORY=${MAXIMUM_MEMORY}
        - RECREATE_DATADIR=${RECREATE_DATADIR}
-       - ACTIVATE_ALL_STABLE_EXTENTIONS:${ACTIVATE_ALL_STABLE_EXTENTIONS}
-       - ACTIVATE_ALL_COMMUNITY_EXTENTIONS:${ACTIVATE_ALL_COMMUNITY_EXTENTIONS}
+       - STABLE_EXTENSIONS=${STABLE_EXTENSIONS}
 
   redis:
     restart: unless-stopped
@@ -151,7 +143,7 @@ services:
       - POSTGRES_USER=${PG_USER}
       - POSTGRES_PASS=${PG_PASS}
       - POSTGRES_DB=${PG_NAME}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+#      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
     #   # - CELERY_BROKER=${CELERY_BROKER}
     #   # - CELERY_BACKEND=${CELERY_BACKEND}
     depends_on:
@@ -199,7 +191,7 @@ volumes:
   media_volume:
   redisdata:
   geoserver_data:
-#  pgadmin:
+  pgadmin:
 
 
 

@@ -33,8 +33,8 @@ def lipa_na_mpesa_online(request):
         "PartyB": LipanaMpesaPassword.Business_short_code,
         "PhoneNumber": 254729759023,  # replace with your phone number to get stk push
         "CallBackURL": "https://sandbox.safaricom.co.ke/mpesa/",
-        "AccountReference": "Kevin Sambuli",
-        "TransactionDesc": "Testing stk push"
+        "AccountReference": "kevin Sambuli",
+        "TransactionDesc": "Repaying Ourselves"
     }
 
     response = requests.post(api_url, json=request, headers=headers)

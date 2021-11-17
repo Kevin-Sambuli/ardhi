@@ -3,45 +3,69 @@
 {% block title %}Registration{% endblock title %}
 
 {% block content %}
-    <div class="col-md-6 offset-md-3">
-        <form class="registration_form" method="post" autocomplete="off">
-            {% csrf_token %}
-            <div style = "max-width:470px;">
-                <h1 class="h3 mb-3 text-center font-weight-normal">Account Registration</h1>
-
-                {% for field in registration_form %}
-                    <p>
-                        {{ field.label_tag }}
-                        {{ field }}
-
-                        {% if field.help_text %}
-                            <small style="color: grey;">{{ field.help_text }}</small>
-                        {% endif %}
-
-                        {% for error in field.errors %}
-                            <p style="color: red;">{{ error }}</p>
-                        {% endfor %}
-                    </p>
-                {% endfor %}
-
-                {% if registration_form.non_field_errors %}
-                    <div style="color: red">
-                        <p>{{ registration_form.non_field_errors }}</p>
+    <div class="cover">
+        <div class="container ">
+            <div class="row mt-5 pt-3">
+                <div class="col-md-5 offset-md-6">
+                    <div class="card my-3 shadow">
+                        <div class="card-body">
+                            <h4 class="h3 mb-3 text-center font-weight-bold">Account Registration</h4>
+                            <hr>
+                            <form class="registration_form" method="POST" autocomplete="off">
+                                {% csrf_token %}
+                                {{ registration_form |crispy }}
+                                <input class="btn btn-primary btn-block" type="submit" value="Sign Up">
+                            </form>
+                        </div>
                     </div>
-
-                {% endif %}
-                <div style = "max-width:470px;">
-                    <center>
-
-                       <button style = "border:0px; background-color:#4285F4; margin-top:8%;
-                          height:35px; width:80%;" type = "submit"
-                          value = "Login" >
-                          <strong>Register</strong>
-                       </button>
-
-                    </center>
                 </div>
             </div>
-        </form>
+        </div>
     </div>
 {% endblock content %}
+
+
+
+<!--    <div class="col-md-6 offset-md-3">-->
+<!--        <form class="registration_form" method="post" autocomplete="off">-->
+<!--            {% csrf_token %}-->
+<!--            <div style = "max-width:470px;">-->
+<!--                <h1 class="h3 mb-3 text-center font-weight-normal">Account Registration</h1>-->
+
+<!--                {% for field in registration_form %}-->
+<!--                    <p>-->
+<!--                        {{ field.label_tag }}-->
+<!--                        {{ field }}-->
+
+<!--                        {% if field.help_text %}-->
+<!--                            <small style="color: grey;">{{ field.help_text }}</small>-->
+<!--                        {% endif %}-->
+
+<!--                        {% for error in field.errors %}-->
+<!--                            <p style="color: red;">{{ error }}</p>-->
+<!--                        {% endfor %}-->
+<!--                    </p>-->
+<!--                {% endfor %}-->
+
+<!--                {% if registration_form.non_field_errors %}-->
+<!--                    <div style="color: red">-->
+<!--                        <p>{{ registration_form.non_field_errors }}</p>-->
+<!--                    </div>-->
+
+<!--                {% endif %}-->
+<!--                <div style = "max-width:470px;">-->
+<!--                    <center>-->
+
+<!--                       <button style = "border:0px; background-color:#4285F4; margin-top:8%;-->
+<!--                          height:35px; width:80%;" type = "submit"-->
+<!--                          value = "Login" >-->
+<!--                          <strong>Register</strong>-->
+<!--                       </button>-->
+
+<!--                    </center>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </form>-->
+<!--    </div>-->
+
+
