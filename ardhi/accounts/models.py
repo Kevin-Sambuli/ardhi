@@ -1,56 +1,31 @@
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin, Group, Permission
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Group, Permission
+from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
 from django.db.models.signals import post_save
 from django.core.mail import send_mail
 from django.dispatch import receiver
 from django.conf import settings
-from django.db import models
+from django.db.models import Q
 import geocoder
 
-
-class UserManager(BaseUserManager):
-    use_in_migrations = True
-
-    def create_user(self, email, username, first_name, last_name, password=None):
-        if not email:
-            raise ValueError('Please provide a valid email')
-        if not username:
-            raise ValueError('Please provide a username')
-        if not first_name:
-            raise ValueError('Provide your first Name')
-        if not last_name:
-            raise ValueError('Provide your last Name')
-
-        user = self.model(
-            email=self.normalize_email(email), username=username, first_name=first_name,
-            last_name=last_name)
-
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, first_name, last_name, username, password):
-        user = self.create_user(
-            email=self.normalize_email(email),
-            username=username,
-            password=password,
-            first_name=first_name,
-            last_name=last_name,
-        )
-        user.is_admin = True
-        user.is_active = True
-        user.is_staff = True
-        user.is_superuser = True
-        user.save(using=self._db)
-        return user
+from django.db import models
+from .managers import UserManager, LandownerManager, AgentManager, SurveyorManager, ManagerManager
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
+    class Types(models.TextChoices):
+        LANDOWNER = "landowner", "LANDOWNER"
+        AGENT = "agent", "AGENT"
+        SURVEYOR = "surveyor", "SURVEYOR"
+        MANAGER = "manager", "MANAGER"
+
     first_name = models.CharField('First Name', max_length=30)
     last_name = models.CharField('Last Name', max_length=30)
     email = models.EmailField(verbose_name='Email', blank=False, max_length=100, unique=True)
     username = models.CharField('Username', max_length=30, unique=True)
+    type = models.CharField(_('Type'), max_length=30, choices=Types.choices, default=Types.LANDOWNER)
     date_joined = models.DateTimeField('Date Joined', auto_now_add=True)
+    # types = MultiSelectField(choices=Types.choices, default=[], null=True, blank=True)
 
     # permissions
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)
@@ -78,7 +53,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
     def get_full_name(self):
         """ Returns the first_name plus the last_name, with a space in between. """
         full_name = '%s %s' % (self.first_name, self.last_name)
-        # full_name= str(full_name.title)
         return full_name.strip()
 
     # For checking permissions. to keep it simple all admin have ALL permissions
@@ -91,27 +65,95 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     def email_user(self, subject, message):
         """Sends an email to this User. """
-        # message = f"""Hi {self.first_name}{self.last_name}, You have successfully been Registered to Ardhi Land
-        #           Information System. Please find the attached certificate of registration. """
-        # subject = "Ardhi LIS Registration"
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email], fail_silently=False)
 
 
-# @receiver(post_save, sender=settings.AUTH_USER_MODEL)
-# def create_auth_token(sender, instance=None, created=False, **kwargs):
-#     if created:
-#         Token.objects.create(user=instance)
+# class CustomerAdditional(models.Model):
+#     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+#     address = models.CharField(max_length=1000)
+#
+#
+# class SellerAdditional(models.Model):
+#     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+#     gst = models.CharField(max_length=10)
+#     warehouse_location = models.CharField(max_length=1000)
 
 
-# @receiver(post_save, sender=Account)
-# def create_user_profile(sender, instance, created, **kwargs):
-#     if created:
-#         Account.objects.create(user=instance)
+# # Proxy Models. They do not create a seperate table
+class Landowner(Account):
+    default_type = Account.Types.LANDOWNER
+    objects = LandownerManager()
+
+    class Meta:
+        proxy = True
+        permissions = (
+            ('can_manage_account', 'can manage account'),
+        )
+
+    def sell(self):
+        print("I can sell")
+
+    @property
+    def showAdditional(self):
+        return self.selleradditional
 
 
-# @receiver(post_save, sender=Account)
-# def save_user_profile(sender, instance, **kwargs):
-#     instance.account.save()
+class Agent(Account):
+    default_type = Account.Types.AGENT
+    objects = AgentManager()
+
+    class Meta:
+        proxy = True
+        permissions = (
+            ('agent_landowners', 'can agent landowners'),
+            ('agent_surveyors', 'can agent surveyors'),
+        )
+
+    def sell(self):
+        print("I can sell")
+
+    @property
+    def showAdditional(self):
+        return self.selleradditional
+
+
+class Surveyor(Account):
+    default_type = Account.Types.SURVEYOR
+
+    objects = SurveyorManager()
+
+    class Meta:
+        proxy = True
+        permissions = (
+            ('can_process_survey', 'can process survey'),
+        )
+
+    def sell(self):
+        print("I can sell")
+
+    @property
+    def showAdditional(self):
+        return self.selleradditional
+
+
+class Manager(Account):
+    default_type = Account.Types.MANAGER
+    objects = ManagerManager()
+
+    class Meta:
+        proxy = True
+        permissions = (
+            ('can_manage_landowners', 'can manage landowners'),
+            ('can_manage_agents', 'can manage agents'),
+            ('can_manage_surveyors', 'can manage surveyors'),
+        )
+
+    def sell(self):
+        print("I can sell")
+
+    @property
+    def showAdditional(self):
+        return self.selleradditional
 
 
 def get_profile_image_filepath(self, filename):
@@ -129,18 +171,18 @@ class Profile(models.Model):
         (MALE, 'Male'),
         (FEMALE, 'Female')
     ]
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
-                              null=True, default=None)
+    owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
+                                 null=True, default=None)
     gender = models.CharField('Gender', max_length=5, choices=GENDER)
     kra_pin = models.CharField('KRA PIN', max_length=20, unique=True, null=True, blank=False)
-    id_no = models.CharField('ID NO', max_length=10, unique=True, blank=False, null=True,)
+    id_no = models.CharField('ID NO', max_length=10, unique=True, blank=False, null=True, )
     dob = models.DateField('Date of Birth', blank=False, null=True)
     phone = models.CharField('Contact Phone', max_length=10, null=True, blank=True, unique=True)
     profile_image = models.ImageField("Profile Image", max_length=255, upload_to='profile_images', null=True,
                                       blank=True, default=get_default_profile_image)
     ip = models.CharField("Ip Address", max_length=20, null=True, blank=True, )
     latitude = models.DecimalField("Latitude", max_digits=10, decimal_places=6, null=True, blank=True, )
-    longitude = models.DecimalField("Longitude", max_digits=10, decimal_places=6, null=True, blank=True,)
+    longitude = models.DecimalField("Longitude", max_digits=10, decimal_places=6, null=True, blank=True, )
 
     class Meta:
         db_table = 'profile'
@@ -149,7 +191,6 @@ class Profile(models.Model):
 
     def __str__(self):
         return '{}'.format(self.ip)
-
 
     def baby_boomer_status(self):
         """Returns the person's baby-boomer status."""

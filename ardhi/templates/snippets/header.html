@@ -1,83 +1,54 @@
-<style type="text/css">
-    @media (min-width: 768px) {
-        html {
-            font-size: 16px;
-        }
-    }
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="main-navbar">
+    <div class="container">
+<!--        <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'img/in-logo-1.svg' %}" alt="DJango"></a>-->
+<!--        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"-->
+<!--                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">-->
+<!--            <span class="navbar-toggler-icon"></span>-->
+<!--        </button>-->
 
-    form {
-        width: 100%;
-    }
-</style>
-
-
-<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom shadow-sm">
-    <h5 class="my-0 mr-md-auto font-weight-normal">
-        {% if request.user.is_authenticated %}
-            <p class="m-auto">Welcome, {{ request.user.username.title }}</p>
-        {% endif %}
-    </h5>
-
-    <nav class="my-2 my-md-0 mr-md-3" style="position: sticky">
-        {% if request.user.is_authenticated %}
-            <a class="p-2 text-dark" href="{% url 'home' %}">Home</a>
-            <a class="p-2 text-dark" href="{% url 'edit_account' %}">Account</a>
-            <a class="p-2 text-dark" href="{% url 'update_password' %}">Password</a>
-            <a class="p-2 text-dark" href="{% url 'rundamap' %}">Parcels</a>
-            <a class="p-2 text-dark" href="{% url 'map' %}">Map</a>
-            <a class="p-2 text-dark" href="{% url 'search' %}">Search</a>
-            <a class="p-2 text-dark" href="{% url 'profile' %}">Profile</a>
-
-            <a class="p-2 text-dark" href="{% url 'logout' %}">Logout</a>
-        {% else %}
-            <div class="search_button">
-                <a href="{% url 'home' %}">
-                    <i class="ti-search"></i>
-                </a>
+        <div class="col-xl-3 col-lg-2">
+            <div class="logo">
+                <a href="{% url 'home' %}"><img src="{% static 'img/logo.png' %}" alt=""></a>
             </div>
-            <a class="p-2 text-dark" href="{% url 'home' %}">Home</a>
-            <a class="p-2 text-dark" href="{% url 'parcels' %}">Parcels</a>
-            <a class="p-2 text-dark" href="{% url 'search' %}">Search</a>
-            <a class="p-2 text-dark" href="{% url 'login' %}">Login</a>
-            <a class="btn btn-outline-primary" href="{% url 'register' %}">Register</a>
-        {% endif %}
-    </nav>
-</div>
+        </div>
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <div class="navbar-nav">
+                {% if request.user.is_authenticated %}
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    <a class="nav-link" href="{% url 'edit_account' %}">Account</a>
+                    <a class="nav-link" href="{% url 'update_password' %}">Password</a>
+                    <a class="nav-link" href="{% url 'rundamap' %}">Parcels</a>
+                    <a class="nav-link" href="{% url 'map' %}">Map</a>
+                    <a class="nav-link" href="{% url 'search' %}">Search</a>
+                    <form class="d-flex" id="authstyle">
+                        <a href="{% url 'profile' %}" class="btn" style="color: white; background-color: green;"
+                           type="submit" id="header-links"> Profile </a>
+                        <a href="{% url 'logout' %}" class="btn" style="color: white; background-color: green;"
+                           type="submit" id="header-links"> Logout </a>
+                    </form>
+                {% else %}
+                    <div class="search_button">
+                        <a href="{% url 'home' %}">
+                            <i class="ti-search"></i>
+                        </a>
+                    </div>
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    <a class="nav-link" href="{% url 'parcels' %}">Parcels</a>
+                    <a class="nav-link" href="{% url 'search' %}">Search</a>
+                    <form class="d-flex" id="authstyle">
+                        <a href="{% url 'register' %}" class="btn" style="color: white; background-color: green;"
+                           type="submit" id="header-links">Register</a>
+                        <a href="{% url 'login' %}" class="btn"
+                           style="color: white; background-color: green; margin-left: 10px; " type="submit"
+                           id="header-links">Login</a>
+                    </form>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+</nav>
 
 <hr>
 
-<!-- End Header -->
-
-<script type="text/javascript">
-    document.getElementById("id_q").value = "{{query}}"
-</script>
-
-
-<!--<nav class="navbar navbar-expand-lg navbar-dark bg-dark my-2 my-md-0 mr-md-3">-->
-<!--  <div class="container-fluid">-->
-<!--    <a class="navbar-brand" href="{% url 'home' %}">Ardhi</a>-->
-<!--    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">-->
-<!--      <span class="navbar-toggler-icon"></span>-->
-<!--    </button>-->
-
-<!--    <div class="collapse navbar-collapse" id="navbarSupportedContent">-->
-<!--      <ul class="navbar-nav me-auto mb-2 mb-lg-0">-->
-<!--        <li class="nav-item">-->
-<!--          <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>-->
-<!--        </li>-->
-<!--        <li class="nav-item">-->
-<!--          <a class="nav-link active" href="{% url 'map' %}">Map</a>-->
-<!--        </li>-->
-<!--      </ul>-->
-<!--      <form class="d-flex">-->
-<!--        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">-->
-<!--        <button class="btn btn-outline-success" type="submit">Search</button>-->
-<!--      </form>-->
-<!--        <h5 class="my-0 mr-md-auto font-weight-normal align-right">-->
-<!--        {% if request.user.is_authenticated %}-->
-<!--            <p class="m-auto">{{ request.user.username.title }}</p>-->
-<!--        {% endif %}-->
-<!--    </h5>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</nav>-->

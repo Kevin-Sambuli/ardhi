@@ -208,3 +208,104 @@ sql = f"ALTER ROLE {username} SET search_path TO public;"
 cmd = f'psql --dbname {dbname} --command "{sql}"'
 print(cmd)
 os.system(cmd)
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Secured layer access - Krishna Lodha</title>
+    <link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
+    <!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+    <script src="https://cdn.polyfill.io/v2/polyfill.min.js?  features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+    <script src="https://openlayers.org/en/v4.6.5/build/ol.js"></script>
+  </head>
+  <body>
+    <div id="map" class="map"></div>
+    <div id="info">&nbsp;</div>
+    <script>
+    (function(open) {
+    XMLHttpRequest.prototype.open = function() {
+        var method = arguments[0].toLowerCase();
+        var url = arguments[1];
+        if(url == undefined) {
+            console.log(arguments)
+        }
+        if((method === 'get' || method ==='post') ) {
+            this.withCredentials = true;
+            open.apply(this, arguments);
+            this.setRequestHeader("Authorization", "Basic "+btoa(user+":"+pwd));
+        } else {
+            open.apply(this, arguments);
+        }
+    };
+})(XMLHttpRequest.prototype.open);
+var user = 'gov' //geoserver username
+var pwd = 'geoserver'//geoserver password
+function xhrTileLoadFunction(tile, src) {
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "arraybuffer";
+    xhr.onload = function() {
+        var arrayBufferView = new Uint8Array(this.response);
+        var blob = new Blob([arrayBufferView], { type: 'image/png' });
+        var urlCreator = window.URL || window.webkitURL;
+        var imageUrl = urlCreator.createObjectURL(blob);
+        tile.getImage().src = imageUrl;
+    };
+    xhr.open("GET", src);
+    xhr.send();
+}
+
+      var wmsSource = new ol.source.TileWMS({
+        url: 'http://localhost:8080/geoserver/cite/wms',
+        params: {'LAYERS': 'cite:ne_10m_populated_places'},
+       tileLoadFunction: xhrTileLoadFunction,
+        serverType: 'geoserver',
+        crossOrigin: 'use-credentials'
+      });
+
+      var wmsLayer = new ol.layer.Tile({
+        source: wmsSource
+      });
+
+      var view = new ol.View({
+        projection:'EPSG:4326',
+        center: [71, 20],
+        zoom: 5
+      });
+
+      var map = new ol.Map({
+        layers: [new ol.layer.Tile({
+            source: new ol.source.OSM()
+          }),
+          wmsLayer],
+        target: 'map',
+        view: view
+      });
+
+    </script>
+  </body>
+</html>
+
+
+//on click info
+      map.on('singleclick', function(evt) {
+        var viewResolution = /** @type {number} */ (view.getResolution());
+        var url = wmsSource.getGetFeatureInfoUrl(
+            evt.coordinate, viewResolution, 'EPSG:4326',
+            {'INFO_FORMAT': 'application/json'});
+        if (url) {
+         fetch(url,{
+          headers: new Headers({
+     'Authorization': 'Basic '+btoa(user+":"+pwd),
+   }),
+         })
+         .then(res => res.json())
+         .then(data => console.log(data))
+        }
+      });

@@ -11,20 +11,20 @@ class AccountAdmin(UserAdmin):
     form = RegisterForm
     model = Account
 
-    list_display = ('email', 'username', 'date_joined', 'last_login', 'is_active', 'is_admin', 'is_staff')
+    list_display = ('email', 'username', 'date_joined', 'last_login', 'is_active', 'is_admin', 'is_staff','type')
     search_fields = ('email', 'username')
     readonly_fields = ('date_joined', 'last_login',)
     list_display_links = ('email',)
     filter_horizontal = ()
     list_per_page = 10
-    list_filter = ('is_staff', 'is_admin', 'is_superuser', 'is_active')
+    list_filter = ('is_staff', 'type','is_admin', 'is_superuser', 'is_active')
     fieldsets = (
         (_("Login Credentials"), {"fields": ("email", "password",)},),
 
         (_("Personal Information"), {"fields": ("username", "first_name", "last_name")},),
 
         (_("Permissions and Groups"),
-         {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions",)},),
+         {"fields": ("type","is_active", "is_staff", "is_superuser", "groups", "user_permissions",)},),
 
         (_("Important Dates"), {"fields": ("last_login", "date_joined",)},),)
 

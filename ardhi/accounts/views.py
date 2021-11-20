@@ -1,7 +1,7 @@
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from .forms import RegisterForm, LoginForm, AccountUpdateForm, AccountProfileForm
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.tokens import default_token_generator
@@ -19,6 +19,9 @@ from django.conf import settings
 from django.views import View
 import africastalking
 import datetime
+
+from django.contrib.auth.models import Group, Permission
+from django.contrib.contenttypes.models import ContentType
 
 username = "rundalis"
 api_key = "6fd1032dcebdbc0bf7d29d057238ee443ee8388e871aab6da7234f06ff8893bc"
@@ -53,20 +56,18 @@ class ActivateAccount(View):
             user.is_active = True
             user.save()
             # return redirect('login')
-
             login(request, user)
-            messages.success(request, 'Your account have been confirmed.')
 
-            messages.success(request, f"Hey {user.username.title}, You have successfully been Registered..")
+            messages.success(request, f"Hey {user.username.title()}, Your account have been confirmed..")
             subject = 'Runda LIS Registration.'
             message = f""" Hi {user.first_name} {user.last_name},Thank you for registering to our services. 
-            Please find the attached certificate of registration.
-            """
+            Please find the attached certificate of registration. """
+
             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [user.email], fail_silently=False, )
 
             return redirect('home')
         else:
-            messages.warning(request, 'The confirmation link was invalid, possibly because it has already been used.')
+            messages.warning(request, 'The confirmation link was invalid and the token has expired.')
             return redirect('home')
 
 
@@ -144,6 +145,23 @@ def profile_view(request, *args, **kwargs):
 
 def login_view(request):
     context = {}
+    new_group, created = Group.objects.get_or_create(name='managers')
+    group = Group.objects.get(name='managers')
+    model_name = 'manage'
+    all_perms_on_this_modal = Permission.objects.filter(codename__contains=model_name)
+    group.permissions.set(all_perms_on_this_modal)
+    print(all_perms_on_this_modal)
+    for permi in all_perms_on_this_modal:
+        print(permi)
+    from .models import Manager
+
+    # content_type = ContentType.objects.get_for_model(Manager)
+    # print(content_type)
+    # all_permissions = Permission.objects.filter(content_type=content_type)
+    # group.permissions.set(all_permissions)
+
+    # permissions_list = Permission.objects.all()
+    # group.permissions.set(all_perms_on_this_modal)
 
     user = request.user
     if user.is_authenticated:
@@ -179,6 +197,7 @@ def edit_account(request):
     if not request.user.is_authenticated:
         return redirect("login")
 
+    print(all_perms_on_this_modal)
     context = {}
     if request.POST:
         form = AccountUpdateForm(request.POST, instance=request.user)

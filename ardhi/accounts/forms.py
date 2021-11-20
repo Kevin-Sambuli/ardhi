@@ -6,13 +6,12 @@ from django.forms import widgets
 from django import forms
 
 
-
-
 class RegisterForm(UserCreationForm):
     first_name = forms.CharField(label="", max_length=100, widget=forms.TextInput())
     last_name = forms.CharField(label="", max_length=100, widget=forms.TextInput())
     username = forms.CharField(label="", max_length=100, widget=forms.TextInput())
     email = forms.EmailField(label="", max_length=100, widget=forms.TextInput())
+    type = forms.Select()
     password1 = forms.CharField(label='', widget=forms.PasswordInput())
     password2 = forms.CharField(label='', widget=forms.PasswordInput())
 
@@ -20,7 +19,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = Account
-        fields = ('first_name', 'last_name', 'email', 'username', 'password1', 'password2',)
+        fields = ('first_name', 'last_name', 'email', 'username', 'type', 'password1', 'password2',)
 
         # widgets = {
         #     'name': forms.TextInput(attrs={
