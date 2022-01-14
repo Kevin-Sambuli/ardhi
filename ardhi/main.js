@@ -160,7 +160,7 @@ var wfsLayer = L.Geoserver.wfs("http://localhost:8080/geoserver/wfs", {
         area = (turf.area(feature)/1000000).toFixed(2);
         // cent= turf.center(feature),
         // bbox= turf.BBOX(feature),
-        
+
         // lat = turf.center(feature).geometry.coordinates[1]
         // long = turf.center(feature).geometry.coordinates[0]
         layer.bindPopup('<h3 style="align-content: center">Parcel Details</h3>' +
@@ -499,5 +499,3 @@ var srsName= "epsg:4326";
 //         marker:'#000000',
 //         topojsonSrc: './world.json'
 //     });
-
-

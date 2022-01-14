@@ -1,8 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Account, Profile
+from .models import Account, Profile, Landowner, Manager, Agent
 from .forms import RegisterForm, AccountUpdateForm
 from django.utils.translation import gettext_lazy as _
+
+
+admin.site.register(Landowner)
+admin.site.register(Agent)
+admin.site.register(Manager)
 
 
 class AccountAdmin(UserAdmin):

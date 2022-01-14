@@ -17,6 +17,20 @@ import json, folium
 import os
 
 
+
+
+# INSERT INTO beer_sheva (the_geom, description, name) VALUES (
+#   ST_SetSRID(
+#     ST_GeomFromGeoJSON(
+#       '{"type":"Point","coordinates":[34.838848,31.296301]}'
+#     ),
+#   4326
+#   ),
+#   'Point 1',
+#   'Michael'
+# );
+
+
 # Survey.objects.filter(pk=survey.pk).update(active=True)
 # get_name = UserInfo.objects.filter(owner=user).update(username='your data')
 

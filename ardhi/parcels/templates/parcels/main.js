@@ -96,9 +96,9 @@ var baseMaps = {
 L.control.scale().addTo(map);
 
 // adding a marker
-let marker = L.marker([lat, lng ],{
+let marker1 = L.marker([lat, lng ],{
     draggable: true,
-    title: "marker",
+    title: "marker1",
     opacity: 0.8,
     }).addTo(map).bindPopup('My place');
 
@@ -119,7 +119,7 @@ let marker = L.marker([lat, lng ],{
 
 
 var overLays = {
-    "Marker": marker,
+    "Marker": marker1,
     // " geojson": geojson
     "Kenya": wms
 };

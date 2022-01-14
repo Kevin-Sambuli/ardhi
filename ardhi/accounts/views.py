@@ -29,6 +29,30 @@ africastalking.initialize(username, api_key)
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 
+# import gdal, geopandas
+
+
+from django.contrib.auth.models import Group
+# group = Group.objects.get(name='groupname')
+# user.groups.add(group)
+#
+# my_group = Group.objects.get(name='my_group_name')
+# my_group.user_set.add(your_user)
+
+
+# from django.contrib.auth.models import Group, Permission
+# from django.contrib.contenttypes.models import ContentType
+# from api.models import Project
+# new_group, created = Group.objects.get_or_create(name='new_group')
+# # Code to add permission to group ???
+# ct = ContentType.objects.get_for_model(Project)
+#
+# # Now what - Say I want to add 'Can add project' permission to new_group?
+# permission = Permission.objects.create(codename='can_add_project',
+#                                    name='Can add project',
+#                                    content_type=ct)
+# new_group.permissions.add(permission)
+
 
 # def activate(request, uidb64, token):
 #     try:
@@ -81,7 +105,7 @@ def registration_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.save()
+            # user.save()
 
             current_site = get_current_site(request)
             subject = 'Activate Your MySite Account'
@@ -191,6 +215,26 @@ def login_view(request):
         form = LoginForm()
     context['login_form'] = form
     return render(request, "accounts/login.html", context)
+
+
+
+# @login_required()
+# def user_deactivate(request, user_id):
+#     user = Account.objects.get(pk=user_id)
+#     user.is_active = False
+#     user.save()
+#     messages.success(request, "User account has been successfully deactivated!")
+#     return redirect('system_users')
+#
+#
+# @login_required()
+# def user_activate(request, user_id):
+#     user = Account.objects.get(pk=user_id)
+#     user.is_active = True
+#     user.save()
+#     messages.success(request, "User account has been successfully activated!")
+#     return redirect('system_users')
+
 
 
 def edit_account(request):

@@ -33,9 +33,9 @@
                 })
                 .then(function (data)
                  {
-                    L.geoJson(data,
+                   L.geoJson(data,
                         {
-                            onEachFeature: function onEachFeature(feature, layer)
+                             onEachFeature: function onEachFeature(feature, layer)
                             {
                                 layer.bindPopup('<h3 style="align-content: center">Parcel Details</h3>' +
                                     '<p>Owner: ' + feature.properties.owner + '</p> ' +
