@@ -99,7 +99,6 @@ var mapOptions = {
 
 //create the map object
 let map = L.map('map' , mapOptions);
-// map.zoomControl.setPosition('topleft');
 
 // Get Map's Center
 var centerBounds = map.getBounds().getCenter();
@@ -126,30 +125,6 @@ var wfsLayer = new L.featureGroup();
 var wfsLayerSearch = new L.featureGroup();
 var editableLayers = new L.FeatureGroup().addTo(map);
 map.addLayer(editableLayers);
-
-
-// var sidebar = L.control
-//   .sidebar({
-//     autopan: false,
-//     container: "sidebar",
-//     position: "right"
-//   })
-//   .addTo(map);
-
-// // Render Layer Control & Move to Sidebar
-// var layerControl = L.control
-//   .layers(basemaps, overLays, {
-//     position: "topright",
-//     collapsed: false
-//   })
-//   .addTo(map);
-
-// var oldLayerControl = layerControl.getContainer();
-// var newLayerControl = $("#layercontrol");
-// newLayerControl.append(oldLayerControl);
-// $(".leaflet-control-layers-list").prepend("<strong class='title'>Base Maps</strong><br>");
-// $(".leaflet-control-layers-separator").after("<br><strong class='title'>Layers</strong>");
-
 
 
 var MyCustomMarker = L.Icon.extend({
@@ -297,14 +272,13 @@ map.addEventListener("draw:created", function(e) {
 
     if (type === "polygon") {
         editableLayers.addLayer(layer);
+
         // creating a geojson from the coordinates
         editableLayers.eachLayer(function (layer){
             feature = layer.feature = layer.feature || {};
             feature.type = feature.type || "Feature";
 
             var area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
-            // console.log('area', area);
-            // e.layer.bindPopup((LGeo.area(e.layer) / 1000000).toFixed(2) + ' km<sup>2</sup>');
 
             var props = feature.properties = feature.properties || {};
             props.area = area;
@@ -317,8 +291,6 @@ map.addEventListener("draw:created", function(e) {
 
             console.log(editableLayers.toGeoJSON());
 
-            // let geojson = JSON.stringify(editableLayers.toGeoJSON());
-            //     // console.log(geojson);
             let geojson2 = JSON.stringify(layer.toGeoJSON().geometry);
             //  let geojson3= JSON.stringify(layer.toGeoJSON());
             //     console.log(geojson2);
@@ -342,11 +314,7 @@ map.addEventListener("draw:created", function(e) {
 
         });
 
-        // console.log("my array: ",layer.getLatLngs()[0]);
-
         var latlngs = layer.getLatLngs()[0];
-        // editableLayers.addLayer(layer);
-
 
         for (var i = 0; i < latlngs.length; i++) {
             coordinates.push([latlngs[i].lng, latlngs[i].lat])
@@ -355,67 +323,43 @@ map.addEventListener("draw:created", function(e) {
 
     if (type === "marker") {
         layer.bindPopup("LatLng: " + layer.getLatLng().lat + "," + layer.getLatLng().lng).openPopup();
+
+        editableLayers.addLayer(layer);
     }
-    editableLayers.addLayer(layer);
-
-    // layer.on("click", function (e) {
-    //     console.log("layer click");
-    //     console.log(e);
-    // });
-
-    // layer.on("touchstart", function (e) {
-    //     console.log("layer touchstart");
-    //     console.log(e);
-    // });
-
-    // editableLayers.on("click", function (e) {
-    //     console.log("editableLayers2 click");
-    //     console.log(e);
-    // });
-
-    // editableLayers.on("touchstart", function (e) {
-    //     console.log("editableLayers2 touchstart");
-    //     console.log(e);
-    // });
+    
 });
 
-// $("form").submit(function (e) {
-//         // preventing from page reload and default actions
-//         e.preventDefault();
-//         // serialize the data for sending the form data.
-//         var serializedData = $(this).serialize();
-//         // make POST ajax call
-//         $.ajax({
-//             type: 'POST',
-//             url: "{% url 'post_friend' %}",
-//             data: serializedData,
-            // success: function (response) {
-            //     // on successfull creating object
-            //     // 1. clear the form.
-            //     $("#friend-form").trigger('reset');
-            //     // 2. focus to nickname input
-            //     $("#id_nick_name").focus();
-            //
-            //     // display the newly friend to table.
-            //     var instance = JSON.parse(response["instance"]);
-            //     var fields = instance[0]["fields"];
-            //     $("#my_friends tbody").prepend(
-            //         `<tr>
-            //         <td>${fields["nick_name"]||""}</td>
-            //         <td>${fields["first_name"]||""}</td>
-            //         <td>${fields["last_name"]||""}</td>
-            //         <td>${fields["likes"]||""}</td>
-            //         <td>${fields["dob"]||""}</td>
-            //         <td>${fields["lives_in"]||""}</td>
-            //         </tr>`
-            //     )
-            // },
-    //         error: function (response) {
-    //             // alert the error if any error occured
-    //             alert(response["responseJSON"]["error"]);
-    //         }
-    //     })
-    // })
+$("form").submit(function (e) {
+        // preventing from page reload and default actions
+        e.preventDefault();
+        // serialize the data for sending the form data.
+        var serializedData = $(this).serialize();
+        // make POST ajax call
+        $.ajax({
+            type: 'POST',
+            url: "{% url 'post_parcels' %}",
+            data: serializedData,
+            success: function (response) {
+                // display the newly friend to table.
+                var instance = JSON.parse(response["instance"]);
+                var fields = instance[0]["fields"];
+                $("#my_friends tbody").prepend(
+                    `<tr>
+                    <td>${fields["nick_name"]||""}</td>
+                    <td>${fields["first_name"]||""}</td>
+                    <td>${fields["last_name"]||""}</td>
+                    <td>${fields["likes"]||""}</td>
+                    <td>${fields["dob"]||""}</td>
+                    <td>${fields["lives_in"]||""}</td>
+                    </tr>`
+                )
+            },
+            error: function (response) {
+                // alert the error if any error occured
+                alert(response["responseJSON"]["error"]);
+            }
+        })
+    })
 
 map.addEventListener("draw:editstart", function(e) {
     editableLayers.closePopup();

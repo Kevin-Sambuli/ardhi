@@ -28,6 +28,13 @@ class Parcels(models.Model):
     def __str__(self):
         return self.lr_no
 
+    # def save(self, *args, **kwargs):
+    #     # if geom ends up as a Polygon, make it into a MultiPolygon
+    #     if self.geom and isinstance(self.geom, geos.Polygon):
+    #         self.geom = geos.MultiPolygon(self.geom)
+    #
+    #     super(Parcels).save(*args, **kwargs)
+
     @property
     def popup_content(self):
         popup = "<span>Parcel ID   :  </span>{}".format(self.id)

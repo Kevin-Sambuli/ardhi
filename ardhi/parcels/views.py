@@ -14,10 +14,57 @@ from django.conf import settings
 from xhtml2pdf import pisa
 from .map import my_map
 import json, folium
-import os
+import os, json
+
+from django.contrib.gis.geos import fromstr, MultiPolygon,  GEOSGeometry
+
+""" upload shapefile in postgis"""
+# ogr2ogr -f “PostgreSQL” PG:”host=<hostname>  dbname=<dbname> user=<yourusername>
+# password=<yourpassword>” <dir>\yourdatafile.shp -lco SCHEMA=foo
+
+# shp2pgsql -s <SRID> -c -D -I <path to shapefile> <schema>.<table> |  psql -d <databasename> -h <hostname> -U <username>
+
+
+# p = Polygon()
+# # this seems to work correctly
+# mp = MultiPolygon(fromstr(str(p)),)
+#
+# model1.geom_field = mp
+#
+# model1.save()
+
+# polygonlist = [GEOSGeometry(json.dumps(feature["geometry"])) for feature in  payload["features"]]
+# mpoly = MultiPolygon(*polygonlist)
+# rows = SampleEntity.objects.filter(point__within=mpoly )
+
+# ALTER TABLE myapp_region
+#     ALTER COLUMN polygon TYPE geometry(MultiPolygon, 4326)
+#     USING ST_Multi(polygon);
+
+
+# operations = [
+#     migrations.RunSQL(
+#         "ALTER TABLE myapp_region ALTER COLUMN polygon type geometry(MultiPolygon, 4326) using ST_Multi(polygon);",
+#         state_operations=[
+#             migrations.AlterField(
+#                 model_name='region',
+#                 name='polygon',
+#                 field=django.contrib.gis.db.models.fields.MultiPolygonField(
+#                     srid=4326),
+#             ),
+#         ],
+#     )
+# ]
 
 
 
+# SELECT ST_AsText(ST_Multi(ST_GeomFromText('POLYGON((743238 2967416,743238 2967450,
+#         743265 2967450,743265.625 2967416,743238 2967416))')));
+#         st_astext
+#         --------------------------------------------------------------------------------------------------
+#         MULTIPOLYGON(((743238 2967416,743238 2967450,743265 2967450,743265.625 2967416,
+#         743238 2967416)))
+#         (1 row)
 
 # INSERT INTO beer_sheva (the_geom, description, name) VALUES (
 #   ST_SetSRID(
