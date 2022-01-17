@@ -12,11 +12,20 @@
 // });
 
 // $('.leaflet-prevent').on('click', L.DomEvent.stopPropagation);
-//  var pinToggler = True;
-
+// var pinToggler = true;
+//
 // $('.pin').on('click', function () {
 //    if(pinToggler){
-//    }
+//        map.on('click', function(e){
+//         var lat = e.latlng.lat;
+//         var lng = e.latlng.lng;
+//         var marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup('popup');
+//         marker.addTo(map)
+//     })
+//     pinToggler = !pinToggler;
+//     }else {
+//         map.off('click')
+//     }
 // })
 
 //function to fire up wfs keyword search
@@ -120,6 +129,14 @@ map.on("mousemove", function(e){
     $(".map-coordinate").html("Lat : " + e.latlng.lat + " Lng : " +e.latlng.lng);
 });
 
+var sidebar = L.control
+  .sidebar({
+    autopan: true,
+    container: "sidebar",
+    position: "right"
+  })
+  .addTo(map);
+
 
 
 var wfsLayer = new L.featureGroup();
@@ -189,8 +206,91 @@ var drawOptions = {
   }
 };
 
+
+$('.leaflet-prevent').on('click', L.DomEvent.stopPropagation);
+var pinToggler = true;
+
+// $('.pin').on('click', function () {
+//    if(pinToggler){
+//        var drawOptions = {
+//   position: "bottomleft",
+//   draw: {
+//     polyline:  {
+//         shapeOptions: {
+//             color: '#f357a1',
+//             weight: 10,
+//         }
+//     },
+//     // circle: true, // Turns off this drawing tool
+//     // rectangle: false,
+//     rectangle: {
+//         shapeOptions: {
+//             clickable: false
+//         }
+//     },
+//     marker: true,
+//     // marker: {icon: new MyCustomMarker()}
+//
+//     polygon: {
+//         shapeOptions: {
+//             stroke:true,
+//             color: '#f357a1',
+//             weight: 10,
+//             lineCap:'round',
+//             lineJoin:'round',
+//             opacity: 0.5,
+//             fill: true,
+//             fillColor: null,
+//             fillOpacity: 0.2,
+//             clickable: true
+//       },
+//       allowIntersection: false, // Restricts shapes to simple polygons
+//       drawError: {
+//         color: "#e1e100", // Color the shape will turn when intersects
+//         message: "<strong>Oh snap!<strong> you can't draw that!" // Message that will show when intersect
+//       },
+//         showArea:true,
+//         metric: false,
+//         repeatMode: false,
+//     }
+//   },
+//
+//   edit: {
+//     featureGroup: editableLayers, //REQUIRED!!
+//     remove: true,
+//     poly : {
+//       allowIntersection : false
+//     }
+//   }
+// };
+//        map.on('click', function(e){
+//         var drawControl = new L.Control.Draw(drawOptions);
+//             map.addControl(drawControl);
+//     })
+//     pinToggler = !pinToggler;
+//     } else {
+//        map.removeControl(drawControl);
+//         map.off('click')}
+//     }
+// })
+
+
 var drawControl = new L.Control.Draw(drawOptions);
+// map.removeControl(drawControl);
 map.addControl(drawControl);
+
+//Edit Button Clicked
+$('#pin').click(function(e) {
+    map.addControl(drawControl);
+  $(".leaflet-draw").fadeToggle("fast", "linear");
+  $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
+  // this.blur();
+  return true;
+});
+
+
+// var drawControl = new L.Control.Draw(drawOptions);
+// map.addControl(drawControl);
 
 // function to open up the pop up on draw end
 var popup = L.popup({

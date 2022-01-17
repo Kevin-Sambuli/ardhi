@@ -18,13 +18,16 @@ import os, json
 
 from django.contrib.gis.geos import fromstr, MultiPolygon,  GEOSGeometry
 
-""" upload shapefile in postgis"""
+# Blog.objects.get(name__iexact="beatles blog")
+# Would match a Blog titled "Beatles Blog", "beatles blog", or even "BeAtlES blOG"
+
+""" upload shapefile in postgis
 # ogr2ogr -f “PostgreSQL” PG:”host=<hostname>  dbname=<dbname> user=<yourusername>
 # password=<yourpassword>” <dir>\yourdatafile.shp -lco SCHEMA=foo
 
 # shp2pgsql -s <SRID> -c -D -I <path to shapefile> <schema>.<table> |  psql -d <databasename> -h <hostname> -U <username>
 
-
+"""
 # p = Polygon()
 # # this seems to work correctly
 # mp = MultiPolygon(fromstr(str(p)),)

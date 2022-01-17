@@ -3,17 +3,17 @@ from geo.Geoserver import Geoserver
 help(Geoserver)
 
 
-geo = Geoserver('http://127.0.0.1:8080/geoserver', username='admin', password='kevoh1995')
+geo = Geoserver('http://127.0.0.1:8080/geoserver', username='admin', password='geoserver')
 
-geo.create_workspace('demo2')
+geo.create_workspace('geoserver-rest')
 # geo.create_coveragestore(
 #     lyr_name='raster1', path=r'C:\Users\gic\Desktop\geoserver-rest\data\raster\raster1.tif', workspace='demo')
 #
-# geo.create_featurestore('postgis', workspace='demo', db='Ardhi',
-#                         pg_user='postgres', pg_password='kevoh', host='127.0.0.1')
-#
-# geo.publish_featurestore(store_name='postgis',
-#                          pg_table='parcels', workspace='demo')
+geo.create_featurestore('postgis', workspace='geoserver-rest', db='Ardhi',
+                        pg_user='postgres', pg_password='kevoh', host='127.0.0.1')
+
+geo.publish_featurestore(store_name='postgis',
+                         pg_table='parcels', workspace='geoserver-rest')
 #
 #
 # geo.upload_style(

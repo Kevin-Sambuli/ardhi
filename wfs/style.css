@@ -90,6 +90,11 @@ body{
   color: orange !important;
 }
 
+
+.leaflet-sidebar-content {
+    background-color: rgba(0, 0, 0, 0.85) !important;
+  }
+
 .left_sidebar {
     height: auto;
     overflow-y: auto;
