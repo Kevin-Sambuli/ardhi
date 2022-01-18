@@ -221,6 +221,17 @@ var population = L.Geoserver.wms("http://localhost:8080/geoserver/wms",
         attribution: "Map by Kevin Sambuli Amuhaya"
     }).addTo(map);
 
+var nairobiPlots= L.tileLayer.wms("http://localhost:8080/geoserver/wms",
+    {
+        layers: 'nairobi',
+        format: 'image/png',
+        transparent: true,
+        tiled:true,
+        opacity:0.6,
+        zIndex:100,
+        attribution: "Map by Kevin Sambuli Amuhaya"
+    }).addTo(map);
+
 
 
 //legend request
@@ -261,9 +272,10 @@ var overLays = {
     "Parks": wfsLayer,
     "Soils": soils,
     "Airports": airports,
+    "Parcels": nairobiPlots,
 };
 
-L.control.layers(baseMaps, overLays, {collapsed: true, position: 'topright'}).addTo(map);
+L.control.layers(baseMaps, overLays, {collapsed: false, position: 'topright'}).addTo(map);
 
 //Leaflet browser print function
 L.control.browserPrint({position: 'topright'}).addTo(map);
@@ -314,7 +326,6 @@ function fullScreenView() {
 }
 
 // add Leaflet-Geoman controls with some options to the map
-
 map.pm.addControls({
   position: 'topleft',
   drawCircle: false,

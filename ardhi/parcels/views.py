@@ -27,6 +27,16 @@ from django.contrib.gis.geos import fromstr, MultiPolygon,  GEOSGeometry
 
 # shp2pgsql -s <SRID> -c -D -I <path to shapefile> <schema>.<table> |  psql -d <databasename> -h <hostname> -U <username>
 
+
+This query returns the nearest five observations from the plants table, based on distance to a specific point [34.810696, 31.895923]
+SELECT areah, perm, aream, ownerid, ST_AsText(geom) AS the_geom 
+  FROM nairobi 
+  ORDER BY 
+    geom::geography <->
+    ST_SetSRID(
+      ST_MakePoint(34.810696, -1.3455), 4326
+    )::geography
+  LIMIT 5;
 """
 # p = Polygon()
 # # this seems to work correctly
