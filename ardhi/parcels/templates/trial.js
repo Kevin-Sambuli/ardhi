@@ -15,6 +15,24 @@ $('#toolbar .hamburger').on('click', function() {
 });
 
 
+// $('.leaflet-prevent').on('click', L.DomEvent.stopPropagation);
+// var pinToggler = true;
+//
+// $('.pin').on('click', function () {
+//    if(pinToggler){
+//        map.on('click', function(e){
+//         var lat = e.latlng.lat;
+//         var lng = e.latlng.lng;
+//         var marker = L.marker([e.latlng.lat, e.latlng.lng]).bindPopup('popup');
+//         marker.addTo(map)
+//     })
+//     pinToggler = !pinToggler;
+//     }else {
+//         map.off('click')
+//     }
+// })
+
+
 // map options
 var lat =  -1.22488;
 var lng =  36.827164;
@@ -38,13 +56,7 @@ var centerBounds = map.getBounds().getCenter();
 // scale control layer
 L.control.scale({metric:true, imperial:false, maxWidth:100}).addTo(map);
 
-//Render Zoom Control zoom control options
-//  var zoomOptions = {
-//     zoomInText: '1',
-//     zoomOutText: '0',
-//  };
-//  var zoom = L.control.zoom(zoomOptions);   // Creating zoom control
-//  zoom.addTo(map);
+//Render Zoom Control
 L.control.zoom({position: "topleft"}).addTo(map);
 
 //zoom to extent button
@@ -57,22 +69,13 @@ map.on("mousemove", function(e){
     $(".map-coordinate").html("Lat : " + e.latlng.lat + " Lng : " +e.latlng.lng);
 });
 
-// Attribution options
-var attrOptions ={
-   prefix: 'Made by Kevin Sambuli'
-};
-
-// Creating an attribution
-var attr = L.control.attribution(attrOptions).addTo(map);
-// attr.setPrefix('aasssss').addTo(map);
-
-// var sidebar = L.control
-//   .sidebar({
-//     autopan: true,
-//     container: "sidebar",
-//     position: "right"
-//   })
-//   .addTo(map);
+var sidebar = L.control
+  .sidebar({
+    autopan: true,
+    container: "sidebar",
+    position: "right"
+  })
+  .addTo(map);
 
 
 // initializing system variables
@@ -88,11 +91,10 @@ var drawgeojson = new L.featureGroup();
 var wfsLayerSearch = new L.featureGroup();
 // var editableLayers = new L.FeatureGroup().addTo(map);
 // var layerEditable = new L.FeatureGroup().addTo(map);
-// map.addLayer(editableLayers);
-
- //feature group that contains the editable layer
-// editableLayers.addTo(map);
+editableLayers.addTo(map);
 layerEditable.addTo(map);
+ //feature group that contains the editable layer
+// map.addLayer(editableLayers);
 
 var MyCustomMarker = L.Icon.extend({
         options: {
@@ -122,44 +124,92 @@ var MyCustomMarker = L.Icon.extend({
 // });
 
 
-//adding the draw control with options to the map
-var drawControl = new L.Control.Draw(drawOptions);
-// map.addControl(drawControl);
+// var drawOptions = {
+//   position: "bottomleft",
+//   draw: {
+//     polyline:  {
+//         shapeOptions: {
+//             color: '#f357a1',
+//             weight: 10,
+//         }
+//     },
+//     // circle: true, // Turns off this drawing tool
+//     // rectangle: false,
+//     rectangle: {
+//         shapeOptions: {
+//             clickable: false
+//         }
+//     },
+//     marker: true,
+//     // marker: {icon: new MyCustomMarker()}
+//
+//     polygon: {
+//         shapeOptions: {
+//             stroke:true,
+//             color: '#f357a1',
+//             weight: 10,
+//             lineCap:'round',
+//             lineJoin:'round',
+//             opacity: 0.5,
+//             fill: true,
+//             fillColor: null,
+//             fillOpacity: 0.2,
+//             clickable: true
+//       },
+//       allowIntersection: false, // Restricts shapes to simple polygons
+//       drawError: {
+//         color: "#e1e100", // Color the shape will turn when intersects
+//         message: "<strong>Oh snap!<strong> you can't draw that!" // Message that will show when intersect
+//       },
+//         showArea:true,
+//         showLength: true,
+//         strings : `['ha', 'm']`,
+//         metric: true,
+//         feet: false,
+// 		nautic: false,
+//         // repeatMode: true,
+//         precision: {km: 2, ft: 0}
+//
+//     }
+//   },
+//
+//     // edit:false
+//   edit: {
+//     featureGroup: editableLayers, //REQUIRED!!
+//     remove: true,
+//     poly : {
+//       allowIntersection : false
+//     }
+//   }
+// };
 
 
 // $('.leaflet-prevent').on('click', L.DomEvent.stopPropagation);
 // var pinToggler = true;
-// $('.pin').on('click', function (e) {
-//    if(pinToggler){
-//        map.on('click', function(e) {
-//            map.addControl(drawControl);
-//        }
-//        pinToggler = !pinToggler;
-//    } else {
+// $('.pin').on('click', function () {
+//    if(pinToggler){//     pinToggler = !pinToggler;
+//     } else {
 //        map.removeControl(drawControl);
-//        map.off('click')}
+//         map.off('click')}
 //     }
+// })
+
+
+var drawControl = new L.Control.Draw(drawOptions);
+map.addControl(drawControl);
+
+// map.on('draw:drawvertex',
+//         function (e) {
+//             $(".leaflet-marker-icon.leaflet-div-icon.leaflet-editing-icon.leaflet-touch-icon.leaflet-zoom-animated.leaflet-interactive:first").css({ 'background-color': 'green' });
+//         });
+//Edit Button Clicked
+// $('#pin').click(function(e) {
+//     map.addControl(drawControl);
+//   $(".leaflet-draw").fadeToggle("fast", "linear");
+//   $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
+//   // this.blur();
+//   return true;
 // });
-
-
-
-// // Edit Button Clicked
-$('#draw').click(function(e) {
-    map.addControl(drawControl);
-    editableLayers.addTo(map);
-      // $(".leaflet-draw").fadeToggle("fast", "linear");
-      // $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
-      // this.blur();
-  return true;
-});
-
-$('#draw').dblclick(function(e) {
-    map.removeControl(drawControl);
-    //  $(".leaflet-draw").fadeToggle("fast", "linear");
-    //  $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
-    // this.blur();
-  return true;
-});
 
 
 // function to open up the pop up on draw end
@@ -264,35 +314,26 @@ map.addEventListener("draw:created", function(e) {
                  // console.log('seridata', $(this).serialize());
                  // console.log('layer to geojson', editableLayers.toGeoJSON(), null, 4);
                  // console.log('serialized geometry', JSON.stringify(layer.toGeoJSON().geometry , null, 4));
+
+                 // function onEachFeature(feature, layer) {
+                 //     // does this feature have a property named popupContent?
+                 //     if (feature.properties && feature.properties.lrnumber) {
+                 //         layer.bindPopup(feature.properties.lrnumber);
+                 //     }
+                 // }
+                 //
+                 // var DrawGeoJSON = L.geoJson(editableLayers.toGeoJSON(), {
+                 //     onEachFeature: onEachFeature,
+                 // }).addTo(drawgeojson);
              });
 
         });
 
     };
-
-
-    if (type === "marker") {
-        layer.bindPopup("LatLng: " + layer.getLatLng().lat + "," + layer.getLatLng().lng).openPopup();
-         // editableLayers.addLayer(layer);
-    }
-});
-
-// on click, clear all layers
-document.getElementById('delete').onclick = function(e) {
-    editableLayers.clearLayers();
-    drawgeojson.clearLayers();
-}
-
-// exportting the layers into the file system
-document.getElementById('export').onclick = function(e) {
-    // Extract GeoJson from featureGroup
-    map.removeLayer(editableLayers);
-    var data = editableLayers.toGeoJSON();
-
     // make POST ajax call
     //     $.ajax({
     //         type: 'POST',
-    //         url: "{% url 'post_parcels' %}",
+    //         // url: "{% url 'post_parcels' %}",
     //         url: "http://localhost:63342/Ardhi/ardhi/parcels/templates/map.html?_ijt=d9kuvqfrt9iaccuv9t7n4u9vn4",
     //         data: {'data': data}, //data = JSON.stringify(editableLayers.toGeoJSON())
     //         success: function (e) {
@@ -305,33 +346,29 @@ document.getElementById('export').onclick = function(e) {
     //         }
     //     });
 
-    // ploting the drawn shape as a geojson file on the map
-    function onEachFeature(feature, layer) {
-         // does this feature have a property named popupContent?
-         if (feature.properties && feature.properties.lrnumber) {
-             var popContent =
-                  "<div>" +
-                     "<b>Number: </b>" + feature.properties.lrnumber + "</br>" +
-                     "<b>Parcel Id: </b>"+ feature.properties.parcelid +  "</br>" +
-                     "<b>Area: </b>" + feature.properties.area + "</br>" +
-                     "<b>Perimeter: </b>" + feature.properties.parcelid +
-                 "</div>";
-             layer.bindPopup(popContent);
-            }
-     }
 
-    var DrawGeoJSON = L.geoJson(editableLayers.toGeoJSON(), {
-         onEachFeature: onEachFeature,
-         style:mySearchStyle,
-    }).addTo(drawgeojson);
-    drawgeojson.addTo(map); //adding the drawn geojson to the map
+    if (type === "marker") {
+        layer.bindPopup("LatLng: " + layer.getLatLng().lat + "," + layer.getLatLng().lng).openPopup();
+         // editableLayers.addLayer(layer);
+    }
+});
+
+// on click, clear all layers
+document.getElementById('delete').onclick = function(e) {
+    editableLayers.clearLayers();
+}
+
+// exportting the layers into the file system
+document.getElementById('export').onclick = function(e) {
+    // Extract GeoJson from featureGroup
+    var data = editableLayers.toGeoJSON();
 
     // Stringify the GeoJson
-    // var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
+    var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
 
     // Create export
-//     document.getElementById('export').setAttribute('href', 'data:' + convertedData);
-//     document.getElementById('export').setAttribute('download','data.geojson');
+    document.getElementById('export').setAttribute('href', 'data:' + convertedData);
+    document.getElementById('export').setAttribute('download','data.geojson');
 }
 
 
@@ -393,22 +430,20 @@ var population= L.tileLayer.wms("http://localhost:8080/geoserver/wms",
         attribution: attribution
     });
 
-var nairobiPlots= L.tileLayer.wms("http://localhost:8080/geoserver/wms",
-    {
-        layers: 'nairobi',
-        format: 'image/png',
-        transparent: true,
-        tiled:true,
-        opacity:0.6,
-        zIndex:100,
-        attribution: attribution
-    }).addTo(map);
+// var nairobiPlots= L.tileLayer.wms("http://localhost:8080/geoserver/wms",
+//     {
+//         layers: 'nairobi',
+//         format: 'image/png',
+//         transparent: true,
+//         tiled:true,
+//         opacity:0.6,
+//         zIndex:100,
+//         attribution: attribution
+//     }).addTo(map);
 
 
 // control that shows state info on hover
-var info = L.control({
-    position:'bottomright'
-});
+var info = L.control();
 info.onAdd = function (map) {
 		this._div = L.DomUtil.create('div', 'info');
 		this.update();
@@ -423,6 +458,36 @@ info.update = function (props) {
 info.addTo(map);
 
 
+//legend control function
+function wmsLegendControl(layerName, layerTitle) {
+  var className = layerName.split(":")[1];
+  var url = `http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=${layerName}`;
+  var legend = `<p class="${className}" style='margion-top:10px; font-weight: bold'>${layerTitle}</p>`;
+  legend += `<p><img class="${className}" src=${url} /><br class=${className} /></p> `;
+  return legend;
+}
+
+
+
+// L.Control.Watermark = L.Control.extend({
+// 		onAdd: function (map) {
+// 			var img = L.DomUtil.create('img');
+//
+// 			img.src = 'https://www.epix.net.pl/wp-content/uploads/2017/03/gis-logo.png';
+// 			img.style.width = '200px';
+//
+// 			return img;
+// 		},
+// 		onRemove: function (map) {
+// 			// Nothing to do here
+// 		}
+// 	});
+//
+// L.control.watermark = function (opts) {
+// 		return new L.Control.Watermark(opts);
+// 	};
+//
+// var watermarkControl = L.control.watermark({position: 'bottomleft'}).addTo(map);
 
 
  // Geojson style file
@@ -443,8 +508,7 @@ function highlightFeature(e) {
 			color: 'green',
 			dashArray: 1,
 			fillOpacity: 0.7,
-			// fillCollor: "#c7e9c0pg"
-            fillCollor: 'blue'
+			fillCollor: "#c7e9c0pg"
 		});
 
 		if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
@@ -674,40 +738,6 @@ var createIcon = function (labelText) {
     });
 };
 
-
-//legend control function
-function wmsLegendControl(layerName, layerTitle) {
-  var className = layerName.split(":")[1];
-  var url = `http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=${layerName}`;
-  var legend = `<p class="${className}" style='margion-top:10px; font-weight: bold'>${layerTitle}</p>`;
-  legend += `<p><img class="${className}" src=${url} /><br class=${className} /></p> `;
-  return legend;
-}
-
-
-
-L.Control.Watermark = L.Control.extend({
-		onAdd: function (map) {
-			var img = L.DomUtil.create('img');
-
-			img.src = 'https://www.epix.net.pl/wp-content/uploads/2017/03/gis-logo.png';
-			img.style.width = '200px';
-
-			return img;
-		},
-		onRemove: function (map) {
-			// Nothing to do here
-		}
-	});
-
-L.control.watermark = function (opts) {
-		return new L.Control.Watermark(opts);
-	};
-
-var watermarkControl = L.control.watermark({position: 'bottomleft'}).addTo(map);
-
-
-
 /*Legend specific*/
 // var legend = L.control({ position: "bottomright" });
 //
@@ -731,16 +761,15 @@ var legend = L.control({position: "bottomright"});
 var contents = "";
 contents += '<div id="description"><p><b>Simple shapes in Leaflet</b></p><hr>';
 contents += '<p>This map shows an example of adding shapes on a Leaflet map<p/>';
-contents += '<p>The following shapes were added:</p><br/>';
+contents += 'The following shapes were added:<br/>';
 contents += '<p><ul>';
 contents += '<li>A marker</li>';
 contents += '<li>A line</li>';
 contents += '<li>A polygon</li>';
 contents += '</ul></p>';
-contents += '<p>The line layer has a <b>popup</b>. Click on the line to see it!</p><hr>';
-contents += '<p>Created with the Leaflet library</p><br/>';
-contents += '<img src="./image/logo.jpg"></div>';
-
+contents += 'The line layer has a <b>popup</b>. Click on the line to see it!<hr>';
+contents += 'Created with the Leaflet library<br/>';
+// contents += '<img src="./image/Leaflet.svg"></div>';
 
 // Function that runs when legend is added to map
 legend.onAdd = function(map) {
@@ -756,9 +785,7 @@ legend.onAdd = function(map) {
 };
 
 // Add Legend to Map
-// legend.addTo(map);
-
-
+legend.addTo(map);
 
 // 'Hide' button
 $("#hide").on("click", function() {
@@ -777,17 +804,17 @@ $("#hide").on("click", function() {
 
 
 
+
 // map overlays
 var overLays = {
     "County (WMS)": counties,
     "Population  (WMS)": population,
     "wfsLayer (WFS)": wfsLayer,
     "Search": wfsLayerSearch,
-    "Nairobi": nairobiPlots,
+    // "Nairobi": nairobiPlots,
     "Draw": editableLayers,
     "DrawGeojson": drawgeojson,
 };
-
 
 // Show coordinates
 // var div = document.createElement('div');
