@@ -24,7 +24,7 @@ var mapOptions = {
   zoomControl: false,
   attributionControl: false,
   center: [lat, lng],
-  zoom: 6.2,
+  zoom: 6.5,
   layers: [basemaps.Dark]
 };
 
@@ -282,9 +282,9 @@ function fullScreenView() {
     }
 }
 
-$(".lock-map").click(function () {
-  $(".lock-map").innerHTML('h')
-});
+// $(".lock-map").click(function () {
+//   $(".lock-map").innerHTML('h')
+// });
 
 
 
@@ -869,7 +869,7 @@ legend.onAdd = function(map) {
 };
 
 // Add Legend to Map
-legend.addTo(map);
+// legend.addTo(map);
 
 
 
