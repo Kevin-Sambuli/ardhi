@@ -1,25 +1,37 @@
-from django.template.defaultfilters import date
 from django.contrib.gis.db import models
+from django.template.defaultfilters import date
 from django.conf import settings
+# from django.db import models
 import datetime
 
 
 # Create your models here.
-class Parcels(models.Model):
-    ON_SALE = 'on_sale'
-    IN_USE = 'in_use'
-    STATUS = [
-        (ON_SALE, 'on sale'),
-        (IN_USE, 'in use')
-    ]
+class LandParcels(models.Model):
     id = models.BigIntegerField(primary_key=True)
+    lrnumber = models.BigIntegerField()
+    areah = models.FloatField()
+    aream = models.FloatField()
+    perm = models.FloatField()
+    geom = models.MultiPolygonField(srid=4326)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
                               null=True, default=None)
+    class Meta:
+        db_table = 'naiparcels'
+        verbose_name_plural = "naisparcels"
+
+    def __str__(self):
+        return self.lrnumber
+
+
+class Parcels(models.Model):
+    id = models.BigIntegerField(primary_key=True)
+    lr_no = models.IntegerField('LR Number', unique=True)
+    area_ha = models.FloatField('Area Ha', max_length=10)
+    area_m = models.FloatField('Area M', max_length=10)
     perimeter = models.FloatField('Perimeter', max_length=10)
-    area_ha = models.FloatField('Area', max_length=10)
-    lr_no = models.CharField('LR Number', max_length=10)
-    status = models.CharField('Status', max_length=10, choices=STATUS, default=IN_USE)
     geom = models.MultiPolygonField(srid=4326)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
+                              null=True, default=None)
 
     class Meta:
         db_table = 'parcels'
@@ -67,10 +79,20 @@ class ParcelDetails(models.Model):
         (LEASEHOLD, 'Leasehold'),
     ]
 
+    ON_SALE = 'on_sale'
+    IN_USE = 'in_use'
+    RESTRICTED = 'restricted'
+    STATUS = [
+        (ON_SALE, 'on sale'),
+        (IN_USE, 'in use'),
+        (RESTRICTED, 'restricted')
+    ]
+
     parcel = models.OneToOneField(Parcels, blank=False, verbose_name='Parcels', null=False, on_delete=models.CASCADE,
                                   related_name="details", related_query_name="details")
     land_use = models.CharField('Land_use', max_length=15, choices=LAND_USE, default=None, blank=False, null=False)
     tenure = models.CharField('Tenure', max_length=10, choices=TENURE, default=None, blank=False, null=False)
+    status = models.CharField('Status', max_length=10, choices=STATUS, default=IN_USE)
     improvements = models.CharField('Land Improvements', max_length=100, default='nil')
     encumbrances = models.CharField('Encumbrances', max_length=100, default='nil')
     purchase_date = models.DateTimeField('Purchase Date', )
@@ -84,18 +106,5 @@ class ParcelDetails(models.Model):
         db_table = 'parcel_details'
         verbose_name_plural = "parcel_details"
 
-# class Centroids(models.Model):
-#     id = models.BigIntegerField(primary_key=True)
-#     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
-#                               null=True, default=None)
-#     perimeter = models.FloatField()
-#     area_ha = models.FloatField()
-#     lr_no = models.CharField(max_length=10)
-#     geom = models.MultiPointField(srid=4326)
 
-#     class Meta:
-#         db_table = 'centroids'
-#         verbose_name_plural = "centroid"
 
-#     def __str__(self):
-#         return self.lr_no

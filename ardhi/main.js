@@ -275,7 +275,7 @@ var overLays = {
     "Parcels": nairobiPlots,
 };
 
-L.control.layers(baseMaps, overLays, {collapsed: false, position: 'topright'}).addTo(map);
+L.control.layers(baseMaps, overLays, {collapsed: true, position: 'topright'}).addTo(map);
 
 //Leaflet browser print function
 L.control.browserPrint({position: 'topright'}).addTo(map);

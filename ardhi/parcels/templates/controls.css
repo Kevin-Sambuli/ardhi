@@ -38,18 +38,21 @@
         margin: 5px 0 22px 0;
 }
 
-/*.leaflet-popup-content input[type=text] {*/
-/*        width: 100%;*/
-/*        padding: 15px;*/
-/*        margin: 5px 0 22px 0;*/
-/*        overflow:  auto;*/
-/*}*/
 
 .leaflet-popup-content hr {
     height: 1px;
     background-color: #ccc;
     border: none;
 }
+
+
+
+/*.leaflet-popup-content input[type=text] {*/
+/*        width: 100%;*/
+/*        padding: 15px;*/
+/*        margin: 5px 0 22px 0;*/
+/*        overflow:  auto;*/
+/*}*/
 
 /*.leaflet-popup-content input {*/
 /*    background-color: transparent;*/
@@ -83,16 +86,27 @@
 /*}*/
 
 
+/*.leaflet-draw-edit-edit {*/
+/*    background-position: 0 -1px;*/
+/*    margin: 7px;*/
+/*    background-color:greenyellow !important;*/
+/*    box-shadow: 1px 1px 1px 1.5px rgba(0, 0, 0, 0.5);*/
+/*}*/
+
 
 .leaflet-draw-draw-polyline , .leaflet-draw-draw-polygon,
 .leaflet-draw-draw-rectangle, .leaflet-draw-draw-circle,
-.leaflet-draw-draw-marker, .leaflet-draw-draw-circlemarker{
+.leaflet-draw-draw-marker, .leaflet-draw-draw-circlemarker,
+.leaflet-draw-edit-edit, .leaflet-draw-edit-remove{
     background-position: 0 -1px;
     margin: 5px;
     background-color:greenyellow !important;
     box-shadow: 1px 1px 1px 1.5px rgba(0, 0, 0, 0.5);
-    /*background-color:rgba(243,87,161, 0.5) !important;*/
-    /*background-color:yellowgreen !important;*/
+}
+
+.leaflet-draw-edit-edit, .leaflet-draw-edit-remove {
+    background-color: yellow !important;
+    /*margin: 5px;*/
 }
 
 /*animation: leaflet-draw-draw-rectangle 2s ease infinite;*/
@@ -180,11 +194,11 @@
   }
 }
 
-
 .leaflet-touch .leaflet-control-layers .leaflet-touch .leaflet-bar {
-    border: none;
+    /*border: none !important;*/
+    border: 2px solid rgba(0,0,0,0) !important;
     background-clip: padding-box;
-    margin:14px ;
+    /*margin:14px ;*/
 }
 
 .leaflet-control-layers{
@@ -226,17 +240,23 @@
 
 .basic-functions{
     position: absolute;
-    top: 80px;
-    left: 7px;
+    top: 100px;
+    left: 6px;
 }
 
-.basic-functions .btns:hover {
-	color: #000 !important;
+.map-functions{
+    position: absolute;
+    top: 80px;
+    right: 6px;
+}
+
+.basic-functions .btns:hover , .map-functions .controls:hover {
+	color: #000 ;
 	background-color: transparent;
 	text-shadow:teal;
 }
 
-.basic-functions .btns{
+.basic-functions .btns, .map-functions .controls{
     position: relative;
     width: 30px;
     height: 30px;
@@ -247,7 +267,7 @@
     box-shadow: 1px 1px 1px 1.5px rgba(0, 0, 0, 0.5);
 }
 
-.basic-functions .fas {
+.basic-functions .fas, .map-functions .fas{
     font-size: 1.2rem;
     position: absolute;
     color:steelblue;

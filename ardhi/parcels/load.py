@@ -1,29 +1,37 @@
 import os
 from pathlib import Path
 from django.contrib.gis.utils import LayerMapping
-from .models import Parcels
+from .models import Parcels ,LandParcels
 
+# python manage.py ogrinspect parcels\shapefile\landparcels.shp ParcelLand --srid=4326 --mapping --multi
+# python manage.py shell
 
-# python manage.py ogrinspect world\data\TM_WORLD_BORDERS-0.3.shp Parcels --srid=4326 --mapping --multi
-
+# Auto-generated `LayerMapping` dictionary for Parcels model
 parcels_mapping = {
     'id': 'Id',
-    'perimeter': 'perimeter',
-    'area_ha': 'area_ha',
-    'lr_no': 'Lr_No',
+    'lr_no': 'LRNumber',
+    'area_ha': 'AreaH',
+    'area_m': 'AreaM',
+    'perimeter': 'PerM',
     'geom': 'MULTIPOLYGON',
 }
 
-# centroid_mapping = {
-#     'id': 'Id',
-#     'perimeter': 'perimeter',
-#     'area_ha': 'area_ha',
-#     'lr_no': 'Lr_No',
-#     'geom': 'MULTIPOINT',
-# }
 
-parcels_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'shapefile', 'landparcels.shp'), )
-# centroid_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'shapefile', 'centroid.shp'), )
+land_parcels_mapping = {
+    'areah': 'AreaH',
+    'perm': 'PerM',
+    'aream': 'AreaM',
+    'lrnumber': 'LRNumber',
+    'id': 'Id',
+    'geom': 'MULTIPOLYGON',
+}
+
+
+parcels_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'shapefile', 'nairobi.shp'), )
+
+
+# centroids_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'shapefile', 'landparcels.shp'), )
+land_parcels_mapping_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'shapefile', 'nairobi.shp'), )
 
 
 def run(verbose=True):
@@ -31,6 +39,6 @@ def run(verbose=True):
     lm.save(strict=True, verbose=verbose)
 
 
-# def run_centroids(verbose=True):
-#     lm = LayerMapping(Centroids, centroid_shp, centroid_mapping, transform=False, encoding='utf-8')
-#     lm.save(strict=True, verbose=verbose)
+def run_parcels(verbose=True):
+    lm = LayerMapping(LandParcels, land_parcels_mapping_shp, land_parcels_mapping, transform=False, encoding='utf-8')
+    lm.save(strict=True, verbose=verbose)

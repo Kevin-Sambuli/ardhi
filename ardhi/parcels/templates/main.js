@@ -132,6 +132,7 @@ var drawControl = new L.Control.Draw(drawOptions);
 // $('.pin').on('click', function (e) {
 //    if(pinToggler){
 //        map.on('click', function(e) {
+//            console.log('map clicked')
 //            map.addControl(drawControl);
 //        }
 //        pinToggler = !pinToggler;
@@ -142,23 +143,185 @@ var drawControl = new L.Control.Draw(drawOptions);
 // });
 
 
-
-// // Edit Button Clicked
-$('#draw').click(function(e) {
-    map.addControl(drawControl);
-    editableLayers.addTo(map);
-      // $(".leaflet-draw").fadeToggle("fast", "linear");
-      // $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
-      // this.blur();
-  return true;
+// coordinate display function Map coordinate display
+map.on('click', function (e) {
+    $('.mapclicks').html(`Lat: ${e.latlng.lat} <br>Lng: ${e.latlng.lng}`)
+    console.log("map clicked at", `Lat: ${e.latlng.lat}  Lng: ${e.latlng.lng}`)
 });
 
-$('#draw').dblclick(function(e) {
+
+
+// Edit Button Clicked
+var drawToggler = true;
+$('#draw').click(function(e) {
+    if(drawToggler) {
+        //on click we add the draw control layer to the map controls
+        map.addControl(drawControl);
+
+        // adding the feature class draw layer
+        editableLayers.addTo(map);
+
+        //removing the the geojson layer when drawing the second time
+        map.removeLayer(drawgeojson);
+
+        //re assinging the toggle button to make the button to run the else code
+        drawToggler = !drawToggler;
+        console.log("control added to the map");
+    } else {
+        // runs when the draw toggle is false
+        console.log("control removed  from the map");
+
+        // when the draw toggle is set to false we remove the darw controls
+        // from the map and assigning the toggle back to true
+       map.removeControl(drawControl);
+       // map.off('click');
+       drawToggler =true;
+    }
+});
+
+// adding the Lr Number to the Map
+var imageUrl = 'image/map.jpg';
+imageBounds = [[-1.22155, 36.8222], [ -1.2293, 36.8277]];
+var imgoverlay = L.imageOverlay(imageUrl, imageBounds);
+imgoverlay.addTo(map);
+imgoverlay.bringToBack();
+
+// //Leaflet measure
+// L.control.measure({
+//         // position: 'topleft',
+//         primaryLengthUnit: 'kilometers',
+//         secondaryLengthUnit: 'meter',
+//         primaryAreaUnit: 'sqmeters',
+//         secondaryAreaUnit: undefined
+//     }).addTo(map);
+
+
+
+// $('#draw').dblclick(function(e) {
+//     map.removeControl(drawControl);
+//     //  $(".leaflet-draw").fadeToggle("fast", "linear");
+//     //  $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
+//     // this.blur();
+//   return true;
+// });
+
+// var polygon = turf.polygon([[[-81, 41], [-88, 36], [-84, 31], [-80, 33], [-77, 39], [-81, 41]]]);
+// var centroid = turf.centroid('centroid',polygon);
+
+
+
+// exportting the layers into the file system
+document.getElementById('export').onclick = function(e) {
+    // on export you remove the draw feature group
+    map.removeLayer(editableLayers);
+
+    //remove the draw controls when exporting the map
     map.removeControl(drawControl);
-    //  $(".leaflet-draw").fadeToggle("fast", "linear");
-    //  $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
-    // this.blur();
-  return true;
+    var data = editableLayers.toGeoJSON();
+
+
+    // ploting the drawn shape as a geojson file on the map
+    function onEachFeature(feature, layer) {
+         // does this feature have a property named popupContent?
+         if (feature.properties && feature.properties.lrnumber) {
+             // var centroid = turf.centroid(feature.geometry.coordinates);
+             // console.log(centroid);
+             var popContent =
+                  "<div" +
+                  // "<div style='background-image: url(image/gis.jpg);' " +
+                    "<h3 style='color: aliceblue'><b>Land Parcels</b></h3><hr>" +
+                     "<b>Number: </b>" + feature.properties.lrnumber + "</br>" +
+                     "<b>Parcel Id: </b>"+ feature.properties.parcelid +  "</br>" +
+                     "<b>Area: </b>" + feature.properties.area + "</br>" +
+                     "<b>Perimeter: </b>" + feature.properties.parcelid +
+                 "</div>";
+             layer.bindPopup(popContent);
+            }
+     };
+
+     // Extract GeoJson from featureGroup and display the drawn layers as a geojson
+    var DrawGeoJSON = L.geoJson(editableLayers.toGeoJSON(), {
+         onEachFeature: onEachFeature,
+         style:mySearchStyle,
+    }).addTo(drawgeojson);
+    drawgeojson.addTo(map); //adding the drawn geojson to the map
+
+    // Stringify the GeoJson
+    // var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
+
+    // Create export
+//     document.getElementById('export').setAttribute('href', 'data:' + convertedData);
+//     document.getElementById('export').setAttribute('download','data.geojson');
+
+     // make POST ajax call
+    //     $.ajax({
+    //         type: 'POST',
+    //         url: "{% url 'post_parcels' %}",
+    //         url: "http://localhost:63342/Ardhi/ardhi/parcels/templates/map.html?_ijt=d9kuvqfrt9iaccuv9t7n4u9vn4",
+    //         data: {'data': data}, //data = JSON.stringify(editableLayers.toGeoJSON())
+    //         success: function (e) {
+    //             console.log('successful logging',JSON.stringify(editableLayers.toGeoJSON(), null, 4) )
+    //             alert('success', JSON.stringify(editableLayers.toGeoJSON()))
+    //             // editableLayers.bindPopup(layer.feature.properties).openPopup();
+    //         },
+    //         error : function() {
+    //             alert('error', JSON.stringify(editableLayers.toGeoJSON()))
+    //         }
+    //     });
+}
+
+
+
+// toggle btwn full screen and normal screen
+var mapId = document.getElementById('map');
+function fullScreenView() {
+    if (document.fullscreenElement) {
+        document.exitFullscreen()
+    } else {
+        mapId.requestFullscreen();
+    }
+}
+
+$(".lock-map").click(function () {
+  $(".lock-map").innerHTML('h')
+});
+
+
+
+//View map in full browser
+function fullScreenToggler() {
+  var doc = document,
+    elm = document.getElementById("map");
+
+  if (elm.requestFullscreen) {
+    !doc.fullscreenElement ? elm.requestFullscreen() : doc.exitFullscreen();
+  } else if (elm.mozRequestFullScreen) {
+    !doc.mozFullScreen ? elm.mozRequestFullScreen() : doc.mozCancelFullScreen();
+  } else if (elm.msRequestFullscreen) {
+    !doc.msFullscreenElement
+      ? elm.msRequestFullscreen()
+      : doc.msExitFullscreen();
+  } else if (elm.webkitRequestFullscreen) {
+    !doc.webkitIsFullscreen
+      ? elm.webkitRequestFullscreen()
+      : doc.webkitCancelFullscreen();
+  } else {
+    console.log("Fullscreen support not detected.");
+  }
+}
+
+// $(".full-screen").click(fullScreenToggler);
+
+
+//Browser print
+// L.control.browserPrint().addTo(map);
+$(".print-map").click(function () {
+  var printMode = L.control.browserPrint.mode.landscape();
+  map.printControl.print(printMode);
+});
+
+$(".leaflet-control-browser-print").css({
+  display: "none",
 });
 
 
@@ -256,7 +419,7 @@ map.addEventListener("draw:created", function(e) {
 
                   // let data = JSON.stringify(editableLayers.toGeoJSON());
                  data = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
-                 $('#results').html(data);
+                 $('#drawcontainer').html(data);
                  console.log('serialized data', data)
                  console.log('unserialized geojson', editableLayers.toGeoJSON());
                  // console.log('hidden layer input', hidden_input.value);
@@ -283,56 +446,6 @@ document.getElementById('delete').onclick = function(e) {
     drawgeojson.clearLayers();
 }
 
-// exportting the layers into the file system
-document.getElementById('export').onclick = function(e) {
-    // Extract GeoJson from featureGroup
-    map.removeLayer(editableLayers);
-    var data = editableLayers.toGeoJSON();
-
-    // make POST ajax call
-    //     $.ajax({
-    //         type: 'POST',
-    //         url: "{% url 'post_parcels' %}",
-    //         url: "http://localhost:63342/Ardhi/ardhi/parcels/templates/map.html?_ijt=d9kuvqfrt9iaccuv9t7n4u9vn4",
-    //         data: {'data': data}, //data = JSON.stringify(editableLayers.toGeoJSON())
-    //         success: function (e) {
-    //             console.log('successful logging',JSON.stringify(editableLayers.toGeoJSON(), null, 4) )
-    //             alert('success', JSON.stringify(editableLayers.toGeoJSON()))
-    //             // editableLayers.bindPopup(layer.feature.properties).openPopup();
-    //         },
-    //         error : function() {
-    //             alert('error', JSON.stringify(editableLayers.toGeoJSON()))
-    //         }
-    //     });
-
-    // ploting the drawn shape as a geojson file on the map
-    function onEachFeature(feature, layer) {
-         // does this feature have a property named popupContent?
-         if (feature.properties && feature.properties.lrnumber) {
-             var popContent =
-                  "<div>" +
-                     "<b>Number: </b>" + feature.properties.lrnumber + "</br>" +
-                     "<b>Parcel Id: </b>"+ feature.properties.parcelid +  "</br>" +
-                     "<b>Area: </b>" + feature.properties.area + "</br>" +
-                     "<b>Perimeter: </b>" + feature.properties.parcelid +
-                 "</div>";
-             layer.bindPopup(popContent);
-            }
-     }
-
-    var DrawGeoJSON = L.geoJson(editableLayers.toGeoJSON(), {
-         onEachFeature: onEachFeature,
-         style:mySearchStyle,
-    }).addTo(drawgeojson);
-    drawgeojson.addTo(map); //adding the drawn geojson to the map
-
-    // Stringify the GeoJson
-    // var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
-
-    // Create export
-//     document.getElementById('export').setAttribute('href', 'data:' + convertedData);
-//     document.getElementById('export').setAttribute('download','data.geojson');
-}
 
 
 map.addEventListener("draw:editstart", function(e) {
@@ -398,12 +511,11 @@ var nairobiPlots= L.tileLayer.wms("http://localhost:8080/geoserver/wms",
         layers: 'nairobi',
         format: 'image/png',
         transparent: true,
-        tiled:true,
+        // tiled:true,
         opacity:0.6,
         zIndex:100,
         attribution: attribution
     }).addTo(map);
-
 
 // control that shows state info on hover
 var info = L.control({
@@ -525,7 +637,8 @@ function handleJson(data) {
  map.on("overLays", function (e) {
       wfsLayer.bringToBack();
       population.bringToBack();
-      nairobiPlots.bringToBack();
+      nairobiPlots.bringToFront();
+
  });
 
 
@@ -704,7 +817,7 @@ L.control.watermark = function (opts) {
 		return new L.Control.Watermark(opts);
 	};
 
-var watermarkControl = L.control.watermark({position: 'bottomleft'}).addTo(map);
+// var watermarkControl = L.control.watermark({position: 'bottomleft'}).addTo(map);
 
 
 
@@ -739,7 +852,7 @@ contents += '<li>A polygon</li>';
 contents += '</ul></p>';
 contents += '<p>The line layer has a <b>popup</b>. Click on the line to see it!</p><hr>';
 contents += '<p>Created with the Leaflet library</p><br/>';
-contents += '<img src="./image/logo.jpg"></div>';
+contents += '<img src="./image/map.jpg"></div>';
 
 
 // Function that runs when legend is added to map
@@ -756,11 +869,11 @@ legend.onAdd = function(map) {
 };
 
 // Add Legend to Map
-// legend.addTo(map);
+legend.addTo(map);
 
 
 
-// 'Hide' button
+// 'Hide' button that toggles the legend
 $("#hide").on("click", function() {
     L.DomEvent.disableClickPropagation(this);
     switch($("#hide").val()) {

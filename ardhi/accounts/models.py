@@ -19,6 +19,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
         SURVEYOR = "surveyor", "SURVEYOR"
         MANAGER = "manager", "MANAGER"
 
+    id = models.IntegerField('id', primary_key=True)
     first_name = models.CharField('First Name', max_length=30)
     last_name = models.CharField('Last Name', max_length=30)
     email = models.EmailField(verbose_name='Email', blank=False, max_length=100, unique=True)

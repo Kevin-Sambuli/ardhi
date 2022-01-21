@@ -19,6 +19,7 @@ from django.conf import settings
 from django.views import View
 import africastalking
 import datetime
+from parcels.models import Parcels
 
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -169,6 +170,7 @@ def profile_view(request, *args, **kwargs):
 
 def login_view(request):
     context = {}
+    print(Parcels.objects.all())
     new_group, created = Group.objects.get_or_create(name='managers')
     group = Group.objects.get(name='managers')
     model_name = 'manage'
