@@ -1,25 +1,38 @@
+import folium
+import geojson
+import json
+import json
+import os
+
+from django.conf import settings
 from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid, Distance
-from .utils import get_geo, get_center_coordinates, get_zoom, get_ip_address
-from django.shortcuts import render, get_object_or_404
-from django.http import JsonResponse, HttpResponse
 from django.contrib.gis.geos import GEOSGeometry
-from django.template.loader import get_template
+from django.contrib.gis.geos import fromstr, MultiPolygon, GEOSGeometry
 from django.contrib.staticfiles import finders
 from django.core.serializers import serialize
-from .models import Parcels, ParcelDetails
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.template.loader import get_template
 from geopy.geocoders import Nominatim
+from xhtml2pdf import pisa
+
 # from geopy.distance import geodesic
 from .database import get_cursor
-from django.conf import settings
-from xhtml2pdf import pisa
+from .filters import parcelJson
 from .map import my_map
-import json, folium
-import os, json
+from .models import Parcels, ParcelDetails, Uploads
+from .utils import get_geo, get_center_coordinates, get_zoom, get_ip_address
 
-from django.contrib.gis.geos import fromstr, MultiPolygon,  GEOSGeometry
+# getting the cursor from the database connection
+cur = get_cursor()
 
 # Blog.objects.get(name__iexact="beatles blog")
 # Would match a Blog titled "Beatles Blog", "beatles blog", or even "BeAtlES blOG"
+
+# ('SRID=4326;MULTIPOLYGON(((36.32080078125 -0.10986328125,36.4306640625 '
+#  '-1.142578125,38.73779296875 -1.6259765625,38.29833984375 '
+#  '0.15380859375,36.32080078125 -0.10986328125)))')
+
 
 """ upload shapefile in postgis
 # ogr2ogr -f “PostgreSQL” PG:”host=<hostname>  dbname=<dbname> user=<yourusername>
@@ -38,6 +51,8 @@ SELECT areah, perm, aream, ownerid, ST_AsText(geom) AS the_geom
     )::geography
   LIMIT 5;
 """
+
+
 # p = Polygon()
 # # this seems to work correctly
 # mp = MultiPolygon(fromstr(str(p)),)
@@ -68,7 +83,6 @@ SELECT areah, perm, aream, ownerid, ST_AsText(geom) AS the_geom
 #         ],
 #     )
 # ]
-
 
 
 # SELECT ST_AsText(ST_Multi(ST_GeomFromText('POLYGON((743238 2967416,743238 2967450,
@@ -129,49 +143,58 @@ def get_points(request):
 
 
 def parcels(request):
-    """ function that returns parcels in geojson and generate a folium leaflet map"""
-
-    points_as_geojson = serialize('geojson', Parcels.objects.all())
+    """ function that returns parcels in geojson and generate a folium leaflet map
+        return JsonResponse(geojson.dumps(data))"""
+    points_as_geojson = serialize('geojson', Parcels.objects.filter())
+    # data = serialize('geojson', Parcels.objects.all()[:200])
     return HttpResponse(points_as_geojson, content_type='json')
-    # return JsonResponse(json.loads(data))
 
 
-def parcels2(request):
-    """ function that returns parcels in geojson and generate a folium leaflet map"""
+def allParcels(request):
+    """calling the function that returns all the parcels from the database"""
+    data = parcelJson()
+    cur.execute(data)
 
-    data = serialize('geojson', Parcels.objects.all())
-    return render(request, 'parcels/leaflet.html', {'data': data})
+    plots = cur.fetchall()
+    nairobiPlots = geojson.dumps(plots[0][0])
+
+    return HttpResponse(nairobiPlots, content_type='json')
 
 
 def my_property(request):
     """ function that returns parcels of the logged in user  generate a folium leaflet map"""
     context = {}
     parcels_as_geojson = serialize('geojson', Parcels.objects.all())
+    # print("my parcels geojson", parcels_as_geojson)
 
     try:
         # returning my parcels as geojson to be passed on the map as objects
         my_parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
+        print("my parcels geojson", my_parcel)
 
         # accessing parcels of the logged user
         my_own_parcels = Parcels.objects.filter(owner_id=request.user.id)
         # Parcels.objects.filter(owner_id=request.user.id).update(owner_id=1)
+        print("my parcels", my_own_parcels)
 
         #  getting each parcel details
         details = [ParcelDetails.objects.get(parcel=parcel_id) for parcel_id in my_own_parcels]
         # details = [ParcelDetails.objects.get(parcel=parcel_id) for parcel_id in
         #            Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True)]
+        print("details", details)
 
         # accessing each parcel detail and returning each parcel id
         # data = [det for det in Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True)]
 
-        # Generating folium leaflet map using my_map function
+        # m = my_map(land_parcels=nairobi, parcel=my_parcel)
         m = my_map(land_parcels=parcels_as_geojson, parcel=my_parcel)
+        print(" return m")
         m = m._repr_html_()
-
 
         context['map'] = m
         context['details'] = details
         context['parcels'] = my_own_parcels
+
     except:
         print('You dont own parcels in the system')
         m = my_map(land_parcels=parcels_as_geojson)
@@ -231,6 +254,26 @@ def render_pdf_view(request):
     return response
 
 
+def uploadShape(request):
+    context = {}
+    if request.method == 'POST':
+        name = request.POST['firstname']
+        print(name)
+
+    return render(request, 'parcels/webmap.html', context)
+
+
+def drawShape(request):
+    context = {}
+    if request.method == 'POST':
+        lrNumber = request.POST['lrnumber']
+        plotNo = request.POST['plotno']
+        coords = request.POST['polygon']
+        print(lrNumber)
+
+    return render(request, 'parcels/webmap.html', context)
+
+
 def search_parcels(request):
     """ function that returns parcels in geojson and generate a folium leaflet map
 
@@ -240,7 +283,6 @@ def search_parcels(request):
     context = {}
     points_as_geojson = serialize('geojson', Parcels.objects.all())
 
-    qu = get_cursor()
     ids = 84
 
     # parcels search and returning the centroid then placed on the map
@@ -252,8 +294,8 @@ def search_parcels(request):
         details = [det for det in list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))]
 
         # qu.execute('select ST_AsText(ST_Centroid(geom) ) FROM parcels;')# where id=84;')
-        qu.execute(f'select ST_AsText(ST_Centroid(geom) ) FROM parcels where id={ids};')
-        mmap = qu.fetchall()
+        cur.execute(f"select ST_AsText(ST_Centroid(geom) ) FROM parcels where gid={ids};")
+        mmap = cur.fetchall()
         # if mmap:
         print('map =', mmap)
         print('point', str(mmap[0][0]))
@@ -286,11 +328,11 @@ def parcels_within_3km(request):
     """Get parcels that are at least 3km or less from a users location"""
     pol = serialize('geojson', Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))))
     # # parcel = Parcels.objects.annotate(geometry=Centroid('geom'))
-    #
+
     parcels = Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=84).geom
     data1 = []
     for parc in Parcels.objects.annotate(geometry=AsGeoJSON(Centroid('geom')), distance=Distance('geom', parcels)):
-        print(parc.lr_no, parc.distance)
+        print(parc.lrnumber, parc.distance)
         data1.append(parc.distance)
 
     ip = get_ip_address(request)
@@ -303,7 +345,6 @@ def parcels_within_3km(request):
     data2 = []
 
     for parc in Parcels.objects.annotate(distance=Distance('geom', parcels)):
-        # print(parc.lr_no, parc.distance)
         data2.append(parc.distance)
 
     sorted(data2)
@@ -397,6 +438,11 @@ def calculate_distance_view(request):
     #     serialized_hospitals = serializer(closest_hospitals, many=True)
     #     return Response(serialized_hospitals.data, status=status.HTTP_200_OK)
     # return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
 
 # from django.contrib.gis.geos import Point
 # from django.contrib.gis.measure import D

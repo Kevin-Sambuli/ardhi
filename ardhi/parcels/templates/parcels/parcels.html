@@ -22,7 +22,7 @@
     </style>
 
     <script>
-        var dataurl = '{% url "data" %}';
+        var dataurl = '{% url "allParcels" %}';
 
         window.addEventListener("map:init", function (event) {
             var map = event.detail.map;
@@ -37,14 +37,16 @@
                         {
                              onEachFeature: function onEachFeature(feature, layer)
                             {
-                                layer.bindPopup('<h3 style="align-content: center">Parcel Details</h3>' +
-                                    '<p>Owner: ' + feature.properties.owner + '</p> ' +
-                                    '<p>Parcel ID: ' + feature.properties.id + '</p> ' +
-                                    '<p>Parcel Number: ' + feature.properties.lr_no + '</p> ' +
-                                    '<p>Status: ' + feature.properties.status + '</p> ' +
-                                    '<p>Area: ' + feature.properties.area_ha + ' Ha</p>' +
-                                    '<p>Perimeter: ' + feature.properties.perimeter + ' M</p>').openPopup();
-
+                                layer.bindPopup
+                                (
+                                    '<h3 style="align-content: center">Parcel Details</h3>' +
+                                    '<p>Parcel ID: ' + feature.properties.gid + '</p> ' +
+                                    // '<p>Owner: ' + feature.properties.owner + '</p> ' +
+                                    '<p>Parcel Number: ' + feature.properties.lrnumber + '</p> ' +
+                                    '<p>Plot Number: ' + feature.properties.plotno + '</p> ' +
+                                    '<p>Area: ' + feature.properties.areah + ' Ha</p>' +
+                                    '<p>Perimeter: ' + feature.properties.perm + ' M</p>'
+                                ).openPopup();
                             },
                         }).addTo(map);
                 });

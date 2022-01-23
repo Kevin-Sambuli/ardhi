@@ -43,8 +43,8 @@ def my_map(land_parcels, parcel=None, lat=None, lng=None):
     folium.plugins.LocateControl().add_to(m)
 
     popup = GeoJsonPopup(
-        fields=["pk", "owner", "area_ha", "perimeter", "status", "lr_no"],
-        aliases=["Parcel id :", "Owner id :", "Area (ha):", "Perimeter(m):", "Status:", "LR No:"],
+        fields=["pk", "owner", "areah", "perm", "plotno", "lrnumber"],
+        aliases=["Parcel id :", "Owner id :", "Area (ha):", "Perimeter(m):", "Plot No:", "LR No:"],
         localize=True, labels=True,
         style="background-color: green;",
         )
@@ -54,7 +54,7 @@ def my_map(land_parcels, parcel=None, lat=None, lng=None):
                                    embed=True, ).add_to(m)
 
     folium.plugins.Search(layer=parc, geom_type="Polygon", zoom_on_click=True, placeholder="Search for parcel",
-                          collapsed=False, search_zoom=18, search_label="lr_no", weight=3, ).add_to(m)
+                          collapsed=False, search_zoom=18, search_label="lrnumber", weight=3, ).add_to(m)
     if parcel:
         folium.features.GeoJson(parcel, style_function=lambda x: style_parcel, highlight_function=None, name='Parcels',
                                 overlay=True, control=True, popup=parcel, show=True, smooth_factor=None,

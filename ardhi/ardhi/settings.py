@@ -27,6 +27,8 @@ environ.Env.read_env(env_file=".env")
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
 
+# DEBUG = False
+
 # Application definition
 # ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")
 ALLOWED_HOSTS = ['land_app', 'localhost', '127.0.0.1', 'ardhi-land-info.herokuapp.com']
@@ -213,39 +215,39 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 # STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
 # leaflet configuration
-LEAFLET_CONFIG = {
-    'DEFAULT_CENTER': (-1.22488, 36.827164),
-    'DEFAULT_ZOOM': 16,
-    'MAX_ZOOM': 20,
-    'MIN_ZOOM': 5,
-    'SCALE': 'both',
-    'MINIMAP': True,
-    'ATTRIBUTION_PREFIX': 'Map by Kevin Sambuli Amuhaya',
-    'TILES':
-        [('Satellite', 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          {'maxZoom': 19,
-           'attribution': '&copy; <a ''href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}),
-
-         ('Topography', 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-          {'maxZoom': 17,
-           'attribution': 'Map data: &copy; <a' 'href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> '
-                          'contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a '
-                          'href="https://opentopomap.org">OpenTopoMap</a> (<a '
-                          'href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'}),
-
-         ('Stamen Toner', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}', {
-             'attribution': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, '
-                            '<a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data '
-                            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-             'subdomains': 'abcd', 'minZoom': 0, 'maxZoom': 20, 'ext': 'png'
-         }),
-
-         ('Terrain', 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
-             'maxZoom': 20,
-             'attribution': 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
-         }),
-         ]
-}
+# LEAFLET_CONFIG = {
+#     'DEFAULT_CENTER': (-1.22488, 36.827164),
+#     'DEFAULT_ZOOM': 16,
+#     'MAX_ZOOM': 20,
+#     'MIN_ZOOM': 5,
+#     'SCALE': 'both',
+#     'MINIMAP': True,
+#     'ATTRIBUTION_PREFIX': 'Map by Kevin Sambuli Amuhaya',
+#     'TILES':
+#         [('Satellite', 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+#           {'maxZoom': 19,
+#            'attribution': '&copy; <a ''href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}),
+#
+#          ('Topography', 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+#           {'maxZoom': 17,
+#            'attribution': 'Map data: &copy; <a' 'href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> '
+#                           'contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a '
+#                           'href="https://opentopomap.org">OpenTopoMap</a> (<a '
+#                           'href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'}),
+#
+#          ('Stamen Toner', 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}', {
+#              'attribution': 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, '
+#                             '<a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data '
+#                             '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+#              'subdomains': 'abcd', 'minZoom': 0, 'maxZoom': 20, 'ext': 'png'
+#          }),
+#
+#          ('Terrain', 'https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', {
+#              'maxZoom': 20,
+#              'attribution': 'Tiles courtesy of the <a href="https://usgs.gov/">U.S. Geological Survey</a>'
+#          }),
+#          ]
+# }
 
 # geoip configuration
 GEOIP_PATH = os.path.join(BASE_DIR, 'geoip')

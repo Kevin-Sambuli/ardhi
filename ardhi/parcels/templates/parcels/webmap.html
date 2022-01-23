@@ -1,0 +1,217 @@
+{% extends 'webGIS.html' %}
+{% load static %}
+
+
+{% block title %}WebGIS{% endblock title %}
+
+{% block stylesheet %}
+<link rel="stylesheet" href="{% static 'parcels/css/style.css' %}" type="text/css">
+<link rel="stylesheet" href="{% static 'parcels/css/controls.css' %}" type="text/css">
+{% endblock stylesheet %}
+
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-3 left_sidebar">
+        <div class="mt-4 mb-3">
+            <h4>Search Location</h4>
+        </div>
+        <div class="form-inline">
+            <input class="form-control col-sm-7 mr-2 mb-2" type="text" placeholder="Search..." id="search-value"/>
+            <div class="form-group sm-3">
+                <button class="btn btn-secondary mr-2 mb-2" onclick="searchWFS()"> Search</button>
+                <button class="btn btn-secondary mb-2" onclick="clearResult()"> Clear</button>
+            </div>
+
+            <h4> Image Opacity: <span id="image-opacity">0.5</span></h4>
+            <input class="range" type="range" id="imgOpacity" min="0" max="1" step="0.1" value="0"
+                   onmousemove="rangevalue1.value=value">
+            <output id="rangevalue1"></output>
+
+            <!--                <div id="results" value=""></div>-->
+
+        </div>
+        <br>
+        <div id="wfsResults" class=""></div>
+
+        <div id="alert_empty" class="alert alert-danger alert-warning fade hide" role="alert">
+            <strong>Please enter an input!</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span asia-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div id="alert_noResult" class="alert alert-danger alert-dismissable fade hide" role="alert">
+            <strong>No result(s) found!</strong>please try again.
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span asia-hidden="true">&times;</span>
+            </button>
+        </div>
+
+        <div id="drawcontainer" class="drawcontainer"></div>
+        <div id="mapclicks" class="mapclicks"></div>
+        <div id="results" value=""></div>
+
+    </div>
+
+
+    <!--  Map Div  -->
+
+    <div class="col-lg-9" id="map">
+        <!--map coordinates -->
+        <div class="leaflet-control map-coordinate"></div>
+
+        <form id="measure">
+            <label>Geoprocessing&nbsp;</label>
+            <select id="measuretype">
+                <option value="select">Select Measure option</option>
+                <option value="clip">Clip</option>
+                <option value="union">Union</option>
+                <option value="difference">Difference</option>
+                <option value="intersect">Intersect</option>
+                <option value="dissolve">Dissolve</option>
+                <option value="buffer">Buffer</option>
+                <option value="clear">Clear Measurement</option>
+            </select>
+        </form>
+
+        <div class='delete' id='delete' title="Delete the Digitized features">Delete</div>
+        <a href='#' class='export' id='export' title="Save Features to the database">Export</a>
+        <div class="toggler" id='draw' data-toggle="tooltip" title="Toggle Digitization">Draw</div>
+
+        <div id="toolbar">
+            <div class="hamburger">
+                <span style="align-content: center">Table&nbsp;Attributes</span>
+            </div>
+            <div id="tourstops">
+                <h2 style="align-content: center">Attributes</h2>
+                <hr>
+                <ul>
+                </ul>
+            </div>
+        </div>
+
+        <div class="leaflet-control basic-functions">
+            <div class="upload btns" data-toggle="modal" data-target="#form2" title="Upload Shapefile">
+                <i class="fas fa-upload"></i>
+            </div>
+
+            <div class="download btns" data-toggle="tooltip" title="Download Shapefile">
+                <i class="fas fa-download"></i>
+            </div>
+
+            <div class="statistics btns" data-toggle="modal" data-target="#form" title="Statistics">
+                <i class="fas fa-signal"></i>
+            </div>
+
+
+            <div class="query btns" data-toggle="modal" data-target="#form" title="Query Builder">
+                <i class="fas fa-cogs"></i>
+            </div>
+
+            <!-- Toggle Draw  button -->
+            <div class="lock-map btns" data-toggle="modal" data-target="#form" title="Open Map Controls">
+                <i class="fas fa-lock-open"></i>
+            </div>
+
+        </div>
+
+
+        <div class="leaflet-control map-functions">
+            <div class="default-view controls" data-toggle="tooltip" title="Zoom full extent">
+                <i class="fas fa-home"></i>
+            </div>
+
+            <div class="full-screen controls" onclick=fullScreenView() data-toggle="modal" title="Toggle Full screen">
+                <i class="fas fa-arrows-alt"></i>
+            </div>
+
+            <div class="print controls" data-toggle="tooltip" title="Print The Map extent">
+                <i class="fas fa-print"></i>
+            </div>
+
+            <div class="info controls" data-target="tooltip" title="Get Feature Info">
+                <i class="fas fa-info"></i>
+            </div>
+
+            <div class="controls disabled  leaflet-prevent" id="pin" data-toggle="tooltip"
+                 title="Toggle Map Interaction">
+                <i class="fas fa-map-pin"></i>
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+    <!--modal form that is used to query the db -->
+    <div class="modal fade" id="form" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="exampleModalLabel">Create Account</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="email1">Email address</label>
+                            <input type="email" class="form-control" id="email1" aria-describedby="emailHelp"
+                                   placeholder="Enter email">
+                            <small id="emailHelp" class="form-text text-muted">Your information is safe with
+                                us.</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="password1">Password</label>
+                            <input type="password" class="form-control" id="password1" placeholder="Password">
+                        </div>
+                        <div class="form-group">
+                            <label for="password1">Confirm Password</label>
+                            <input type="password" class="form-control" id="password2"
+                                   placeholder="Confirm Password">
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top-0 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!--modal form that is used to query the db -->
+    <div class="modal fade" id="form2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header border-bottom-0">
+                    <h5 class="modal-title" id="exampleModalLabel2">Upload Shapefile</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{% url 'uploadShape' %}" method="post" enctype="multipart/form-data">
+                    Select shapefile:
+                    <!--                              {% csrf_token %}-->
+                    <input type="file" name="shape" id="shape" multiple>
+                    <input type="submit" class="btn btn-primary" value="Upload Shapefile" name="submit">
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+{% block javascript %}
+<script type="text/javascript" src="{% static 'parcels/js/baselayers.js' %}"></script>
+<!--<script type="text/javascript" src="{% static 'parcels/js/draw.js' %}"></script>-->
+<script type="text/javascript" src="{% static 'parcels/js/main.js' %}"></script>
+
+{% endblock javascript %}
+
+{% endblock content %}

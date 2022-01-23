@@ -28,8 +28,10 @@
               <caption>My Parcel(s)</caption>
               <tr>
                 <th style="align-content: center">Parcel Number</th>
+                <th>Plot Number</th>
+                <th>LR Number</th>
                 <th>Area(ha)</th>
-                <th>Perimeter(m)</th>
+                <th>Perimeter</th>
                 <th>Land Use</th>
                 <th>Encumbrances</th>
                 <th>Improvements</th>
@@ -38,11 +40,12 @@
             <!-- looping through the returned objects and displaying them on the map-->
                 {% for detail in details %}
                     {% for parcel in parcels %}
-                        {% if detail.parcel_id == parcel.id %}
+                        {% if detail.parcel_id == parcel.gid %}
                             <tr>
-                                <td> {{ parcel.lr_no }} </td>
-                                <td> {{ parcel.area_ha }} </td>
-                                <td> {{ parcel.perimeter }} </td>
+                                <td> {{ parcel.plotno }} </td>
+                                <td> {{ parcel.lrnumber }} </td>
+                                <td> {{ parcel.areah }} </td>
+                                <td> {{ parcel.perm }} </td>
                                 <td> {{ detail.land_use.title }} </td>
                                 <td> {{ detail.encumbrances.title }} </td>
                                 <td> {{ detail.improvements.title }}</td>

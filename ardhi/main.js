@@ -431,6 +431,23 @@ var srsName= "epsg:4326";
 // var dataUrl = url + service + version + request + request + outputFormat
 
 
+// var dataurl = '{% url "data" %}';
+// $.getJSON(dataurl, function (data) {
+//     L.geoJson(data, {
+//         onEachFeature:function(feature, layer)
+//             {
+//                 layer.bindPopup('<h3 style="align-content: center">Parcel Details</h3>' +
+//                     '<p>Owner: ' + feature.properties.owner + '</p> ' +
+//                     '<p>Parcel ID: ' + feature.properties.id + '</p> ' +
+//                     '<p>Parcel Number: ' + feature.properties.lr_no + '</p> ' +
+//                     '<p>Status: ' + feature.properties.status + '</p> ' +
+//                     '<p>Area: ' + feature.properties.area_ha + ' Ha</p>' +
+//                     '<p>Perimeter: ' + feature.properties.perimeter + ' M</p>').openPopup();
+//             }
+//     }).addTo(map);
+// });
+
+
 
 // $.getJSON(dataUrl).then(res)=> {
 //     var layer = L.geoJson(res,{

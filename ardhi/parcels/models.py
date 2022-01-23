@@ -6,29 +6,29 @@ import datetime
 
 
 # Create your models here.
-class LandParcels(models.Model):
-    id = models.BigIntegerField(primary_key=True)
-    lrnumber = models.BigIntegerField()
-    areah = models.FloatField()
-    aream = models.FloatField()
-    perm = models.FloatField()
+class Uploads(models.Model):
+    areah = models.FloatField('Area(Ha)')
+    perm = models.FloatField('Perimeter')
+    aream = models.FloatField('Arae(M)')
+    plotno = models.BigIntegerField('Plot NO', unique=True)
+    lrnumber = models.CharField('LRNumber', max_length=80, unique=True)
     geom = models.MultiPolygonField(srid=4326)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
-                              null=True, default=None)
+
     class Meta:
-        db_table = 'naiparcels'
-        verbose_name_plural = "naisparcels"
+        db_table = 'uploads'
+        verbose_name_plural = "uploads"
 
     def __str__(self):
         return self.lrnumber
 
 
 class Parcels(models.Model):
-    id = models.BigIntegerField(primary_key=True)
-    lr_no = models.IntegerField('LR Number', unique=True)
-    area_ha = models.FloatField('Area Ha', max_length=10)
-    area_m = models.FloatField('Area M', max_length=10)
-    perimeter = models.FloatField('Perimeter', max_length=10)
+    gid = models.IntegerField(primary_key=True)
+    areah = models.FloatField('Area(Ha)')
+    perm = models.FloatField('Perimeter')
+    aream = models.FloatField('Arae(M)')
+    plotno = models.BigIntegerField('Plot NO', unique=True)
+    lrnumber = models.CharField('LRNumber', max_length=80, unique=True)
     geom = models.MultiPolygonField(srid=4326)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
                               null=True, default=None)
@@ -38,7 +38,7 @@ class Parcels(models.Model):
         verbose_name_plural = "parcels"
 
     def __str__(self):
-        return self.lr_no
+        return self.lrnumber
 
     # def save(self, *args, **kwargs):
     #     # if geom ends up as a Polygon, make it into a MultiPolygon
@@ -99,12 +99,9 @@ class ParcelDetails(models.Model):
     registered = models.DateTimeField(default=datetime.datetime.now)
 
     def __str__(self):
-        return "%s" % self.parcel.lr_no
+        return "%s" % self.parcel.lrnumber
 
     class Meta:
         # Gives the proper plural name for admin
         db_table = 'parcel_details'
         verbose_name_plural = "parcel_details"
-
-
-
