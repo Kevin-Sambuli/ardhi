@@ -30,7 +30,7 @@ def get_center_coordinates(latA, longA, latB=None, longB=None):
 def get_zoom(distance):
     if distance <= 100:
         return 8
-    elif distance > 100 and distance <= 5000:
+    elif 100 < distance <= 5000:
         return 4
     else:
         return 2

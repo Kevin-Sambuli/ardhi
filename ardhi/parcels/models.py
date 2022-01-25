@@ -1,18 +1,17 @@
 from django.contrib.gis.db import models
 from django.template.defaultfilters import date
 from django.conf import settings
-# from django.db import models
 import datetime
+from django.core.serializers import serialize
 
 
 # Create your models here.
 class Uploads(models.Model):
-    areah = models.FloatField('Area(Ha)')
-    perm = models.FloatField('Perimeter')
-    aream = models.FloatField('Arae(M)')
+    areah = models.FloatField('Area(Ha)', default=0)
+    perm = models.FloatField('Perimeter', default=0)
     plotno = models.BigIntegerField('Plot NO', unique=True)
     lrnumber = models.CharField('LRNumber', max_length=80, unique=True)
-    geom = models.MultiPolygonField(srid=4326)
+    geom = models.PolygonField('Geometry', srid=4326)
 
     class Meta:
         db_table = 'uploads'
@@ -21,15 +20,36 @@ class Uploads(models.Model):
     def __str__(self):
         return self.lrnumber
 
+    def allUploads(self):
+        """ Returns all objects from the database as ageojson"""
+        return self.objects.annotate(geometry=AsGeoJSON('geom'))
+
+    def serialized(self):
+        """returns all the uploads in a serialize format"""
+        return serialize('geojson', self.objects.all())
+
+    def getCentroid(self, id=None):
+        """ Returns the centroid of a specified parcel"""
+        if id:
+            return self.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=id).geom
+        return self.objects.annotate(geometry=AsGeoJSON(Centroid('geom')))
+
+    def getNearestParcels(self, id):
+        """ Returns the first 50 parcels with a specified parcel of land"""
+        parcels = []
+        parcel = self.objects.get(id=id).geom
+        for parc in self.objects.annotate(distance=Distance('geom', parcel)):
+            parcels.append(parc.distance)
+        return sorted(parcels[:50])
+
 
 class Parcels(models.Model):
     gid = models.IntegerField(primary_key=True)
-    areah = models.FloatField('Area(Ha)')
-    perm = models.FloatField('Perimeter')
-    aream = models.FloatField('Arae(M)')
+    areah = models.FloatField('Area(Ha)', default=0)
+    perm = models.FloatField('Perimeter', default=0)
     plotno = models.BigIntegerField('Plot NO', unique=True)
     lrnumber = models.CharField('LRNumber', max_length=80, unique=True)
-    geom = models.MultiPolygonField(srid=4326)
+    geom = models.PolygonField('Geometry', srid=4326)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
                               null=True, default=None)
 
@@ -40,12 +60,17 @@ class Parcels(models.Model):
     def __str__(self):
         return self.lrnumber
 
-    # def save(self, *args, **kwargs):
-    #     # if geom ends up as a Polygon, make it into a MultiPolygon
-    #     if self.geom and isinstance(self.geom, geos.Polygon):
-    #         self.geom = geos.MultiPolygon(self.geom)
-    #
-    #     super(Parcels).save(*args, **kwargs)
+    def getCentroid(self, id):
+        """ Returns the centroid of a specified parcel"""
+        return self.objects.annotate(geometry=AsGeoJSON(Centroid('geom'))).get(id=id).geom
+
+    def getNearestParcels(self, id):
+        """ Returns the first 50 parcels with a specified parcel of land"""
+        parcels = []
+        parcel = self.objects.get(id=id).geom
+        for parc in self.objects.annotate(distance=Distance('geom', parcel)):
+            parcels.append(parc.distance)
+        return sorted(parcels[:50])
 
     @property
     def popup_content(self):

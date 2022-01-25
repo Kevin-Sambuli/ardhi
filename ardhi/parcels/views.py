@@ -7,7 +7,7 @@ import os
 from django.conf import settings
 from django.contrib.gis.db.models.functions import AsGeoJSON, Centroid, Distance
 from django.contrib.gis.geos import GEOSGeometry
-from django.contrib.gis.geos import fromstr, MultiPolygon, GEOSGeometry
+from django.contrib.gis.geos import fromstr, MultiPolygon, GEOSGeometry, Polygon
 from django.contrib.staticfiles import finders
 from django.core.serializers import serialize
 from django.http import JsonResponse, HttpResponse
@@ -145,7 +145,7 @@ def get_points(request):
 def parcels(request):
     """ function that returns parcels in geojson and generate a folium leaflet map
         return JsonResponse(geojson.dumps(data))"""
-    points_as_geojson = serialize('geojson', Parcels.objects.filter())
+    points_as_geojson = serialize('geojson', Parcels.objects.all())
     # data = serialize('geojson', Parcels.objects.all()[:200])
     return HttpResponse(points_as_geojson, content_type='json')
 
@@ -257,8 +257,9 @@ def render_pdf_view(request):
 def uploadShape(request):
     context = {}
     if request.method == 'POST':
-        name = request.POST['firstname']
-        print(name)
+        pass
+        # name = request.POST['firstname']
+        print('processing data')
 
     return render(request, 'parcels/webmap.html', context)
 
@@ -266,12 +267,32 @@ def uploadShape(request):
 def drawShape(request):
     context = {}
     if request.method == 'POST':
-        lrNumber = request.POST['lrnumber']
-        plotNo = request.POST['plotno']
-        coords = request.POST['polygon']
-        print(lrNumber)
+        lrNumber = request.POST.get('lrnumber')
+        plotNo = request.POST.get('plotno')
+        poly = request.POST.get('polygon')
 
-    return render(request, 'parcels/webmap.html', context)
+        data = serialize('geojson', Uploads.objects.all())
+        print(type(data))
+
+        #  loading the string returned from the form into a python object using geojson
+        poly = geojson.loads(poly)
+        print(type(poly.coordinates))
+        print('coordinates', poly.coordinates[0])
+
+        pols = Polygon(poly.coordinates[0])
+        print('type', type(pols))
+        print('polygon', pols)
+        print('wkt', pols.wkt)
+        print('area', pols.area)
+        print('boundary', pols.boundary)
+
+        # geom = GEOSGeometry(pols, srid=4326)
+        # upload = Uploads(lrnumber='B2344', areah=1233, perm=1323, plotno=plotNo, geom=pols)
+        # upload.save()
+
+        context['data'] = data
+
+    return render(request, 'parcels/webmap2.html', context)
 
 
 def search_parcels(request):
@@ -300,6 +321,7 @@ def search_parcels(request):
         print('map =', mmap)
         print('point', str(mmap[0][0]))
 
+        # creating the geos point object
         pnt = GEOSGeometry(str(mmap[0][0]), srid=4326)
         print('geos point object', pnt)
 
@@ -438,11 +460,6 @@ def calculate_distance_view(request):
     #     serialized_hospitals = serializer(closest_hospitals, many=True)
     #     return Response(serialized_hospitals.data, status=status.HTTP_200_OK)
     # return Response(status=status.HTTP_400_BAD_REQUEST)
-
-
-
-
-
 
 # from django.contrib.gis.geos import Point
 # from django.contrib.gis.measure import D

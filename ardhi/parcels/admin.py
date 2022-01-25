@@ -15,7 +15,7 @@ from .models import Parcels, ParcelDetails, Uploads
 # Register your models here.
 # class ParcelAdmin(LeafletGeoAdmin):
 class ParcelAdmin(GeoModelAdmin):
-    list_display = ('lrnumber', 'perm', 'areah', 'aream', 'owner')
+    list_display = ('lrnumber', 'perm', 'areah', 'owner')
     search_fields = ('gid', 'lrnumber')
     readonly_fields = ('lrnumber', 'gid', 'perm', 'areah')
     list_per_page = 10
@@ -26,7 +26,7 @@ class ParcelAdmin(GeoModelAdmin):
 
 # class UploadsAdmin(LeafletGeoAdmin):
 class UploadsAdmin(GeoModelAdmin):
-    list_display = ('lrnumber', 'plotno', 'perm', 'areah', 'aream')
+    list_display = ('lrnumber', 'plotno', 'perm', 'areah')
     search_fields = ('gid', 'lrnumber', 'plotno')
     list_per_page = 10
     filter_horizontal = ()

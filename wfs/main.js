@@ -401,8 +401,7 @@ var popup = L.popup({
 function createFormPopup() {
     var popupContent =
         `<div class="form">
-                <form action="{% url 'drawShape' %}" role="form" id="form" method="post" role="form" id="geoform" enctype="multipart/form-data">
-                {% csrf_token %}
+                <form action="{% url 'drawShape' %}" id="form" method="post" id="geoform" enctype="multipart/form-data">
                     <h3 style="color: #15784e">Parcel Information</h3><hr>
                         <input type="text" name="lrnumber" id="lrnumber"  placeholder="LRN0/0001" required> <br><br>
                         <input type="number" name="plotno" id="plotno"  placeholder="Plot Number" required> <br><br>

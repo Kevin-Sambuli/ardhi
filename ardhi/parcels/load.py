@@ -21,7 +21,7 @@ parcels_shp = os.path.abspath(os.path.join(os.path.dirname(__file__), 'shapefile
 
 
 def run(verbose=True):
-    lm = LayerMapping(Uploads, parcels_shp, parcels_mapping, transform=False, encoding='utf-8')
+    lm = LayerMapping(Parcels, parcels_shp, parcels_mapping, transform=False, encoding='utf-8')
     lm.save(strict=True, verbose=verbose)
     # fid_range=(0, 10))
 
