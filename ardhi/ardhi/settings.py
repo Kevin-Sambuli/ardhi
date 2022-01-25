@@ -135,38 +135,38 @@ WSGI_APPLICATION = 'ardhi.wsgi.application'
 # }
 
 # local database
-DATABASES = {
-    'default': {
-        'ENGINE': env("PG_ENGINE"),
-        'NAME': env("PG_NAME"),
-        'USER': env("PG_USER_LOCAL"),
-        'PASSWORD': env("PG_PASS_LOCAL"),
-        'HOST': env("PG_HOST_LOCAL"),
-        'PORT': env("PG_PORT"),
-    },
-    'openstreetmap': {
-        'ENGINE': env("PG_ENGINE"),
-        'NAME': env("PG_NAME_OSM"),
-        'USER': env("PG_USER_LOCAL"),
-        'PASSWORD': env("PG_PASS_LOCAL"),
-        'HOST': env("PG_HOST_LOCAL"),
-        'PORT': env("PG_PORT"),
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': env("PG_ENGINE"),
+#         'NAME': env("PG_NAME"),
+#         'USER': env("PG_USER_LOCAL"),
+#         'PASSWORD': env("PG_PASS_LOCAL"),
+#         'HOST': env("PG_HOST_LOCAL"),
+#         'PORT': env("PG_PORT"),
+#     },
+#     'openstreetmap': {
+#         'ENGINE': env("PG_ENGINE"),
+#         'NAME': env("PG_NAME_OSM"),
+#         'USER': env("PG_USER_LOCAL"),
+#         'PASSWORD': env("PG_PASS_LOCAL"),
+#         'HOST': env("PG_HOST_LOCAL"),
+#         'PORT': env("PG_PORT"),
+#     }
+# }
 
 # PASSWORD_RESET_TIMEOUT = 10
 
 # heroku
-# DATABASES = {
-#     'default': {
-#         'ENGINE': env("PG_ENGINE"),
-#         'NAME': env("PG_DATABASE_NAME"),
-#         'USER': env("POSTGRES_USER"),
-#         'PASSWORD': env("POSTGRES_PASS"),
-#         'HOST': env("PG_HOST"),
-#         'PORT': env("PG_PORT"),
-#     },
-# }
+DATABASES = {
+    'default': {
+        'ENGINE': env("PG_ENGINE"),
+        'NAME': env("PG_DATABASE_NAME"),
+        'USER': env("POSTGRES_USER"),
+        'PASSWORD': env("POSTGRES_PASS"),
+        'HOST': env("PG_HOST"),
+        'PORT': env("PG_PORT"),
+    },
+}
 
 
 # Password validation
