@@ -369,8 +369,8 @@
             $.ajax({
                     url: "{% url 'drawShape' %}",
                     type: "POST",
-                    data: { lrnumber: lrnumber,
-                            plotno: parcelid,
+                    data: { lrnumber: JSON.stringify(lrnumber),
+                            plotno: JSON.stringify(parcelid),
                             polygon: poly,
                             csrfmiddlewaretoken: csrfmiddlewaretoken
                         },

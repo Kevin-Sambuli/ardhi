@@ -266,7 +266,6 @@ def uploadShape(request):
     return render(request, 'parcels/webmap.html', context)
 
 
-
 def drawShapeAction(request):
     if request.method == 'POST':
         lrNumber = request.POST.get('lrnumber')
@@ -306,12 +305,19 @@ def drawShape(request):
     if request.is_ajax():
         if request.method == 'POST':
             usersV = request.body
-            print('ajax request',usersV.decode('UTF-8'))
-            print('type',type(usersV.decode('UTF-8')))
+            # print('ajax request',usersV.decode('UTF-8'))
+            # print('type',type(usersV.decode('UTF-8')))
+            #
+            # data = ast.literal_eval(repr(usersV))
+            # print(type(data))
+            # print(data)
 
-            data = ast.literal_eval(repr(usersV))
-            print(type(data))
-            print(data)
+            parcel = json.loads(request.POST.get('lrnumber'))
+            plot = json.loads(request.POST.get('plotno'))
+            polygon = json.loads(request.POST.get('polygon'))
+            print('parcel', parcel)
+            print('plot', plot)
+            print('polygon', type(polygon))
 
     return render(request, 'parcels/webmap2.html', context)
 
