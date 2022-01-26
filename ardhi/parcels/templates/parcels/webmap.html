@@ -354,36 +354,11 @@
         layer.bindPopup(popupContent).openPopup();
     }
 
-    //ajax call function
-    function postParcels(parcel) {
-        var url = "{% url 'drawShape' %}"
-        $.ajax({
-            url: url,
-            type: "POST",
-            dataType: "json",
-            data: {result: parcel},
-            beforeSend: function (s) {
-                console.log('processing');
-            },
-            success: function (data) {
-                console.log("succesfully sent")
-            },
-            error: function (error) {
-                alert('error ocurred during save save')
-            },
-        });
-    }
-
-
 
     // an event listener that populates the drawn shape on the map
     map.addEventListener("draw:created", function (e) {
         var type = e.layerType,
             layer = e.layer;
-
-        feature = layer.feature = layer.feature || {};
-        feature.type = feature.type || "Feature";
-        var props = feature.properties = feature.properties || {}; // initialize the feature property
 
         // adding the layer with the properties to the editable layer
         layer.addTo(editableLayers);
@@ -392,56 +367,11 @@
         createFormPopup(layer);
 
         if (type === "polygon") {
-                let lrnumber = document.getElementById("lrnumber").value;
-                let parcelid = document.getElementById("plotno").value;
-                let poly = document.getElementById("polygon").value;
+            var area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+            // let hidden_input = document.querySelector("[name='polygon']");
+            // hidden_input.value = JSON.stringify(layer.toGeoJSON().geometry);
 
-                // adding more properties values to the geojson layer
-                props.lrnumber = lrnumber;
-                props.parcelid = parcelid;
-                props.status = 'on sale';
-
-                // layer.closePopup();
-
-
-                // data = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
-                // $('#drawcontainer').html(data);
-                // console.log('serialized data', data)
-
-                // L.geoJson(JSON.parse(data)).addTo(map);
-
-                // editableLayers.eachLayer(function (layer) {
-                //     // var area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
-                //
-                //     $("#geoform").submit(function (e) {
-                //         e.preventDefault();
-                //         let parcelid = document.getElementById("lrnumber").value;
-                //         let lrnumber = document.getElementById("plotno").value;
-                //         // let hidden_input = document.querySelector("[name='polygon']");
-                //         // hidden_input.value = JSON.stringify(layer.toGeoJSON().geometry);
-                //
-                //         // adding more properties values to the geojson layer
-                //         props.area = 123;
-                //         props.lrnumber = lrnumber;
-                //         props.parcelid = parcelid;
-                //         props.status = 'on sale';
-                //         props.perimeter = 200;
-                //
-                //         layer.closePopup();
-                //         // editableLayers.closePopup(layer);
-                //
-                //         // editableLayers.addLayer(layer); // adding the layer to the with properties
-                //
-                //         // let data = JSON.stringify(editableLayers.toGeoJSON());
-                //         data = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
-                //         $('#drawcontainer').html(data);
-                //
-                //         // L.geoJson(JSON.parse(data)).addTo(map);
-
-                //     });
-                //
-                // });
-                // })
+            // layer.closePopup();
 
         }
         if (type === "marker") {
@@ -464,11 +394,6 @@
             console.log("------------",poly);
             console.log("------------",csrfmiddlewaretoken);
 
-            data = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
-
-            // adding the drawn layer back to the map as a geojson layer
-            L.geoJson(JSON.parse(data)).addTo(map);
-            // $('#drawcontainer').html(data);
 
             $.ajax({
                     url: "{% url 'drawShape' %}",
@@ -483,37 +408,29 @@
                     },
                     success: function (data) {
                         alert("data success saved to the database")
-                        console.log(data)
                     },
                     error: function (response) {
                         alert('trial error');
-                        alert(response);
                     }
                 });
 
             // Get and print GeoJSON for each drawn layer
             editableLayers.eachLayer(function (layer) {
-                feature = layer.feature = layer.feature || {};
-                feature.type = feature.type || "Feature";
-                var props = feature.properties = feature.properties || {}; // initialize the feature property
-
-                // adding more properties values to the geojson layer
-                props.lrnumber = lrnumber;
-                props.parcelid = parcelid;
-                props.status = 'on sale';
-
-                let drawing = JSON.stringify(layer.toGeoJSON().geometry);
-                console.log('drawing', drawing);
+                // closing the pop up on each layer
                 layer.closePopup();
 
                 const layerdata = JSON.stringify(layer.toGeoJSON(), null, 4);
+                let geometry = JSON.stringify(layer.toGeoJSON().geometry);
+                console.log('drawing', layerdata);
+                console.log('geometry', geometry);
                 $('#drawcontainer').html(layerdata);
 
-                // console.log("export", typeof (drawing));
+                L.geoJson(JSON.parse(layerdata)).addTo(map);
+
             })
 
-    //         // Clear drawn items layer
-    //         editableLayers.closePopup();
+            // Clear drawn items layer
+            // editableLayers.closePopup();
     //         // editableLayers.clearLayers();
     //
         }
@@ -533,6 +450,7 @@
 
         const geodata = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
         console.log('serialized data', geodata);
+        console.log('pop up', geodata )
         $('#drawcontainer').html(geodata);
 
         // Stringify the GeoJson
