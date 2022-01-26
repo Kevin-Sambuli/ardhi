@@ -317,7 +317,7 @@ def drawShape(request):
             upload = Uploads(lrnumber=parcel, areah=1233, perm=1323, plotno=plot, geom=pols)
             upload.save()
 
-    return render(request, 'parcels/webmap2.html', context)
+    return render(request, 'parcels/webmap.html', context)
 
 
 def search_parcels(request):
