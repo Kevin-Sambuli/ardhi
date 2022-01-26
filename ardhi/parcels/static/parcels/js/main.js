@@ -103,7 +103,6 @@ var basemaps = {
     ),
     "Osm_Mapnik": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {maxZoom: 19,}),
-    // "georeferenced image":L.tileLayer('image/png',{ attribution: 'Georeferenced Image',}).addTo(map);
 
 };
 

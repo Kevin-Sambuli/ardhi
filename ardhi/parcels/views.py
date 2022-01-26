@@ -1,3 +1,5 @@
+import ast
+
 import folium
 import geojson
 import json
@@ -266,31 +268,65 @@ def uploadShape(request):
 
 def drawShape(request):
     context = {}
-    if request.method == 'POST':
-        lrNumber = request.POST.get('lrnumber')
-        plotNo = request.POST.get('plotno')
-        poly = request.POST.get('polygon')
+    if request.is_ajax():
+        if request.method == 'POST':
+            # lrNumber = request.POST.get('lrnumber')
+            # plotNo = request.POST.get('plotno')
+            # poly = request.POST.get('polygon')
+            usersV = request.body
+            # print('json',usersV.decode('UTF-8'))
+            print('ajax request',usersV.decode('UTF-8'))
+            print('type',type(usersV.decode('UTF-8')))
 
-        data = serialize('geojson', Uploads.objects.all())
-        print(type(data))
+            # da = json.loads(usersV.decode('UTF-8'))
+            # print(type(da), da)
 
-        #  loading the string returned from the form into a python object using geojson
-        poly = geojson.loads(poly)
-        print(type(poly.coordinates))
-        print('coordinates', poly.coordinates[0])
+            # data = ast.literal_eval(repr(usersV))
+            # print(type(data))
+            # print(data)
 
-        pols = Polygon(poly.coordinates[0])
-        print('type', type(pols))
-        print('polygon', pols)
-        print('wkt', pols.wkt)
-        print('area', pols.area)
-        print('boundary', pols.boundary)
+
+
+            # data3 = ast.literal_eval(usersV.decode('UTF-8'))
+            # print(repr(data3))
+
+
+
+
+            # byte_str = b"{'one': 1, 'two': 2}"
+            # dict_str = byte_str.decode("UTF-8")
+            # mydata = ast.literal_eval(dict_str)
+            # print(repr(mydata))
+
+            # updatedData = json.loads(request.body.decode('UTF-8'))
+            # print('updatedData', updatedData)
+
+        # lrNumber = request.POST['lrnumber']
+        # plotNo = request.POST['plotno']
+        # poly = request.POST['polygon']
+
+
+
+        # data = serialize('geojson', Uploads.objects.all())
+        # print(type(data))
+        #
+        # #  loading the string returned from the form into a python object using geojson
+        # poly = geojson.loads(poly)
+        # print(type(poly.coordinates))
+        # print('coordinates', poly.coordinates[0])
+        #
+        # pols = Polygon(poly.coordinates[0])
+        # print('type', type(pols))
+        # print('polygon', pols)
+        # print('wkt', pols.wkt)
+        # print('area', pols.area)
+        # print('boundary', pols.boundary)
 
         # geom = GEOSGeometry(pols, srid=4326)
         # upload = Uploads(lrnumber='B2344', areah=1233, perm=1323, plotno=plotNo, geom=pols)
         # upload.save()
 
-        context['data'] = data
+        # context['data'] = data
 
     return render(request, 'parcels/webmap2.html', context)
 

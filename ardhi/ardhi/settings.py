@@ -25,9 +25,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(env_file=".env")
 SECRET_KEY = env("SECRET_KEY")
-# DEBUG = env("DEBUG")
+DEBUG = env("DEBUG")
 
-DEBUG = False
+# DEBUG = False
 
 # Application definition
 # ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(" ")

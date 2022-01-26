@@ -321,18 +321,33 @@
 
     //a function that's called each time a layer is created
 
-    $("#submit").on("click", L.DomEvent.stopPropagation);
+    // $("#submit").on("click", L.DomEvent.stopPropagation);
+
+    // function createFormPopup(layer) {
+    //     var popupContent =
+    //         `<div class="form">
+    //             <form action="{% url 'drawShape' %}" class="geoform" method="post" id="geoform">
+    //                 {% csrf_token %}
+    //                 <h3 style="color: #15784e">Parcel Information</h3><hr>
+    //                  <input type="text" name="lrnumber" id="lrnumber"  placeholder="LRN0/0001" required> <br><br>
+    //                 <input type="number" name="plotno" id="plotno"  placeholder="Plot Number" required> <br><br>
+    //                 <input type="hidden" name="polygon" id="polygon" value=${JSON.stringify(layer.toGeoJSON().geometry)}>
+    //                 <input style="color: #ffffff" class="btn btn-primary btn-block" id='submit' type="submit" value="Submit">
+    //             </form>
+    //         </div>`;
+    //     // opening the popup on each layer that is created
+    //     layer.bindPopup(popupContent).openPopup();
+    // }
 
     function createFormPopup(layer) {
         var popupContent =
             `<div class="form">
-                <form action="{% url 'drawShape' %}" class="geoform" method="post" id="geoform">
-                     {% csrf_token %}
+                <form id="geoform">{% csrf_token %}
                     <h3 style="color: #15784e">Parcel Information</h3><hr>
                      <input type="text" name="lrnumber" id="lrnumber"  placeholder="LRN0/0001" required> <br><br>
                     <input type="number" name="plotno" id="plotno"  placeholder="Plot Number" required> <br><br>
                     <input type="hidden" name="polygon" id="polygon" value=${JSON.stringify(layer.toGeoJSON().geometry)}>
-                    <input style="color: #ffffff" class="btn btn-primary btn-block" id='save' type="submit" value="Submit">
+                    <input style="color: #ffffff" class="btn btn-primary btn-block" id='submit' type="submit" value="Submit">
                 </form>
             </div>`;
         // opening the popup on each layer that is created
@@ -353,18 +368,13 @@
             success: function (data) {
                 console.log("succesfully sent")
             },
-            error: function () {
+            error: function (error) {
                 alert('error ocurred during save save')
             },
         });
     }
 
-    document.getElementById('geoform').onsubmit(function(e) {
-                   e.preventDefault();
-                   // do something
-                });
 
-    // map.preventDefault();
 
     // an event listener that populates the drawn shape on the map
     map.addEventListener("draw:created", function (e) {
@@ -382,11 +392,14 @@
         createFormPopup(layer);
 
         if (type === "polygon") {
-            $("#save").submit(function (e) {
-                // e.preventDefault();
+            // $("#submit").submit(function (e) {
+            $("#geoform").submit(function (e) {
+                e.preventDefault();
+                console.log("nowwwww 1");
 
-                let parcelid = document.getElementById("lrnumber").value;
-                let lrnumber = document.getElementById("plotno").value;
+                let lrnumber = document.getElementById("lrnumber").value;
+                let parcelid = document.getElementById("plotno").value;
+                let poly = document.getElementById("poly").value;
 
                 // adding more properties values to the geojson layer
                 props.lrnumber = lrnumber;
@@ -394,6 +407,8 @@
                 props.status = 'on sale';
 
                 layer.closePopup();
+
+
                 data = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
                 $('#drawcontainer').html(data);
                 console.log('serialized data', data)
@@ -443,83 +458,77 @@
         }
     });
 
-    // function setData(e) {
-    //     if (e.target && e.target.id === "submit"){
-    //         // e.preventDefault();
-    //         console.log('clicked')
-    //     }
-    // }
-    //
-    // document.addEventListener("click", setData);
 
-
-    // document.getElementById("export").addEventListener("click", function () {
-    //     var parcel = JSON.stringify(editableLayers.toGeoJSON());
-    //
-    //     console.log("export", typeof (parcel));
-    //         $.ajax({
-    //             url: "{% url 'drawShape' %}",
-    //             type: "POST",
-    //             dataType: "json",
-    //             data: {result: parcel},
-    //             beforeSend: function (s) {
-    //                 console.log('processing');
-    //             },
-    //             success: function (data) {
-    //                 console.log("succesfully sent")
-    //             },
-    //             error: function () {
-    //                 alert('error ocurred during save save')
-    //             },
-    //         });
-    // });
+    document.getElementById("export").addEventListener("click", function () {
+            $.ajax({
+                url: "/parcels/draw/",
+                type: "POST",
+                // dataType: "json",
+                // data: { polygon: poly,
+                //         // parcelid: parcelid,
+                //         // lrnumber:lrnumber,
+                //         // csrfmiddlewaretoken:$('input[csrfmiddlewaretoken]').val()
+                //     },
+                beforeSend: function (s) {
+                    console.log('processing');
+                },
+                success: function (data) {
+                    console.log("success sent")
+                },
+                error: function (response) {
+                // alert the error if any error occured
+                    alert('trial error');
+                }
+            });
+    });
 
 
     // exporting the layers into the file system
-    document.getElementById('export').onclick = function (e) {
-        // on export you remove the draw feature group
-        // map.removeLayer(editableLayers);
 
-        //remove the draw controls when exporting the map
-        map.removeControl(drawControl);
-
-        const geodata = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
-        console.log('serialized data', geodata);
-
-        // Stringify the GeoJson
-        const convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(geodata);
-
-        // Create export
-        document.getElementById('export').setAttribute('href', 'data:' + convertedData);
-        document.getElementById('export').setAttribute('download', 'data.geojson');
-
-
-        // plotting the drawn shape as a geojson file on the map
-        function onEachFeature(feature, layer) {
-            if (feature.properties && feature.properties.lrnumber) {
-                var popContent = "<div" +
-                    "<h3 style='color: aliceblue'><b>Land Parcels</b></h3><hr>" +
-                    "<b>Number: </b>" + feature.properties.lrnumber + "</br>" +
-                    "<b>Parcel Id: </b>" + feature.properties.parcelid + "</br>" +
-                    "<b>Area: </b>" + feature.properties.area + "</br>" +
-                    "<b>Perimeter: </b>" + feature.properties.parcelid +
-                    "</div>";
-                layer.bindPopup(popContent);
-            }
-        }
-
-        // Extract GeoJson from featureGroup and display the drawn layers as a geojson
-        L.geoJson(editableLayers.toGeoJSON(), {
-            onEachFeature: onEachFeature,
-            style: mySearchStyle,
-        }).addTo(drawgeojson);
-
-        // adding the drawn geojson to the map
-        drawgeojson.addTo(map);
-
-        // fitting the map to the bounds of the drawn geojson
-        map.fitBounds(drawgeojson.getBounds());
-    };
+    // document.getElementById('export').onclick = function (e) {
+    //     // on export you remove the draw feature group
+    //     // map.removeLayer(editableLayers);
+    //
+    //     //remove the draw controls when exporting the map
+    //     map.removeControl(drawControl);
+    //
+    //     const geodata = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
+    //     console.log('serialized data', geodata);
+    //
+    //     // Stringify the GeoJson
+    //     const convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(geodata);
+    //
+    //     // Create export
+    //     document.getElementById('export').setAttribute('href', 'data:' + convertedData);
+    //     document.getElementById('export').setAttribute('download', 'data.geojson');
+    //
+    //
+    //     // plotting the drawn shape as a geojson file on the map
+    //     function onEachFeature(feature, layer) {
+    //         if (feature.properties && feature.properties.lrnumber) {
+    //             var popContent = "<div" +
+    //                 "<h3 style='color: aliceblue'><b>Land Parcels</b></h3><hr>" +
+    //                 "<b>Number: </b>" + feature.properties.lrnumber + "</br>" +
+    //                 "<b>Parcel Id: </b>" + feature.properties.parcelid + "</br>" +
+    //                 "<b>Area: </b>" + feature.properties.area + "</br>" +
+    //                 "<b>Perimeter: </b>" + feature.properties.parcelid +
+    //                 "</div>";
+    //             layer.bindPopup(popContent);
+    //         }
+    //     }
+    //
+    //     // Extract GeoJson from featureGroup and display the drawn layers as a geojson
+    //     L.geoJson(editableLayers.toGeoJSON(), {
+    //         onEachFeature: onEachFeature,
+    //         style: mySearchStyle,
+    //     }).addTo(drawgeojson);
+    //
+    //     // adding the drawn geojson to the map
+    //     drawgeojson.addTo(map);
+    //
+    //     // fitting the map to the bounds of the drawn geojson
+    //     map.fitBounds(drawgeojson.getBounds());
+    // };
 
 
     // on click, clear all layers

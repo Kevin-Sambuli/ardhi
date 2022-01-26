@@ -49,7 +49,7 @@ class Parcels(models.Model):
     perm = models.FloatField('Perimeter', default=0)
     plotno = models.BigIntegerField('Plot NO', unique=True)
     lrnumber = models.CharField('LRNumber', max_length=80, unique=True)
-    geom = models.PolygonField('Geometry', srid=4326)
+    geom = models.MultiPolygonField('Geometry', srid=4326)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Owner', blank=True,
                               null=True, default=None)
 

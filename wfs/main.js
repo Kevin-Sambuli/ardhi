@@ -1,14 +1,14 @@
-$(document).ready(function () {
-    $("input[type=text]").val("");
-    $(".alert").hide();
-    $("#search-value").on("keydown", function (e) {
-        //if user presses Enter Key (keycode 13) on keyboard
-        if( e.keyCode == 13 ) {
-            e.preventDefault();
-            searchWFS();
-        }
-    });
-});
+// $(document).ready(function () {
+//     $("input[type=text]").val("");
+//     $(".alert").hide();
+//     $("#search-value").on("keydown", function (e) {
+//         //if user presses Enter Key (keycode 13) on keyboard
+//         if( e.keyCode == 13 ) {
+//             e.preventDefault();
+//             searchWFS();
+//         }
+//     });
+// });
 
 $('#toolbar .hamburger').on('click', function() {
   $(this).parent().toggleClass('open');
@@ -197,6 +197,16 @@ $('#draw').click(function(e) {
     }
 });
 
+// $('#draw').dblclick(function(e) {
+//     map.removeControl(drawControl);
+//     //  $(".leaflet-draw").fadeToggle("fast", "linear");
+//     //  $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
+//     // this.blur();
+//   return true;
+// });
+
+
+
 // adding the Lr Number to the Map
 imageBounds = [[-1.22155, 36.8222], [ -1.2293, 36.8277]];
 var imageUrl = 'image/map.jpg';
@@ -228,13 +238,6 @@ $('#imgOpacity').on('change', function (){
 
 
 
-// $('#draw').dblclick(function(e) {
-//     map.removeControl(drawControl);
-//     //  $(".leaflet-draw").fadeToggle("fast", "linear");
-//     //  $(".leaflet-draw-toolbar").fadeToggle("fast", "linear");
-//     // this.blur();
-//   return true;
-// });
 
 // var polygon = turf.polygon([[[-81, 41], [-88, 36], [-84, 31], [-80, 33], [-77, 39], [-81, 41]]]);
 // var centroid = turf.centroid('centroid',polygon);
@@ -269,6 +272,7 @@ document.getElementById('export').onclick = function(e) {
              layer.bindPopup(popContent);
             }
      };
+     
 
      // Extract GeoJson from featureGroup and display the drawn layers as a geojson
     var DrawGeoJSON = L.geoJson(editableLayers.toGeoJSON(), {
