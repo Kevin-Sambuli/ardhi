@@ -323,26 +323,11 @@
 
     // $("#submit").on("click", L.DomEvent.stopPropagation);
 
-    // function createFormPopup(layer) {
-    //     var popupContent =
-    //         `<div class="form">
-    //             <form action="{% url 'drawShape' %}" class="geoform" method="post" id="geoform">
-    //                 {% csrf_token %}
-    //                 <h3 style="color: #15784e">Parcel Information</h3><hr>
-    //                  <input type="text" name="lrnumber" id="lrnumber"  placeholder="LRN0/0001" required> <br><br>
-    //                 <input type="number" name="plotno" id="plotno"  placeholder="Plot Number" required> <br><br>
-    //                 <input type="hidden" name="polygon" id="polygon" value=${JSON.stringify(layer.toGeoJSON().geometry)}>
-    //                 <input style="color: #ffffff" class="btn btn-primary btn-block" id='submit' type="submit" value="Submit">
-    //             </form>
-    //         </div>`;
-    //     // opening the popup on each layer that is created
-    //     layer.bindPopup(popupContent).openPopup();
-    // }
-
     function createFormPopup(layer) {
         var popupContent =
             `<div class="form">
-                <form id="geoform">{% csrf_token %}
+                <form action="{% url 'drawShape' %}" class="geoform" method="post" id="geoform">
+                    {% csrf_token %}
                     <h3 style="color: #15784e">Parcel Information</h3><hr>
                      <input type="text" name="lrnumber" id="lrnumber"  placeholder="LRN0/0001" required> <br><br>
                     <input type="number" name="plotno" id="plotno"  placeholder="Plot Number" required> <br><br>
@@ -353,6 +338,21 @@
         // opening the popup on each layer that is created
         layer.bindPopup(popupContent).openPopup();
     }
+
+    // function createFormPopup(layer) {
+    //     var popupContent =
+    //         `<div class="form">
+    //             <form id="geoform">{% csrf_token %}
+    //                 <h3 style="color: #15784e">Parcel Information</h3><hr>
+    //                  <input type="text" name="lrnumber" id="lrnumber"  placeholder="LRN0/0001" required> <br><br>
+    //                 <input type="number" name="plotno" id="plotno"  placeholder="Plot Number" required> <br><br>
+    //                 <input type="hidden" name="polygon" id="polygon" value=${JSON.stringify(layer.toGeoJSON().geometry)}>
+    //                 <input style="color: #ffffff" class="btn btn-primary btn-block" id='submit' type="submit" value="Submit">
+    //             </form>
+    //         </div>`;
+    //     // opening the popup on each layer that is created
+    //     layer.bindPopup(popupContent).openPopup();
+    // }
 
     //ajax call function
     function postParcels(parcel) {
@@ -392,9 +392,9 @@
         createFormPopup(layer);
 
         if (type === "polygon") {
-            // $("#submit").submit(function (e) {
-            $("#geoform").submit(function (e) {
-                e.preventDefault();
+            $("#submit").submit(function (e) {
+            // $("#geoform").submit(function (e) {
+                // e.preventDefault();
                 console.log("nowwwww 1");
 
                 let lrnumber = document.getElementById("lrnumber").value;

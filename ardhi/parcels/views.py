@@ -266,67 +266,52 @@ def uploadShape(request):
     return render(request, 'parcels/webmap.html', context)
 
 
-def drawShape(request):
-    context = {}
-    if request.is_ajax():
-        if request.method == 'POST':
-            # lrNumber = request.POST.get('lrnumber')
-            # plotNo = request.POST.get('plotno')
-            # poly = request.POST.get('polygon')
-            usersV = request.body
-            # print('json',usersV.decode('UTF-8'))
-            print('ajax request',usersV.decode('UTF-8'))
-            print('type',type(usersV.decode('UTF-8')))
 
-            # da = json.loads(usersV.decode('UTF-8'))
-            # print(type(da), da)
-
-            # data = ast.literal_eval(repr(usersV))
-            # print(type(data))
-            # print(data)
-
-
-
-            # data3 = ast.literal_eval(usersV.decode('UTF-8'))
-            # print(repr(data3))
-
-
-
-
-            # byte_str = b"{'one': 1, 'two': 2}"
-            # dict_str = byte_str.decode("UTF-8")
-            # mydata = ast.literal_eval(dict_str)
-            # print(repr(mydata))
-
-            # updatedData = json.loads(request.body.decode('UTF-8'))
-            # print('updatedData', updatedData)
+def drawShapeAction(request):
+    if request.method == 'POST':
+        lrNumber = request.POST.get('lrnumber')
+        plotNo = request.POST.get('plotno')
+        poly = request.POST.get('polygon')
 
         # lrNumber = request.POST['lrnumber']
         # plotNo = request.POST['plotno']
         # poly = request.POST['polygon']
 
+        data = serialize('geojson', Uploads.objects.all())
+        print(type(data))
+
+        #  loading the string returned from the form into a python object using geojson
+        poly = geojson.loads(poly)
+        print(type(poly.coordinates))
+        print('coordinates', poly.coordinates[0])
+
+        pols = Polygon(poly.coordinates[0])
+        print('type', type(pols))
+        print('polygon', pols)
+        print('wkt', pols.wkt)
+        print('area', pols.area)
+        print('boundary', pols.boundary)
+
+        geom = GEOSGeometry(pols, srid=4326)
+        upload = Uploads(lrnumber='B2344', areah=1233, perm=1323, plotno=plotNo, geom=pols)
+        upload.save()
+
+        context['data'] = data
+
+    return render(request, 'parcels/webmap.html', context)
 
 
-        # data = serialize('geojson', Uploads.objects.all())
-        # print(type(data))
-        #
-        # #  loading the string returned from the form into a python object using geojson
-        # poly = geojson.loads(poly)
-        # print(type(poly.coordinates))
-        # print('coordinates', poly.coordinates[0])
-        #
-        # pols = Polygon(poly.coordinates[0])
-        # print('type', type(pols))
-        # print('polygon', pols)
-        # print('wkt', pols.wkt)
-        # print('area', pols.area)
-        # print('boundary', pols.boundary)
+def drawShape(request):
+    context = {}
+    if request.is_ajax():
+        if request.method == 'POST':
+            usersV = request.body
+            print('ajax request',usersV.decode('UTF-8'))
+            print('type',type(usersV.decode('UTF-8')))
 
-        # geom = GEOSGeometry(pols, srid=4326)
-        # upload = Uploads(lrnumber='B2344', areah=1233, perm=1323, plotno=plotNo, geom=pols)
-        # upload.save()
-
-        # context['data'] = data
+            data = ast.literal_eval(repr(usersV))
+            print(type(data))
+            print(data)
 
     return render(request, 'parcels/webmap2.html', context)
 
