@@ -28,10 +28,10 @@ def lipa_na_mpesa_online(request):
         "Password": LipanaMpesaPassword.decode_password,
         "Timestamp": LipanaMpesaPassword.lipa_time,
         "TransactionType": "CustomerPayBillOnline",
-        "Amount": 100,
-        "PartyA": 254729759023,  # replace with your phone number to get stk push
+        "Amount": 10,
+        "PartyA": 254728893493,  # replace with your phone number to get stk push
         "PartyB": LipanaMpesaPassword.Business_short_code,
-        "PhoneNumber": 254729759023,  # replace with your phone number to get stk push
+        "PhoneNumber": 254728893493,  # replace with your phone number to get stk push
         "CallBackURL": "https://sandbox.safaricom.co.ke/mpesa/",
         "AccountReference": "kevin Sambuli",
         "TransactionDesc": "Repaying Ourselves"

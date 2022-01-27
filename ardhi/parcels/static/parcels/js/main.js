@@ -244,3 +244,29 @@ var drawOptions = {
 };
 
 var drawControl = new L.Control.Draw(drawOptions);
+
+
+
+var options = {
+  position: 'bottomleft',
+  drawMarker: true,
+  drawPolygon: true,
+  drawPolyline: true,
+  drawCircle: true,
+  editPolygon: true,
+  deleteLayer: true
+};
+
+// map.pm.addControls(options);
+
+map.on('pm:create', function(e) {
+  // var marker = e.polygon;
+  console.log(e)
+  console.log(e.layer.getLatLngs()[0])
+  editableLayers.addLayer(e.layer);
+  console.log(JSON.stringify(e.layer.toGeoJSON().geometry));
+
+  var type = e.shape
+      console.log(type)
+
+});

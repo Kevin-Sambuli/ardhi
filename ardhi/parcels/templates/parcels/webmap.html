@@ -5,6 +5,7 @@
 {% block title %}WebGIS{% endblock title %}
 
 {% block stylesheet %}
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>-->
 <link rel="stylesheet" href="{% static 'parcels/css/style.css' %}" type="text/css">
 <link rel="stylesheet" href="{% static 'parcels/css/controls.css' %}" type="text/css">
 {% endblock stylesheet %}
@@ -216,6 +217,66 @@
 {% block extras %}
 
 <script>
+    // Leaflet JS
+    var newgroup = new L.featureGroup();
+
+
+    // function highlightFeature(e) {
+    //     var layer = e.target;
+    //
+    //     layer.setStyle({
+    //         weight: 5,
+    //         color: 'green',
+    //         dashArray: 1,
+    //         fillOpacity: 0.7,
+    //         // fillCollor: "#c7e9c0pg"
+    //         fillCollor: 'blue'
+    //     });
+    //
+    //     if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+    //         layer.bringToFront();
+    //     }
+    //     info.update(layer.feature.properties);
+    // }
+    //
+    // function resetHighlight(e) {
+    //     geojsonlayer.resetStyle(e.target);
+    //     info.update();
+    // }
+    //
+    // function zoomToFeature(e) {
+    //     map.fitBounds(e.target.getBounds());
+    // }
+
+    $.getJSON("{% url 'wfs' %}", function (data) {
+        var geojsonlayer = new L.geoJSON(data, {
+            style: myStyle,
+            onEachFeature: function onEachFeature(feature, layer) {
+                var popContent = "<div><b>" + "Code " + feature.properties.countyname + "</b></br>" + "Name "
+                    + feature.properties.countycode + "</div>";
+                layer.bindPopup(popContent);
+                layer.on({
+                    mouseover: highlightFeature,
+                    mouseout: resetHighlight,
+                    click: zoomToFeature
+                });
+            }
+        }).addTo(newgroup)
+    });
+    newgroup.addTo(map)
+
+    // $("search-value").click(function(){
+    //   $.getJSON("{% url 'wfs' %}", function(result){
+    //     $.each(result, function(i, field){
+    //
+    //     });
+    //   });
+    // });
+
+
+    // L.geoJSON(data, {
+    // onEachFeature: onEachFeature
+    //     }).addTo(map);
 
     // adding the FR  to the Map
     imageBounds = [[-1.22155, 36.8222], [-1.2293, 36.8277]];
@@ -317,12 +378,6 @@
     });
 
 
-    // $('body').on('submit', '#geoform', createFormPopup);
-
-    //a function that's called each time a layer is created
-
-    // $("#submit").on("click", L.DomEvent.stopPropagation);
-
     // function createFormPopup(layer) {
     //     var popupContent =
     //         `<div class="form">
@@ -389,30 +444,34 @@
             let poly = document.getElementById("polygon").value;
             let csrfmiddlewaretoken = document.getElementsByName("csrfmiddlewaretoken")[0].value;
 
-            console.log("------------",lrnumber);
-            console.log("------------",parcelid);
-            console.log("------------",poly);
-            console.log("------------",csrfmiddlewaretoken);
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            console.log("Tokeb------------", csrftoken);
+            console.log("------------", lrnumber);
+            console.log("------------", parcelid);
+            console.log("------------", poly);
+            console.log("------------", csrfmiddlewaretoken);
 
 
             $.ajax({
-                    url: "{% url 'drawShape' %}",
-                    type: "POST",
-                    data: { lrnumber: JSON.stringify(lrnumber),
-                            plotno: JSON.stringify(parcelid),
-                            polygon: poly,
-                            csrfmiddlewaretoken: csrfmiddlewaretoken
-                        },
-                    beforeSend: function (s) {
-                        console.log('processing');
-                    },
-                    success: function (data) {
-                        alert("data success saved to the database")
-                    },
-                    error: function (response) {
-                        alert('trial error');
-                    }
-                });
+                url: "{% url 'drawShape' %}",
+                type: "POST",
+                data: {
+                    lrnumber: JSON.stringify(lrnumber),
+                    plotno: JSON.stringify(parcelid),
+                    polygon: poly,
+                    csrfmiddlewaretoken: csrfmiddlewaretoken
+                },
+                beforeSend: function (s) {
+                    console.log('processing');
+                },
+                success: function (data) {
+                    alert("data success saved to the database")
+                },
+                error: function (response) {
+                    alert('trial error');
+                }
+            });
 
             // Get and print GeoJSON for each drawn layer
             editableLayers.eachLayer(function (layer) {
@@ -431,13 +490,13 @@
 
             // Clear drawn items layer
             // editableLayers.closePopup();
-    //         // editableLayers.clearLayers();
-    //
+            //         // editableLayers.clearLayers();
+            //
         }
 
     }
 
-
+    // this attatches the pop up to the document since its dynamic hence thus reducing page reload
     document.addEventListener("click", setData);
 
 
@@ -450,7 +509,7 @@
 
         const geodata = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
         console.log('serialized data', geodata);
-        console.log('pop up', geodata )
+        console.log('pop up', geodata)
         $('#drawcontainer').html(geodata);
 
         // Stringify the GeoJson
@@ -619,7 +678,6 @@
         jsonp: 'format_options',
         jsonpCallback: 'callback:handleJson',
     });
-
 
     // the ajax callback function
     function handleJson(data) {

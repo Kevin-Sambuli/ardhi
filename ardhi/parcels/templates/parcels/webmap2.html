@@ -315,45 +315,67 @@
     $(".leaflet-control-browser-print").css({
         display: "none",
     });
+    
 
+    // function createFormPopup(layer) {
+    //     var popupContent =
+    //         `<div class="form">
+    //             <form action="{% url 'drawShape' %}" class="geoform" method="post" id="geoform">
+    //                 {% csrf_token %}
+    //                 <h3 style="color: #15784e">Parcel Information</h3><hr>
+    //                  <input type="text" name="lrnumber" id="lrnumber"  placeholder="LRN0/0001" required> <br><br>
+    //                 <input type="number" name="plotno" id="plotno"  placeholder="Plot Number" required> <br><br>
+    //                 <input type="hidden" name="polygon" id="polygon" value=${JSON.stringify(layer.toGeoJSON().geometry)}>
+    //                 <input style="color: #ffffff" class="btn btn-primary btn-block" id='submit' type="submit" value="Submit">
+    //             </form>
+    //         </div>`;
+    //     // opening the popup on each layer that is created
+    //     layer.bindPopup(popupContent).openPopup();
+    // }
 
-    // $('body').on('submit', '#geoform', createFormPopup);
-
-    //a function that's called each time a layer is created
-
-    // $(".leaflet-prevent").on("click", L.DomEvent.stopPropagation);
     function createFormPopup(layer) {
         var popupContent =
             `<div class="form">
-                <form method="post" id="geoform">{% csrf_token %}
+                <form id="geoform">{% csrf_token %}
                     <h3 style="color: #15784e">Parcel Information</h3><hr>
                      <input type="text" name="lrnumber" id="lrnumber"  placeholder="LRN0/0001" required> <br><br>
                     <input type="number" name="plotno" id="plotno"  placeholder="Plot Number" required> <br><br>
                     <input type="hidden" name="polygon" id="polygon" value=${JSON.stringify(layer.toGeoJSON().geometry)}>
-                    <input type="hidden" name="polygon2" id="polygon2" value=${layer.toGeoJSON().geometry}>
-                    <input type="button" value="Submit" id="save">
+                    <input style="color: #ffffff" class="btn btn-primary btn-block" id='save' type="button" value="Save">
                 </form>
             </div>`;
         // opening the popup on each layer that is created
         layer.bindPopup(popupContent).openPopup();
     }
 
+
     // an event listener that populates the drawn shape on the map
     map.addEventListener("draw:created", function (e) {
         var type = e.layerType,
             layer = e.layer;
 
+        // adding the layer with the properties to the editable layer
         layer.addTo(editableLayers);
 
+        // calling the  pop up function on each drawn layer with predefined coordinates
         createFormPopup(layer);
-        console.log('editable layers',editableLayers);
+
+        if (type === "polygon") {
+            var area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+            // let hidden_input = document.querySelector("[name='polygon']");
+            // hidden_input.value = JSON.stringify(layer.toGeoJSON().geometry);
+
+            // layer.closePopup();
+
+        }
+        if (type === "marker") {
+            layer.bindPopup("LatLng: " + layer.getLatLng().lat + "," + layer.getLatLng().lng).openPopup();
+            editableLayers.addLayer(layer);
+        }
     });
 
 
     function setData(e) {
-        console.log('set data', e.target);
-        console.log('set id', e.target.id);
-
         if (e.target && e.target.id == "save") {
             // Get user name and description
             let lrnumber = document.getElementById("lrnumber").value;
@@ -365,6 +387,7 @@
             console.log("------------",parcelid);
             console.log("------------",poly);
             console.log("------------",csrfmiddlewaretoken);
+
 
             $.ajax({
                     url: "{% url 'drawShape' %}",
@@ -379,27 +402,29 @@
                     },
                     success: function (data) {
                         alert("data success saved to the database")
-                        console.log(data)
                     },
                     error: function (response) {
                         alert('trial error');
-                        alert(response);
                     }
                 });
 
             // Get and print GeoJSON for each drawn layer
             editableLayers.eachLayer(function (layer) {
-                let drawing = JSON.stringify(layer.toGeoJSON().geometry);
-                console.log('drawing', drawing);
+                // closing the pop up on each layer
                 layer.closePopup();
 
-                console.log("export", typeof (drawing));
+                const layerdata = JSON.stringify(layer.toGeoJSON(), null, 4);
+                let geometry = JSON.stringify(layer.toGeoJSON().geometry);
+                console.log('drawing', layerdata);
+                console.log('geometry', geometry);
+                $('#drawcontainer').html(layerdata);
+
+                L.geoJson(JSON.parse(layerdata)).addTo(map);
+
             })
 
-            // });
-    //
-    //         // Clear drawn items layer
-    //         editableLayers.closePopup();
+            // Clear drawn items layer
+            // editableLayers.closePopup();
     //         // editableLayers.clearLayers();
     //
         }
@@ -410,7 +435,6 @@
     document.addEventListener("click", setData);
 
 
-    // exporting the layers into the file system
     document.getElementById('export').onclick = function (e) {
         // on export you remove the draw feature group
         // map.removeLayer(editableLayers);
@@ -420,13 +444,15 @@
 
         const geodata = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
         console.log('serialized data', geodata);
+        console.log('pop up', geodata )
+        $('#drawcontainer').html(geodata);
 
         // Stringify the GeoJson
-        const convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(geodata);
-
-        // Create export
-        document.getElementById('export').setAttribute('href', 'data:' + convertedData);
-        document.getElementById('export').setAttribute('download', 'data.geojson');
+        // const convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(geodata);
+        //
+        // // Create export
+        // document.getElementById('export').setAttribute('href', 'data:' + convertedData);
+        // document.getElementById('export').setAttribute('download', 'data.geojson');
 
 
         // plotting the drawn shape as a geojson file on the map
@@ -903,3 +929,33 @@
 
 </script>
 {% endblock extras %}
+
+<!--'<form role="form" id="form" enctype="multipart/form-data" class = "form-horizontal" onsubmit="addMarker()">'+-->
+<!--          '<div class="form-group">'+-->
+<!--              '<label class="control-label col-sm-5"><strong>Date: </strong></label>'+-->
+<!--              '<input type="date" placeholder="Required" id="date" name="date" class="form-control"/>'+ -->
+<!--          '</div>'+-->
+<!--          '<div class="form-group">'+-->
+<!--              '<label class="control-label col-sm-5"><strong>Gender: </strong></label>'+-->
+<!--              '<select class="form-control" id="gender" name="gender">'+-->
+<!--                '<option value="Male">Male</option>'+-->
+<!--                '<option value="Female">Female</option>'+-->
+<!--                '<option value="Other">Other</option>'+-->
+<!--              '</select>'+ -->
+<!--          '</div>'+-->
+<!--          '<div class="form-group">'+-->
+<!--              '<label class="control-label col-sm-5"><strong>Age: </strong></label>'+-->
+<!--              '<input type="number" min="0" class="form-control" id="age" name="age">'+ -->
+<!--          '</div>'+-->
+<!--          //...-->
+<!--          '<div class="form-group">'+-->
+<!--              '<label class="control-label col-sm-5"><strong>Description: </strong></label>'+-->
+<!--              '<textarea class="form-control" rows="6" id="descrip" name="descript">...</textarea>'+-->
+<!--          '</div>'+-->
+<!--          '<input style="display: none;" type="text" id="lat" name="lat" value="'+coords.lat.toFixed(6)+'" />'+-->
+<!--          '<input style="display: none;" type="text" id="lng" name="lng" value="'+coords.lng.toFixed(6)+'" />'+-->
+<!--          '<div class="form-group">'+-->
+<!--            '<div style="text-align:center;" class="col-xs-4 col-xs-offset-2"><button type="button" class="btn">Cancel</button></div>'+-->
+<!--            '<div style="text-align:center;" class="col-xs-4"><button type="submit" value="submit" class="btn btn-primary trigger-submit">Submit</button></div>'+-->
+<!--          '</div>'+-->
+<!--          '</form>';-->

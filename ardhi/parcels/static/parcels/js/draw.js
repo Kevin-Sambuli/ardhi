@@ -73,8 +73,8 @@ var options = {
   deleteLayer: true
 };
 
-	 	// add leaflet.pm controls to the map
-	 	// map.pm.addControls(options);
+// add leaflet.pm controls to the map
+map.pm.addControls(options);
 
 // const shapes = [{
 //     "type": "Feature",

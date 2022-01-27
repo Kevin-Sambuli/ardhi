@@ -9,6 +9,7 @@ urlpatterns = [
                                            properties=('gid', 'owner', 'plotno', 'areah', 'perm', 'lrnumber')), name='data'),
     path('allParcels/', views.allParcels, name='allParcels'),
     path('draw/', views.drawShape, name='drawShape'),
+    path('wfs/', views.getWFS, name='wfs'),
     path('uploadShape/', views.uploadShape, name='uploadShape'),
     path('centroids/', views.get_points, name='distance'),
     path('json/', views.parcels, name='json_parcels'),

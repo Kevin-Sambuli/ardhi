@@ -266,58 +266,77 @@ def uploadShape(request):
     return render(request, 'parcels/webmap.html', context)
 
 
-def drawShapeAction(request):
-    if request.method == 'POST':
-        lrNumber = request.POST.get('lrnumber')
-        plotNo = request.POST.get('plotno')
-        poly = request.POST.get('polygon')
+def drawShape(request):
+    """ the view takes in data from ajax and decodes using json for  texts values
+        and geojson to decode polygon string
+    """
+    context = {}
+    parcels = serialize('geojson', Parcels.objects.all())
 
-        # lrNumber = request.POST['lrnumber']
-        # plotNo = request.POST['plotno']
-        # poly = request.POST['polygon']
+    # request should be ajax and method should be POST.
+    if request.is_ajax() and request.method == 'POST':
+        # lrNumber = request.POST.get('lrnumber')
+        # plotNo = request.POST.get('plotno')
+        # poly = request.POST.get('polygon')
 
-        data = serialize('geojson', Uploads.objects.all())
-        print(type(data))
+        url = 'http://localhost:8080/geoserver/kenya/wfs'
+        auth = ('admin', 'geoserver')
 
-        #  loading the string returned from the form into a python object using geojson
-        poly = geojson.loads(poly)
-        print(type(poly.coordinates))
-        print('coordinates', poly.coordinates[0])
+        params = dict(service='WFS', version='2.0.0', request='GetFeature',
+                      typeName='kenya:counties', srsname='EPSG:4326', outputFormat='text/javascript', encoding="utf-8",
+                      cql_filter="countyname='Nairobi'")
 
-        pols = Polygon(poly.coordinates[0])
+        r = requests.get(url, auth=auth, params=params)
+
+        wfs = geojson.loads(r.content)
+
+
+        parcel = json.loads(request.POST.get('lrnumber'))
+        plot = json.loads(request.POST.get('plotno'))
+        polygon = geojson.loads(request.POST.get('polygon'))
+        print('parcel', parcel)
+        print('plot', plot)
+        print('polygon', type(polygon))
+
+        pols = Polygon(polygon.coordinates[0])
+        geom = GEOSGeometry(pols, srid=4326)
         print('type', type(pols))
         print('polygon', pols)
         print('wkt', pols.wkt)
         print('area', pols.area)
         print('boundary', pols.boundary)
 
-        geom = GEOSGeometry(pols, srid=4326)
-        upload = Uploads(lrnumber='B2344', areah=1233, perm=1323, plotno=plotNo, geom=pols)
+        # pols = Polygon(polygon.coordinates[0])
+        upload = Uploads(lrnumber=parcel, areah=1233, perm=1323, plotno=plot, geom=pols)
         upload.save()
 
-        context['data'] = data
-
+        context['parcels'] = parcels
+        context['wfs'] = json.dumps(wfs)
     return render(request, 'parcels/webmap.html', context)
 
 
-def drawShape(request):
-    context = {}
-    if request.is_ajax():
-        if request.method == 'POST':
-            usersV = request.body
+def getWFS(request):
+    import requests #request.is_ajax and
+    if request.method == 'GET':
+        url = 'http://localhost:8080/geoserver/kenya/wfs'
+        auth = ('admin', 'geoserver')
 
-            parcel = json.loads(request.POST.get('lrnumber'))
-            plot = json.loads(request.POST.get('plotno'))
-            polygon = geojson.loads(request.POST.get('polygon'))
-            print('parcel', parcel)
-            print('plot', plot)
-            print('polygon', type(polygon))
+        # typename = json.loads(request.GET.get("typename"))
+        # cql_filter = json.loads(request.GET.get("cqlFilter"))
 
-            pols = Polygon(polygon.coordinates[0])
-            upload = Uploads(lrnumber=parcel, areah=1233, perm=1323, plotno=plot, geom=pols)
-            upload.save()
+        params = dict(service='WFS', version='2.0.0', request='GetFeature',
+                      typeName='kenya:counties', srsname='EPSG:4326', outputFormat='json', encoding="utf-8")
 
-    return render(request, 'parcels/webmap.html', context)
+        # cql_filter = "countyname='Nairobi'"
+
+        r = requests.get(url, auth=auth, params=params)
+        
+        wfs = geojson.loads(r.content)
+
+        # if wfs:
+        return JsonResponse(wfs)
+
+    # return render(request, 'parcels/webmap.html', {'data': wfs})
 
 
 def search_parcels(request):

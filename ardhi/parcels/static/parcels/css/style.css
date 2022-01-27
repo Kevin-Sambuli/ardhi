@@ -84,7 +84,7 @@ body{
   position: absolute;
   top:10px;
   left:150px;
-  z-index:1001;
+  z-index:1000;
   color:white;
   padding:6px;
   border-radius:20px;
@@ -99,7 +99,7 @@ body{
   position: absolute;
   top:10px;
   left:50px;
-  z-index:1001;
+  z-index:1000;
   background-color: darkcyan;
   color:ghostwhite;
   padding:6px;
@@ -114,7 +114,7 @@ body{
   position: absolute;
   top:10px;
   left:100px;
-  z-index:1001;
+  z-index:1000;
   color: whitesmoke;
   text-decoration: green;
   padding:6px;
