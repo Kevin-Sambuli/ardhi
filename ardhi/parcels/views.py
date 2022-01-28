@@ -1,5 +1,3 @@
-import ast
-
 import folium
 import geojson
 import json
@@ -18,9 +16,9 @@ from django.template.loader import get_template
 from geopy.geocoders import Nominatim
 from xhtml2pdf import pisa
 
-# from geopy.distance import geodesic
+from geopy.distance import geodesic
 from .database import get_cursor
-from .filters import parcelJson
+from .filters import parcelJson, wfsRequest
 from .map import my_map
 from .models import Parcels, ParcelDetails, Uploads
 from .utils import get_geo, get_center_coordinates, get_zoom, get_ip_address
@@ -304,60 +302,13 @@ def drawShape(request):
 
 
 def getWFS(request):
-    import requests
     if request.is_ajax and request.method == 'GET':
-        url = 'http://localhost:8080/geoserver/kenya/wfs'
-        auth = ('admin', 'geoserver')
-
         queryValue = request.GET.get("cql")
-        if queryValue:
-            print(queryValue)
-            cqlFilter = "countyname='" + queryValue + "'";
+        wfs = wfsRequest(queryValue='K')
+        # wfs = wfsRequest(queryValue=queryValue)
 
-            # cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'"
-            params = dict(service='WFS', version='2.0.0', request='GetFeature',
-                          typeName='kenya:counties', cql_filter=cqlFilter,
-                          srsname='EPSG:4326', outputFormat='json', encoding="utf-8")
+    return JsonResponse(wfs)
 
-            r = requests.get(url, auth=auth, params=params)
-
-            wfs = geojson.loads(r.content)
-            return JsonResponse(wfs)
-
-        params = dict(service='WFS', version='2.0.0', request='GetFeature',
-                      typeName='kenya:counties',srsname='EPSG:4326',
-                      outputFormat='json', encoding="utf-8")
-
-        r = requests.get(url, auth=auth, params=params)
-
-        wfs = geojson.loads(r.content)
-
-        return JsonResponse(wfs)
-
-
-def getWFS2(request):
-    import requests  # request.is_ajax and
-    if request.is_ajax and request.method == 'GET':
-        url = 'http://localhost:8080/geoserver/kenya/wfs'
-        auth = ('admin', 'geoserver')
-
-        queryValue = request.GET.get("cql")
-        print(queryValue)
-        # cql_filter = json.loads(request.GET.get("cqlFilter"))
-
-        # cqlFilter = "countyname='" + queryValue + "'";
-        # cql_filter = "countyname='Nairobi'"
-
-        cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'"
-        params = dict(service='WFS', version='2.0.0', request='GetFeature',
-                      typeName='kenya:counties', cql_filter=cqlFilter,
-                      srsname='EPSG:4326', outputFormat='json', encoding="utf-8")
-
-        r = requests.get(url, auth=auth, params=params)
-
-        wfs = geojson.loads(r.content)
-
-        return JsonResponse(wfs)
 
 
 def search_parcels(request):

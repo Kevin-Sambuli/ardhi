@@ -10,7 +10,6 @@ urlpatterns = [
     path('allParcels/', views.allParcels, name='allParcels'),
     path('draw/', views.drawShape, name='drawShape'),
     path('wfs/', views.getWFS, name='wfs'),
-    path('wfs2/', views.getWFS2, name='wfs2'),
     path('uploadShape/', views.uploadShape, name='uploadShape'),
     path('centroids/', views.get_points, name='distance'),
     path('json/', views.parcels, name='json_parcels'),

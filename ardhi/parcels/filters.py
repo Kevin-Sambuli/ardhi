@@ -2,27 +2,12 @@
 from django_filters import rest_framework as filters
 from rest_framework_gis.filters import GeoFilterSet
 from .models import Parcels
+import requests
 import geojson
 
 
+
 # from regions.models import SubLocations, Locations, SubCounties, Counties
-
-
-def get_parcel_by_sublocation(queryset, name, value):
-    filtered_boundary = SubLocations.objects.filter(pk=value)
-    if filtered_boundary:
-        boundary = filtered_boundary.first()
-        parcel_in_sublocation = queryset.filter(geom__within=boundary.geom)
-        print('subloc', parcel_in_sublocation)
-        return parcel_in_sublocation
-
-
-def get_parcel_by_location(queryset, name, value):
-    filtered_boundary = Locations.objects.filter(pk=value)
-    if filtered_boundary:
-        boundary = filtered_boundary.first()
-        parcel_in_location = queryset.filter(geom__within=boundary.geom)
-        return parcel_in_location
 
 
 class ParcelsFilter(GeoFilterSet):
@@ -107,10 +92,13 @@ def myParcels(table=None, owner_id=None):
 
 
 def wfsRequest(queryValue=None):
-    if cqlfilter:
-        cqlFilter = "countyname='" + queryValue + "'";
+    url = 'http://localhost:8080/geoserver/kenya/wfs'
+    auth = ('admin', 'geoserver')
 
-        # cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'"
+    if queryValue:
+        # cqlFilter = "countyname='" + queryValue + "'"
+
+        cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'"
         params = dict(service='WFS', version='2.0.0', request='GetFeature',
                       typeName='kenya:counties', cql_filter=cqlFilter,
                       srsname='EPSG:4326', outputFormat='json', encoding="utf-8")

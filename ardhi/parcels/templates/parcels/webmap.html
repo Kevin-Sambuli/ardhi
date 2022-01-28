@@ -823,10 +823,10 @@
             });
         } else {
             // alert("please wait");
-            // $.ajax("{% url 'wfs2' %}", {
-            $.ajax(URL, {
-                // type: "GET",
-                // data: { cql: queryValue},
+            $.ajax("{% url 'wfs' %}", {
+            // $.ajax(URL, {
+                type: "GET",
+                data: { 'cql': JSON.stringify(queryValue)},
                 dataType: 'jsonp',
                 jsonpCallback: 'callback:searchJson',
                 jsonp: 'format_options'
