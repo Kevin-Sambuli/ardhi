@@ -198,7 +198,7 @@
                 <form action="{% url 'uploadShape' %}" method="post" enctype="multipart/form-data">
                     Select shapefile:
                     <!--                              {% csrf_token %}-->
-                    <input type="file" name="shape" id="shape" multiple>
+                    <input type="file" name="shape" id="shape" multiple required>
                     <input type="submit" class="btn btn-primary" value="Upload Shapefile" name="submit">
                 </form>
             </div>
@@ -219,64 +219,52 @@
 <script>
     // Leaflet JS
     var newgroup = new L.featureGroup();
+    var geojsonlayer;
 
 
-    // function highlightFeature(e) {
-    //     var layer = e.target;
-    //
-    //     layer.setStyle({
-    //         weight: 5,
-    //         color: 'green',
-    //         dashArray: 1,
-    //         fillOpacity: 0.7,
-    //         // fillCollor: "#c7e9c0pg"
-    //         fillCollor: 'blue'
-    //     });
-    //
-    //     if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-    //         layer.bringToFront();
-    //     }
-    //     info.update(layer.feature.properties);
-    // }
-    //
-    // function resetHighlight(e) {
-    //     geojsonlayer.resetStyle(e.target);
-    //     info.update();
-    // }
-    //
-    // function zoomToFeature(e) {
-    //     map.fitBounds(e.target.getBounds());
-    // }
+    function highlightFeature2(e) {
+        var layer = e.target;
+        layer.setStyle({
+            weight: 5,
+            color: 'green',
+            dashArray: 1,
+            fillOpacity: 0.1,
+            fillCollor: "#c7e9c0pg",
+            // fillCollor: 'blue'
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+        }
+        info.update(layer.feature.properties);
+    }
+
+    function resetHighlight2(e) {
+        geojsonlayer.resetStyle(e.target);
+        info.update();
+    }
+
+    function zoomToFeature2(e) {
+        map.fitBounds(e.target.getBounds());
+    }
 
     $.getJSON("{% url 'wfs' %}", function (data) {
-        var geojsonlayer = new L.geoJSON(data, {
+        geojsonlayer = new L.geoJSON(data, {
             style: myStyle,
             onEachFeature: function onEachFeature(feature, layer) {
-                var popContent = "<div><b>" + "Code " + feature.properties.countyname + "</b></br>" + "Name "
+                var popContent = "<div><b>" + "Name " + feature.properties.countyname + "</b></br>" + "Code "
                     + feature.properties.countycode + "</div>";
                 layer.bindPopup(popContent);
                 layer.on({
-                    mouseover: highlightFeature,
-                    mouseout: resetHighlight,
-                    click: zoomToFeature
+                    mouseover: highlightFeature2,
+                    mouseout: resetHighlight2,
+                    click: zoomToFeature2
                 });
             }
         }).addTo(newgroup)
     });
     newgroup.addTo(map)
 
-    // $("search-value").click(function(){
-    //   $.getJSON("{% url 'wfs' %}", function(result){
-    //     $.each(result, function(i, field){
-    //
-    //     });
-    //   });
-    // });
-
-
-    // L.geoJSON(data, {
-    // onEachFeature: onEachFeature
-    //     }).addTo(map);
 
     // adding the FR  to the Map
     imageBounds = [[-1.22155, 36.8222], [-1.2293, 36.8277]];
@@ -422,6 +410,9 @@
         createFormPopup(layer);
 
         if (type === "polygon") {
+            // layer.addTo(editableLayers);
+
+            alert(turf.area(layer.toGeoJSON()))
             var area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
             // let hidden_input = document.querySelector("[name='polygon']");
             // hidden_input.value = JSON.stringify(layer.toGeoJSON().geometry);
@@ -430,9 +421,20 @@
 
         }
         if (type === "marker") {
-            layer.bindPopup("LatLng: " + layer.getLatLng().lat + "," + layer.getLatLng().lng).openPopup();
-            editableLayers.addLayer(layer);
+            layer.bindPopup("Lat: " + layer.getLatLng().lat + "<br>" +"Lng:"  + layer.getLatLng().lng).openPopup();
+            // editableLayers.addLayer(layer);
         }
+
+        //       if (type == "marker" || type == "circle" || type == "circlemarker"){
+        //   console.log([layer.getLatLng().lat, layer.getLatLng().lng]);
+        //       }
+        // else {
+        //   var objects = layer.getLatLngs()[0];
+        //   for (var i = 0; i < objects.length; i++){
+        //     console.log([objects[i].lat,objects[i].lng]);
+        //   }
+        // }
+
     });
 
 
@@ -461,6 +463,8 @@
                     plotno: JSON.stringify(parcelid),
                     polygon: poly,
                     csrfmiddlewaretoken: csrfmiddlewaretoken
+                    // csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+                    // action: 'post'
                 },
                 beforeSend: function (s) {
                     console.log('processing');
@@ -580,6 +584,21 @@
         $(".drawercontainer .drawercontent").html("");
     });
 
+    // let popup = L.popup();
+
+    // function onMapClick(e) {
+    //     popup
+    //         .setLatLng(e.latlng)
+    //         .setContent(
+    //             "You clicked the map at -<br>" +
+    //             "<b>lon:</b> " + e.latlng.lng + "<br>" +
+    //             "<b>lat:</b> " + e.latlng.lat
+    //         )
+    //         .openOn(map);
+    // }
+
+    // map.addEventListener("click", onMapClick);
+
 
     //Get WFS request from  geoserver
     var wfsURL = wfs_layer_url + "service=wfs&version=1.0.0&request=GetFeature&typeName=kenya:counties&outputFormat=application/json";
@@ -610,7 +629,7 @@
             layers: 'nairobi',
             format: 'image/png',
             transparent: true,
-            // tiled:true,
+            tiled: true,
             opacity: 0.6,
             zIndex: 100,
             attribution: attribution
@@ -679,6 +698,21 @@
         jsonpCallback: 'callback:handleJson',
     });
 
+    function states_color(p) {
+        if (p === "Republican") return "red";
+        if (p === "Democrat") return "blue";
+        return "grey";
+    }
+
+    function states_style(feature) {
+        return {
+            color: "black",
+            weight: 1,
+            fillColor: states_color(feature.properties.party),
+            fillOpacity: 0.7
+        };
+    }
+
     // the ajax callback function
     function handleJson(data) {
         selectedArea = L.geoJson(data, {
@@ -700,6 +734,16 @@
         }).addTo(wfsLayer);
         map.fitBounds(selectedArea.getBounds());
     }
+
+
+    let url = "https:earthquake.usgs.gov/earthquakes/feed/v1.0/" + "summary/4.5_week.geojson";
+    // fetch(url)
+    //     .then(function(response) {
+    //         return response.json();
+    //     })
+    //     .then(function(data) {
+    //         L.geoJSON(data).addTo(map);
+    //     });
 
     // re order map z index
     map.on("overLays", function (e) {
@@ -777,15 +821,12 @@
                 $(".alert").slideUp(500);
                 alert("Please enter A valid Input!");
             });
-        }
-
-            // if (!queryValue) {
-            //     alert("Please enter A valid Input!");
-            //     return false;
-        // }
-        else {
+        } else {
             // alert("please wait");
+            // $.ajax("{% url 'wfs2' %}", {
             $.ajax(URL, {
+                // type: "GET",
+                // data: { cql: queryValue},
                 dataType: 'jsonp',
                 jsonpCallback: 'callback:searchJson',
                 jsonp: 'format_options'
@@ -978,13 +1019,14 @@
     // map overlays
     var overLays = {
         // "Georeferenced": imgoverlay,
-        "Nairobi": nairobiPlots,
-        "County (WMS)": counties,
-        "Population  (WMS)": population,
-        "wfsLayer (WFS)": wfsLayer,
-        "Search": wfsLayerSearch,
+        // "Nairobi": nairobiPlots,
+        // "County (WMS)": counties,
+        // "Population  (WMS)": population,
+        // "wfsLayer (WFS)": wfsLayer,
+        // "Search": wfsLayerSearch,
         "Draw": editableLayers,
         "DrawGeojson": drawgeojson,
+        "kenya": newgroup,
 
     };
 

@@ -24,14 +24,14 @@ var area = null;
 // map.addLayer(editableLayers);
 
 
-var MyCustomMarker = L.Icon.extend({
-    options: {
-        shadowUrl: null,
-        iconAnchor: new L.Point(12, 12),
-        iconSize: new L.Point(24, 24),
-        iconUrl: 'image/logo.png'
-    }
-});
+// var MyCustomMarker = L.Icon.extend({
+//     options: {
+//         shadowUrl: null,
+//         iconAnchor: new L.Point(12, 12),
+//         iconSize: new L.Point(24, 24),
+//         iconUrl: 'image/logo.png'
+//     }
+// });
 
 
 var basemaps = {
@@ -169,10 +169,6 @@ var sidebar = L.control
     })
   // .addTo(map);
 
-// // adding the Lr Number to the Map
-// imageBounds = [[-1.22155, 36.8222], [-1.2293, 36.8277]];
-// var imageUrl = "{% static 'parcels/image/map.jpg'%}";
-// var imgoverlay = L.imageOverlay(imageUrl, imageBounds, {opacity: 1, zIndex: 1});
 
 
 // function to open up the pop up on draw end
@@ -182,6 +178,40 @@ var popup = L.popup({
     className: "custom-popup"
 });
 
+// define custom marker
+var MyCustomMarker = L.Icon.extend({
+  options: {
+    shadowUrl: null,
+    iconAnchor: new L.Point(12, 12),
+    iconSize: new L.Point(24, 24),
+    iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6b/Information_icon4_orange.svg'
+  }
+});
+
+// map.on(L.Draw.Event.CREATED, function (e) {
+//   console.clear();
+//   var type = e.layerType
+//   var layer = e.layer;
+//
+//
+//   // Do whatever else you need to. (save to db, add to map etc)
+//
+//   drawnItems.addLayer(layer);
+//
+//   console.log("Coordinates:");
+//
+//   if (type == "marker" || type == "circle" || type == "circlemarker"){
+//     console.log([layer.getLatLng().lat, layer.getLatLng().lng]);
+//   }
+//   else {
+//     var objects = layer.getLatLngs()[0];
+//     for (var i = 0; i < objects.length; i++){
+//       console.log([objects[i].lat,objects[i].lng]);
+//     }
+//   }
+//
+//
+// });
 
 var drawOptions = {
     position: "bottomleft",
@@ -200,8 +230,8 @@ var drawOptions = {
                 clickable: false
             }
         },
-        marker: true,
-        // marker: {icon: new MyCustomMarker()}
+        // marker: true,
+        marker: {icon: new MyCustomMarker()},
 
         polygon: {
             shapeOptions: {
@@ -219,6 +249,7 @@ var drawOptions = {
             allowIntersection: false, // Restricts shapes to simple polygons
             drawError: {
                 color: "#e1e100", // Color the shape will turn when intersects
+                timeout: 3000,
                 message: "<strong>Oh snap!<strong> you can't draw that!" // Message that will show when intersect
             },
             showArea: true,
@@ -229,7 +260,6 @@ var drawOptions = {
             nautic: false,
             // repeatMode: true,
             precision: {km: 2, ft: 0}
-
         }
     },
 
@@ -259,14 +289,115 @@ var options = {
 
 // map.pm.addControls(options);
 
-map.on('pm:create', function(e) {
-  // var marker = e.polygon;
-  console.log(e)
-  console.log(e.layer.getLatLngs()[0])
-  editableLayers.addLayer(e.layer);
-  console.log(JSON.stringify(e.layer.toGeoJSON().geometry));
+// map.on('pm:create', function(e) {
+//   // var marker = e.polygon;
+//   console.log(e)
+//   console.log(e.layer.getLatLngs()[0])
+//   editableLayers.addLayer(e.layer);
+//   console.log(JSON.stringify(e.layer.toGeoJSON().geometry));
+//
+//   var type = e.shape
+//       console.log(type)
+//
+// });
 
-  var type = e.shape
-      console.log(type)
 
-});
+//     var container = L.DomUtil.create('input');
+//     container.type="button";
+//
+//     container.title="No cat";
+//     container.value = "42";
+//
+//     container.onmouseover = function(){
+//       container.style.backgroundColor = 'pink';
+//     }
+//     container.onmouseout = function(){
+//       container.style.backgroundColor = 'white';
+//     }
+
+
+// <!DOCTYPE html>
+// <html>
+// <head>
+// 	<title>Fit Bounds to Selected Feature</title>
+// 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+// 	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css">
+//     <script src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js"></script>
+//     <style>
+//         body {
+//             padding: 0;
+//             margin: 0;
+//         }
+//         html, body, #map {
+//             height: 100%;
+//             width: 100%;
+//         }
+//         .sel {
+// 			padding: 6px 8px;
+// 			font: 14px/16px Arial, Helvetica, sans-serif;
+// 			background-color: rgba(255,255,255,0.8);
+// 			box-shadow: 0 0 15px rgba(0,0,0,0.2);
+// 			border-radius: 5px;
+// 		}
+//     </style>
+// </head>
+// <body>
+// 	<div id="map"></div>
+// 	<script>
+//
+// // Map
+// var map = L.map("map").setView([0, 0], 1);
+//
+// // Tile layer
+// L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+// 	maxZoom: 19,
+//     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+// }).addTo(map);
+//
+// // Lines GeoJSON
+// var lines = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"id":1},"geometry":{"type":"LineString","coordinates":[[-113.90625,34.30714385628804],[-106.5234375,47.754097979680026],[-84.375,39.36827914916014]]}},{"type":"Feature","properties":{"id":2},"geometry":{"type":"LineString","coordinates":[[90.3515625,66.23145747862573],[121.28906250000001,61.77312286453146]]}},{"type":"Feature","properties":{"id":3},"geometry":{"type":"LineString","coordinates":[[8.0859375,15.284185114076433],[23.203125,28.613459424004414],[3.1640625,30.14512718337613],[27.7734375,21.289374355860424]]}}]};
+//
+// // Lines layer
+// var line_layer = L.geoJSON(
+//     lines, {
+//         onEachFeature: function(feature, layer) {
+//             layer._leaflet_id = feature.properties.id;
+//             layer.bindPopup("<b>ID:</b> " + feature.properties.id, {closeOnClick: false, autoClose: false});
+//         },
+//         style: {
+//             weight: 10
+//         }
+//     }
+// ).addTo(map);
+//
+// // Open popups
+// line_layer.eachLayer(function(layer) {layer.openPopup()});
+//
+// // Selection menu
+// var dropdown = L.control({position: "topright"});
+// dropdown.onAdd = function(map) {
+//     var div = L.DomUtil.create("div", "sel");
+//     div.innerHTML =
+//         '<input type="radio" name="id" value="1"> 1<br>' +
+//         '<input type="radio" name="id" value="2"> 2<br>' +
+//         '<input type="radio" name="id" value="3"> 3';
+//     return div;
+// };
+// dropdown.addTo(map);
+//
+// // Fit bounds on selection change
+// document
+//     .querySelector(".sel")
+//     .addEventListener(
+//         "change",
+//         function(e) {
+//             var bounds = line_layer.getLayer(e.target.value).getBounds();
+//             map.flyToBounds(bounds);
+//         }
+//     );
+//
+// 	</script>
+// </body>
+// </html>
+
+

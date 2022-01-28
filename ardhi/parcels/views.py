@@ -279,18 +279,6 @@ def drawShape(request):
         # plotNo = request.POST.get('plotno')
         # poly = request.POST.get('polygon')
 
-        url = 'http://localhost:8080/geoserver/kenya/wfs'
-        auth = ('admin', 'geoserver')
-
-        params = dict(service='WFS', version='2.0.0', request='GetFeature',
-                      typeName='kenya:counties', srsname='EPSG:4326', outputFormat='text/javascript', encoding="utf-8",
-                      cql_filter="countyname='Nairobi'")
-
-        r = requests.get(url, auth=auth, params=params)
-
-        wfs = geojson.loads(r.content)
-
-
         parcel = json.loads(request.POST.get('lrnumber'))
         plot = json.loads(request.POST.get('plotno'))
         polygon = geojson.loads(request.POST.get('polygon'))
@@ -311,32 +299,65 @@ def drawShape(request):
         upload.save()
 
         context['parcels'] = parcels
-        context['wfs'] = json.dumps(wfs)
+        # context['wfs'] = json.dumps(wfs)
     return render(request, 'parcels/webmap.html', context)
 
 
 def getWFS(request):
-    import requests #request.is_ajax and
-    if request.method == 'GET':
+    import requests
+    if request.is_ajax and request.method == 'GET':
         url = 'http://localhost:8080/geoserver/kenya/wfs'
         auth = ('admin', 'geoserver')
 
-        # typename = json.loads(request.GET.get("typename"))
-        # cql_filter = json.loads(request.GET.get("cqlFilter"))
+        queryValue = request.GET.get("cql")
+        if queryValue:
+            print(queryValue)
+            cqlFilter = "countyname='" + queryValue + "'";
+
+            # cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'"
+            params = dict(service='WFS', version='2.0.0', request='GetFeature',
+                          typeName='kenya:counties', cql_filter=cqlFilter,
+                          srsname='EPSG:4326', outputFormat='json', encoding="utf-8")
+
+            r = requests.get(url, auth=auth, params=params)
+
+            wfs = geojson.loads(r.content)
+            return JsonResponse(wfs)
 
         params = dict(service='WFS', version='2.0.0', request='GetFeature',
-                      typeName='kenya:counties', srsname='EPSG:4326', outputFormat='json', encoding="utf-8")
-
-        # cql_filter = "countyname='Nairobi'"
+                      typeName='kenya:counties',srsname='EPSG:4326',
+                      outputFormat='json', encoding="utf-8")
 
         r = requests.get(url, auth=auth, params=params)
-        
+
         wfs = geojson.loads(r.content)
 
-        # if wfs:
         return JsonResponse(wfs)
 
-    # return render(request, 'parcels/webmap.html', {'data': wfs})
+
+def getWFS2(request):
+    import requests  # request.is_ajax and
+    if request.is_ajax and request.method == 'GET':
+        url = 'http://localhost:8080/geoserver/kenya/wfs'
+        auth = ('admin', 'geoserver')
+
+        queryValue = request.GET.get("cql")
+        print(queryValue)
+        # cql_filter = json.loads(request.GET.get("cqlFilter"))
+
+        # cqlFilter = "countyname='" + queryValue + "'";
+        # cql_filter = "countyname='Nairobi'"
+
+        cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'"
+        params = dict(service='WFS', version='2.0.0', request='GetFeature',
+                      typeName='kenya:counties', cql_filter=cqlFilter,
+                      srsname='EPSG:4326', outputFormat='json', encoding="utf-8")
+
+        r = requests.get(url, auth=auth, params=params)
+
+        wfs = geojson.loads(r.content)
+
+        return JsonResponse(wfs)
 
 
 def search_parcels(request):

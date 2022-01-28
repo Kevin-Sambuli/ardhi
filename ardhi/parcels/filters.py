@@ -2,6 +2,7 @@
 from django_filters import rest_framework as filters
 from rest_framework_gis.filters import GeoFilterSet
 from .models import Parcels
+import geojson
 
 
 # from regions.models import SubLocations, Locations, SubCounties, Counties
@@ -46,7 +47,6 @@ class ParcelsFilter(GeoFilterSet):
             return parcel_in_county
 
 
-
 # SELECT jsonb_build_object FROM public."parcelView";
 # query1 = ('SELECT jsonb_build_object FROM public.parcels_geojson;')
 
@@ -56,11 +56,10 @@ class ParcelsFilter(GeoFilterSet):
 # parcels = cur.fetchall()
 # parcels = parcels[0][0]
 
-      # SELECT jsonb_build_object FROM public."parcelView";
-        # query1 = ('SELECT jsonb_build_object FROM public.parcelView;')
+# SELECT jsonb_build_object FROM public."parcelView";
+# query1 = ('SELECT jsonb_build_object FROM public.parcelView;')
 
 def parcelJson():
-
     return """
         SELECT jsonb_build_object(
             'type','FeatureCollection',
@@ -106,3 +105,24 @@ def myParcels(table=None, owner_id=None):
                     ) features;
                 """
 
+
+def wfsRequest(queryValue=None):
+    if cqlfilter:
+        cqlFilter = "countyname='" + queryValue + "'";
+
+        # cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'"
+        params = dict(service='WFS', version='2.0.0', request='GetFeature',
+                      typeName='kenya:counties', cql_filter=cqlFilter,
+                      srsname='EPSG:4326', outputFormat='json', encoding="utf-8")
+
+        r = requests.get(url, auth=auth, params=params)
+
+        return geojson.loads(r.content)
+
+    params = dict(service='WFS', version='2.0.0', request='GetFeature',
+                  typeName='kenya:counties', srsname='EPSG:4326',
+                  outputFormat='json', encoding="utf-8")
+
+    r = requests.get(url, auth=auth, params=params)
+
+    return geojson.loads(r.content)
