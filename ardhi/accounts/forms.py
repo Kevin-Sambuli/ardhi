@@ -1,4 +1,4 @@
-from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, UserChangeForm
 from django.contrib.auth import authenticate
 from .models import Account, Profile
 from parcels.models import Parcels
@@ -11,7 +11,7 @@ class RegisterForm(UserCreationForm):
     last_name = forms.CharField(label="", max_length=100, widget=forms.TextInput())
     username = forms.CharField(label="", max_length=100, widget=forms.TextInput())
     email = forms.EmailField(label="", max_length=100, widget=forms.TextInput())
-    type = forms.Select()
+    # type = forms.Select()
     password1 = forms.CharField(label='', widget=forms.PasswordInput())
     password2 = forms.CharField(label='', widget=forms.PasswordInput())
 
@@ -19,7 +19,7 @@ class RegisterForm(UserCreationForm):
 
     class Meta:
         model = Account
-        fields = ('first_name', 'last_name', 'email', 'username', 'type', 'password1', 'password2',)
+        fields = ('first_name', 'last_name', 'email', 'username', 'password1', 'password2',)
 
         # widgets = {
         #     'name': forms.TextInput(attrs={

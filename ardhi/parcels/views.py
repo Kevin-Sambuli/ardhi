@@ -269,7 +269,10 @@ def drawShape(request):
         and geojson to decode polygon string
     """
     context = {}
+    response_data ={}
+
     parcels = serialize('geojson', Parcels.objects.all())
+    context['parcels'] = parcels
 
     # request should be ajax and method should be POST.
     if request.is_ajax() and request.method == 'POST':
@@ -296,7 +299,11 @@ def drawShape(request):
         upload = Uploads(lrnumber=parcel, areah=1233, perm=1323, plotno=plot, geom=pols)
         upload.save()
 
-        context['parcels'] = parcels
+        response_data['plot'] = plot
+        response_data['parcel'] = parcel
+
+        return JsonResponse(response_data)
+
         # context['wfs'] = json.dumps(wfs)
     return render(request, 'parcels/webmap.html', context)
 
@@ -304,7 +311,7 @@ def drawShape(request):
 def getWFS(request):
     if request.is_ajax and request.method == 'GET':
         queryValue = request.GET.get("cql")
-        wfs = wfsRequest(queryValue='K')
+        wfs = wfsRequest(queryValue='G')
         # wfs = wfsRequest(queryValue=queryValue)
 
     return JsonResponse(wfs)
@@ -326,8 +333,10 @@ def search_parcels(request):
     try:
         parcel = serialize('geojson', Parcels.objects.filter(owner_id=request.user.id))
 
+        print(parcel)
+
         # accessing each parcel detail and returning each parcel id
-        parcel_id = list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))
+        parcel_id = list(Parcels.objects.filter(owner_id=request.user.id).values_list('gid', flat=True))
         details = [det for det in list(Parcels.objects.filter(owner_id=request.user.id).values_list('id', flat=True))]
 
         # qu.execute('select ST_AsText(ST_Centroid(geom) ) FROM parcels;')# where id=84;')

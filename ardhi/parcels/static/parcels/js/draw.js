@@ -179,3 +179,33 @@ map.pm.addControls(options);
 // });
 // var removeAllControl = new L.Control.RemoveAll();
 // map.addControl(removeAllControl);
+
+
+
+
+
+
+// map.on(L.Draw.Event.CREATED, function (e) {
+//   console.clear();
+//   var type = e.layerType
+//   var layer = e.layer;
+//
+//
+//   // Do whatever else you need to. (save to db, add to map etc)
+//
+//   drawnItems.addLayer(layer);
+//
+//   console.log("Coordinates:");
+//
+//   if (type == "marker" || type == "circle" || type == "circlemarker"){
+//     console.log([layer.getLatLng().lat, layer.getLatLng().lng]);
+//   }
+//   else {
+//     var objects = layer.getLatLngs()[0];
+//     for (var i = 0; i < objects.length; i++){
+//       console.log([objects[i].lat,objects[i].lng]);
+//     }
+//   }
+//
+//
+// });

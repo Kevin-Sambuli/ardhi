@@ -1,7 +1,7 @@
 from django.contrib.auth.models import BaseUserManager
+from django.conf import settings
 from django.db.models import Q
 from django.db import models
-from django.conf import settings
 
 
 class UserManager(BaseUserManager):
@@ -41,27 +41,3 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-
-# Model Managers for proxy models
-class LandownerManager(models.Manager):
-    def get_queryset(self, *args, **kwargs):
-        # return super().get_queryset(*args, **kwargs).filter(type = CustomUser.Types.SELLER)
-        return super().get_queryset(*args, **kwargs).filter(Q(type__contains=settings.AUTH_USER_MODEL.Types.LANDOWNER))
-
-
-class AgentManager(models.Manager):
-    def get_queryset(self, *args, **kwargs):
-        # return super().get_queryset(*args, **kwargs).filter(type = CustomUser.Types.CUSTOMER)
-        return super().get_queryset(*args, **kwargs).filter(Q(type__contains=settings.AUTH_USER_MODEL.Types.AGENT))
-
-
-class SurveyorManager(models.Manager):
-    def get_queryset(self, *args, **kwargs):
-        # return super().get_queryset(*args, **kwargs).filter(type = CustomUser.Types.SELLER)
-        return super().get_queryset(*args, **kwargs).filter(Q(type__contains=settings.AUTH_USER_MODEL.Types.SURVEYOR))
-
-
-class ManagerManager(models.Manager):
-    def get_queryset(self, *args, **kwargs):
-        # return super().get_queryset(*args, **kwargs).filter(type = CustomUser.Types.CUSTOMER)
-        return super().get_queryset(*args, **kwargs).filter(Q(type__contains=settings.AUTH_USER_MODEL.Types.MANAGER))

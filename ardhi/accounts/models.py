@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, Group, Permission
 from django.utils.translation import gettext_lazy as _
 from rest_framework.authtoken.models import Token
+from django.core.validators import RegexValidator
 from django.db.models.signals import post_save
 from django.core.mail import send_mail
 from django.dispatch import receiver
@@ -9,7 +10,7 @@ from django.db.models import Q
 import geocoder
 
 from django.db import models
-from .managers import UserManager, LandownerManager, AgentManager, SurveyorManager, ManagerManager
+from .managers import UserManager
 
 
 class Account(AbstractBaseUser, PermissionsMixin):
@@ -19,12 +20,15 @@ class Account(AbstractBaseUser, PermissionsMixin):
         SURVEYOR = "surveyor", "SURVEYOR"
         MANAGER = "manager", "MANAGER"
 
-    id = models.IntegerField('id', primary_key=True)
+    # id = models.IntegerField('id', primary_key=True)
     first_name = models.CharField('First Name', max_length=30)
     last_name = models.CharField('Last Name', max_length=30)
     email = models.EmailField(verbose_name='Email', blank=False, max_length=100, unique=True)
     username = models.CharField('Username', max_length=30, unique=True)
-    type = models.CharField(_('Type'), max_length=30, choices=Types.choices, default=Types.LANDOWNER)
+
+    default_type = Types.LANDOWNER
+
+    type = models.CharField('Type', max_length=30, choices=Types.choices, default=default_type)
     date_joined = models.DateTimeField('Date Joined', auto_now_add=True)
     # types = MultiSelectField(choices=Types.choices, default=[], null=True, blank=True)
 
@@ -50,6 +54,11 @@ class Account(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return '{}'.format(self.get_full_name())
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.type = self.default_type
+        return super().save(*args, **kwargs)
 
     def get_full_name(self):
         """ Returns the first_name plus the last_name, with a space in between. """
@@ -80,81 +89,93 @@ class Account(AbstractBaseUser, PermissionsMixin):
 #     warehouse_location = models.CharField(max_length=1000)
 
 
-# # Proxy Models. They do not create a seperate table
+# Model Managers for proxy models
+class LandownerManager(models.Manager):
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(type=Account.Types.LANDOWNER)
+        # return super().get_queryset(*args, **kwargs).filter(Q(type__contains=Account.Types.LANDOWNER))
+
+
+class AgentManager(models.Manager):
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(type=Account.Types.AGENT)
+        # return super().get_queryset(*args, **kwargs).filter(Q(type__contains=Account.Types.AGENT))
+
+
+class SurveyorManager(models.Manager):
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(type=Account.Types.SURVEYOR)
+        # return super().get_queryset(*args, **kwargs).filter(Q(type__contains=Account.Types.SURVEYOR))
+
+
+class ManagerManager(models.Manager):
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(type=Account.Types.MANAGER)
+        # return super().get_queryset(*args, **kwargs).filter(Q(type__contains=Account.Types.MANAGER))
+
+
+# Proxy Models. They do not create a seperate table
 class Landowner(Account):
-    default_type = Account.Types.LANDOWNER
     objects = LandownerManager()
+    default_type = Account.Types.LANDOWNER
 
     class Meta:
         proxy = True
-        permissions = (
-            ('can_manage_account', 'can manage account'),
-        )
+
 
     def sell(self):
         print("I can sell")
 
-    @property
-    def showAdditional(self):
-        return self.selleradditional
+    # @property
+    # def showAdditional(self):
+    #     return self.selleradditional
 
 
 class Agent(Account):
-    default_type = Account.Types.AGENT
     objects = AgentManager()
+    default_type = Account.Types.AGENT
 
     class Meta:
         proxy = True
-        permissions = (
-            ('agent_landowners', 'can agent landowners'),
-            ('agent_surveyors', 'can agent surveyors'),
-        )
 
     def sell(self):
         print("I can sell")
 
-    @property
-    def showAdditional(self):
-        return self.selleradditional
+    # @property
+    # def showAdditional(self):
+    #     return self.selleradditional
 
 
 class Surveyor(Account):
-    default_type = Account.Types.SURVEYOR
-
     objects = SurveyorManager()
+    default_type = Account.Types.SURVEYOR
 
     class Meta:
         proxy = True
-        permissions = (
-            ('can_process_survey', 'can process survey'),
-        )
+
 
     def sell(self):
         print("I can sell")
 
-    @property
-    def showAdditional(self):
-        return self.selleradditional
+    # @property
+    # def showAdditional(self):
+    #     return self.selleradditional
 
 
 class Manager(Account):
-    default_type = Account.Types.MANAGER
     objects = ManagerManager()
+    default_type = Account.Types.MANAGER
 
     class Meta:
         proxy = True
-        permissions = (
-            ('can_manage_landowners', 'can manage landowners'),
-            ('can_manage_agents', 'can manage agents'),
-            ('can_manage_surveyors', 'can manage surveyors'),
-        )
+
 
     def sell(self):
         print("I can sell")
 
-    @property
-    def showAdditional(self):
-        return self.selleradditional
+    # @property
+    # def showAdditional(self):
+    #     return self.selleradditional
 
 
 def get_profile_image_filepath(self, filename):
@@ -178,7 +199,9 @@ class Profile(models.Model):
     kra_pin = models.CharField('KRA PIN', max_length=20, unique=True, null=True, blank=False)
     id_no = models.CharField('ID NO', max_length=10, unique=True, blank=False, null=True, )
     dob = models.DateField('Date of Birth', blank=False, null=True)
-    phone = models.CharField('Contact Phone', max_length=10, null=True, blank=True, unique=True)
+    phone_regex = RegexValidator(regex=r'^\d{10}$', message="phone number should exactly be in 10 digits")
+    phone = models.CharField('Contact Phone', max_length=255, validators=[phone_regex], unique=True, blank=True,
+                             null=True)  # you can set it unique = True
     profile_image = models.ImageField("Profile Image", max_length=255, upload_to='profile_images', null=True,
                                       blank=True, default=get_default_profile_image)
     ip = models.CharField("Ip Address", max_length=20, null=True, blank=True, )

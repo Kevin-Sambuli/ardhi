@@ -9,6 +9,7 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('register/', views.registration_view, name='register'),
+    # path('ajax/validate_username/', views.validate_username, name='validate_username'),
     path('activate/<uidb64>/<token>/', views.ActivateAccount.as_view(), name='activate'),
     path('profile/', views.profile_view, name='profile'),
     path('edit_account/', views.edit_account, name='edit_account'),

@@ -217,7 +217,6 @@
 {% block extras %}
 
 <script>
-    // Leaflet JS
     var newgroup = new L.featureGroup();
     var geojsonlayer;
 
@@ -263,13 +262,8 @@
             }
         }).addTo(newgroup)
     });
-    newgroup.addTo(map)
+    newgroup.addTo(map);
 
-
-    // adding the FR  to the Map
-    imageBounds = [[-1.22155, 36.8222], [-1.2293, 36.8277]];
-    var imageUrl = "{% static 'parcels/image/map.jpg'%}";
-    var imgoverlay = L.imageOverlay(imageUrl, imageBounds, {opacity: 1, zIndex: 1});
 
     $(document).ready(function () {
         $("input[type=text]").val("");
@@ -343,17 +337,6 @@
     });
 
 
-    // toggle between full screen and normal screen
-    var mapId = document.getElementById('map');
-
-    function fullScreenView() {
-        if (document.fullscreenElement) {
-            document.exitFullscreen()
-        } else {
-            mapId.requestFullscreen();
-        }
-    }
-
     //Browser print
     // L.control.browserPrint().addTo(map);
     $(".print-map").click(function () {
@@ -421,7 +404,7 @@
 
         }
         if (type === "marker") {
-            layer.bindPopup("Lat: " + layer.getLatLng().lat + "<br>" +"Lng:"  + layer.getLatLng().lng).openPopup();
+            layer.bindPopup("Lat: " + layer.getLatLng().lat + "<br>" + "Lng:" + layer.getLatLng().lng).openPopup();
             // editableLayers.addLayer(layer);
         }
 
@@ -439,7 +422,7 @@
 
 
     function setData(e) {
-        if (e.target && e.target.id == "save") {
+        if (e.target && e.target.id === "save") {
             // Get user name and description
             let lrnumber = document.getElementById("lrnumber").value;
             let parcelid = document.getElementById("plotno").value;
@@ -448,7 +431,7 @@
 
             const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-            console.log("Tokeb------------", csrftoken);
+            console.log("Token------------", csrftoken);
             console.log("------------", lrnumber);
             console.log("------------", parcelid);
             console.log("------------", poly);
@@ -471,11 +454,27 @@
                 },
                 success: function (data) {
                     alert("data success saved to the database")
-                },
+                            // the url return response in json that can be mapped as a geojson
+
+                            // geojsonlayer = new L.geoJSON(data, {
+                            //     style: myStyle,
+                            //     onEachFeature: function onEachFeature(feature, layer) {
+                            //         var popContent = "<div><b>" + "Name " + feature.properties.countyname + "</b></br>" + "Code "
+                            //             + feature.properties.countycode + "</div>";
+                            //         layer.bindPopup(popContent);
+                            //         layer.on({
+                            //             mouseover: highlightFeature2,
+                            //             mouseout: resetHighlight2,
+                            //             click: zoomToFeature2
+                            //         });
+                            //     }
+                            // }).addTo(newgroup)
+
+                        },
                 error: function (response) {
-                    alert('trial error');
-                }
-            });
+                        alert('trial error');
+                    }
+                });
 
             // Get and print GeoJSON for each drawn layer
             editableLayers.eachLayer(function (layer) {
@@ -498,539 +497,507 @@
             //
         }
 
-    }
+        }
 
-    // this attatches the pop up to the document since its dynamic hence thus reducing page reload
-    document.addEventListener("click", setData);
-
-
-    document.getElementById('export').onclick = function (e) {
-        // on export you remove the draw feature group
-        // map.removeLayer(editableLayers);
-
-        //remove the draw controls when exporting the map
-        map.removeControl(drawControl);
-
-        const geodata = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
-        console.log('serialized data', geodata);
-        console.log('pop up', geodata)
-        $('#drawcontainer').html(geodata);
-
-        // Stringify the GeoJson
-        // const convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(geodata);
-        //
-        // // Create export
-        // document.getElementById('export').setAttribute('href', 'data:' + convertedData);
-        // document.getElementById('export').setAttribute('download', 'data.geojson');
+        // this attaches the pop up to the document since its dynamic hence thus reducing page reload
+        document.addEventListener("click", setData);
 
 
-        // plotting the drawn shape as a geojson file on the map
-        function onEachFeature(feature, layer) {
-            if (feature.properties && feature.properties.lrnumber) {
-                var popContent = "<div" +
-                    "<h3 style='color: aliceblue'><b>Land Parcels</b></h3><hr>" +
-                    "<b>Number: </b>" + feature.properties.lrnumber + "</br>" +
-                    "<b>Parcel Id: </b>" + feature.properties.parcelid + "</br>" +
-                    "<b>Area: </b>" + feature.properties.area + "</br>" +
-                    "<b>Perimeter: </b>" + feature.properties.parcelid +
-                    "</div>";
-                layer.bindPopup(popContent);
+        document.getElementById('export').onclick = function (e) {
+            // on export you remove the draw feature group
+            // map.removeLayer(editableLayers);
+
+            //remove the draw controls when exporting the map
+            map.removeControl(drawControl);
+
+            const geodata = JSON.stringify(editableLayers.toGeoJSON(), null, 4);
+            console.log('serialized data', geodata);
+            console.log('pop up', geodata)
+            $('#drawcontainer').html(geodata);
+
+            // Stringify the GeoJson
+            // const convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(geodata);
+            //
+            // // Create export
+            // document.getElementById('export').setAttribute('href', 'data:' + convertedData);
+            // document.getElementById('export').setAttribute('download', 'data.geojson');
+
+
+            // plotting the drawn shape as a geojson file on the map
+            function onEachFeature(feature, layer) {
+                if (feature.properties && feature.properties.lrnumber) {
+                    var popContent = "<div" +
+                        "<h3 style='color: aliceblue'><b>Land Parcels</b></h3><hr>" +
+                        "<b>Number: </b>" + feature.properties.lrnumber + "</br>" +
+                        "<b>Parcel Id: </b>" + feature.properties.parcelid + "</br>" +
+                        "<b>Area: </b>" + feature.properties.area + "</br>" +
+                        "<b>Perimeter: </b>" + feature.properties.parcelid +
+                        "</div>";
+                    layer.bindPopup(popContent);
+                }
             }
-        }
 
-        // Extract GeoJson from featureGroup and display the drawn layers as a geojson
-        L.geoJson(editableLayers.toGeoJSON(), {
-            onEachFeature: onEachFeature,
-            style: mySearchStyle,
-        }).addTo(drawgeojson);
+            // Extract GeoJson from featureGroup and display the drawn layers as a geojson
+            L.geoJson(editableLayers.toGeoJSON(), {
+                onEachFeature: onEachFeature,
+                style: mySearchStyle,
+            }).addTo(drawgeojson);
 
-        // adding the drawn geojson to the map
-        drawgeojson.addTo(map);
+            // adding the drawn geojson to the map
+            drawgeojson.addTo(map);
 
-        // fitting the map to the bounds of the drawn geojson
-        map.fitBounds(drawgeojson.getBounds());
-    };
-
-
-    // on click, clear all layers
-    document.getElementById('delete').onclick = function (e) {
-        editableLayers.clearLayers();
-        drawgeojson.clearLayers();
-    }
-
-
-    map.addEventListener("draw:editstart", function (e) {
-        editableLayers.closePopup();
-    });
-
-    map.addEventListener("draw:deletestart", function (e) {
-        editableLayers.closePopup();
-    });
-
-    map.addEventListener("draw:editstop", function (e) {
-        // $(".drawercontainer .drawercontent").html(
-        // JSON.stringify(editableLayers.toGeoJSON())
-        // );
-        editableLayers.openPopup();
-    });
-
-    map.addEventListener("draw:deletestop", function (e) {
-        if (editableLayers.getLayers().length > 0) {
-            editableLayers.openPopup();
-        }
-    });
-
-    map.on(L.Draw.Event.DELETED, function (e) {
-        $(".drawercontainer .drawercontent").html("");
-    });
-
-    // let popup = L.popup();
-
-    // function onMapClick(e) {
-    //     popup
-    //         .setLatLng(e.latlng)
-    //         .setContent(
-    //             "You clicked the map at -<br>" +
-    //             "<b>lon:</b> " + e.latlng.lng + "<br>" +
-    //             "<b>lat:</b> " + e.latlng.lat
-    //         )
-    //         .openOn(map);
-    // }
-
-    // map.addEventListener("click", onMapClick);
-
-
-    //Get WFS request from  geoserver
-    var wfsURL = wfs_layer_url + "service=wfs&version=1.0.0&request=GetFeature&typeName=kenya:counties&outputFormat=application/json";
-    console.log(wfsURL);
-
-    var counties = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
-        {
-            layers: 'kenya:counties',
-            format: 'image/png',
-            tiled: true,
-            transparent: true,
-            attribution: attribution
-        });
-
-    var population = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
-        {
-            layers: 'population',
-            format: 'image/png',
-            transparent: true,
-            tiled: true,
-            opacity: 0.6,
-            zIndex: 100,
-            attribution: attribution
-        });
-
-    var nairobiPlots = L.tileLayer.wms("http://localhost:8080/geoserver/wms",
-        {
-            layers: 'nairobi',
-            format: 'image/png',
-            transparent: true,
-            tiled: true,
-            opacity: 0.6,
-            zIndex: 100,
-            attribution: attribution
-        }).addTo(map);
-
-    // control that shows state info on hover
-    var info = L.control({
-        position: 'bottomright'
-    });
-    info.onAdd = function (map) {
-        this._div = L.DomUtil.create('div', 'info');
-        this.update();
-        return this._div;
-    };
-
-    info.update = function (props) {
-        this._div.innerHTML = '<h4>County</h4>' + (props ?
-            '<b>' + props.countycode + '</b><br />' + props.countyname : 'Hover over a county');
-    };
-
-    info.addTo(map);
-
-
-    function highlightFeature(e) {
-        var layer = e.target;
-
-        layer.setStyle({
-            weight: 5,
-            color: 'green',
-            dashArray: 1,
-            fillOpacity: 0.7,
-            // fillCollor: "#c7e9c0pg"
-            fillCollor: 'blue'
-        });
-
-        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-            layer.bringToFront();
-        }
-        info.update(layer.feature.properties);
-    }
-
-    function resetHighlight(e) {
-        selectedArea.resetStyle(e.target);
-        info.update();
-    }
-
-    function zoomToFeature(e) {
-        map.fitBounds(e.target.getBounds());
-    }
-
-
-    // Geoserver Web Feature Service using Ajax
-    $.ajax(wfs_layer_url, {
-        type: 'GET',
-        data: {
-            service: 'wfs',
-            version: '1.0.0',
-            request: 'GetFeature',
-            typename: 'kenya:counties',
-            maxFeatures: 50,
-            srsname: 'EPSG:4326',
-            outputFormat: 'text/javascript',
-        },
-        dataType: 'jsonp',
-        jsonp: 'format_options',
-        jsonpCallback: 'callback:handleJson',
-    });
-
-    function states_color(p) {
-        if (p === "Republican") return "red";
-        if (p === "Democrat") return "blue";
-        return "grey";
-    }
-
-    function states_style(feature) {
-        return {
-            color: "black",
-            weight: 1,
-            fillColor: states_color(feature.properties.party),
-            fillOpacity: 0.7
+            // fitting the map to the bounds of the drawn geojson
+            map.fitBounds(drawgeojson.getBounds());
         };
-    }
-
-    // the ajax callback function
-    function handleJson(data) {
-        selectedArea = L.geoJson(data, {
-            style: myStyle,
-            onEachFeature: function onEachFeature(feature, layer) {
-                var customOptions = {
-                    "maxWidth": "500px",
-                    "className": "customPop"
-                };
-                var popContent = "<div><b>" + "Code " + feature.properties.countycode + "</b></br>" + "Name "
-                    + feature.properties.countyname + "</div>";
-                layer.bindPopup(popContent, customOptions);
-                layer.on({
-                    mouseover: highlightFeature,
-                    mouseout: resetHighlight,
-                    click: zoomToFeature
-                });
-            }
-        }).addTo(wfsLayer);
-        map.fitBounds(selectedArea.getBounds());
-    }
 
 
-    let url = "https:earthquake.usgs.gov/earthquakes/feed/v1.0/" + "summary/4.5_week.geojson";
-    // fetch(url)
-    //     .then(function(response) {
-    //         return response.json();
-    //     })
-    //     .then(function(data) {
-    //         L.geoJSON(data).addTo(map);
-    //     });
-
-    // re order map z index
-    map.on("overLays", function (e) {
-        wfsLayer.bringToBack();
-        population.bringToBack();
-        nairobiPlots.bringToFront();
-        imgoverlay.bringToBack();
-    });
-
-
-    // var cqlFilter = "countyname='Nakuru'";
-    var defaultParameters = {
-        service: 'wfs',
-        version: '1.0.0',
-        request: 'GetFeature',
-        typeName: 'kenya:counties',
-        // CQL_FILTER: cqlFilter,
-        // cql_filter=INTERSECTS(the_geom,%20POINT(-105.36369323730467%2040.10013461308659))
-        maxFeatures: 50,
-        srsName: 'EPSG:4326',
-        outputFormat: 'text/javascript',
-    };
-
-    //query string URL that automatically adds a question mark at the end of the string
-    // this applies when you use default parameters
-    var wfs_layer_url2 = "http://localhost:8080/geoserver/kenya/ows";
-    var parameters = L.Util.extend(defaultParameters);
-    var URL = wfs_layer_url2 + L.Util.getParamString(parameters);
-    console.log(URL);
-
-
-    // Geojson style file
-    var mySearchStyle = {
-        stroke: true,
-        fillColor: 'yellow',
-        fillOpacity: 0.5,
-        color: 'red',
-        weight: 2,
-        Opacity: 1.0,
-    };
-
-
-    // function that returns the searched layers
-    function searchWFS() {
-        if (wfsLayerSearch != null) {
-            map.removeLayer(wfsLayerSearch);
+        // on click, clear all layers
+        document.getElementById('delete').onclick = function (e) {
+            editableLayers.clearLayers();
+            drawgeojson.clearLayers();
         }
-        // get value from input inbox
-        queryValue = document.getElementById("search-value").value;
 
-        // cqlFilter = "countyname='" + queryValue + "'";
-        cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'";
-        // cqlFilter = "countyname LIKE'" + queryValue + "%'";
-        // console.log(cqlFilter);
-        // cql_filter=INTERSECTS(the_geom,%20POINT(-105.36369323730467%2040.10013461308659))
 
-        geoLayer = 'counties';
-        var typeName = "kenya:" + geoLayer;
+        map.addEventListener("draw:editstart", function (e) {
+            editableLayers.closePopup();
+        });
 
+        map.addEventListener("draw:deletestart", function (e) {
+            editableLayers.closePopup();
+        });
+
+        map.addEventListener("draw:editstop", function (e) {
+            // $(".drawercontainer .drawercontent").html(
+            // JSON.stringify(editableLayers.toGeoJSON())
+            // );
+            editableLayers.openPopup();
+        });
+
+        map.addEventListener("draw:deletestop", function (e) {
+            if (editableLayers.getLayers().length > 0) {
+                editableLayers.openPopup();
+            }
+        });
+
+        map.on(L.Draw.Event.DELETED, function (e) {
+            $(".drawercontainer .drawercontent").html("");
+        });
+
+        // let popup = L.popup();
+
+        // function onMapClick(e) {
+        //     popup
+        //         .setLatLng(e.latlng)
+        //         .setContent(
+        //             "You clicked the map at -<br>" +
+        //             "<b>lon:</b> " + e.latlng.lng + "<br>" +
+        //             "<b>lat:</b> " + e.latlng.lat
+        //         )
+        //         .openOn(map);
+        // }
+
+        // map.addEventListener("click", onMapClick);
+
+
+        //Get WFS request from  geoserver
+        var wfsURL = wfs_layer_url + "service=wfs&version=1.0.0&request=GetFeature&typeName=kenya:counties&outputFormat=application/json";
+        console.log(wfsURL);
+
+        // control that shows state info on hover
+        var info = L.control({
+            position: 'bottomright'
+        });
+        info.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info');
+            this.update();
+            return this._div;
+        };
+
+        info.update = function (props) {
+            this._div.innerHTML = '<h4>County</h4>' + (props ?
+                '<b>' + props.countycode + '</b><br />' + props.countyname : 'Hover over a county');
+        };
+
+        info.addTo(map);
+
+
+        function highlightFeature(e) {
+            var layer = e.target;
+
+            layer.setStyle({
+                weight: 5,
+                color: 'green',
+                dashArray: 1,
+                fillOpacity: 0.7,
+                fillCollor: "#c7e9c0pg"
+            });
+
+            if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+                layer.bringToFront();
+            }
+            info.update(layer.feature.properties);
+        }
+
+        function resetHighlight(e) {
+            selectedArea.resetStyle(e.target);
+            info.update();
+        }
+
+        function zoomToFeature(e) {
+            map.fitBounds(e.target.getBounds());
+        }
+
+
+        // Geoserver Web Feature Service using Ajax
+        $.ajax(wfs_layer_url, {
+            type: 'GET',
+            data: {
+                service: 'wfs',
+                version: '1.0.0',
+                request: 'GetFeature',
+                typename: 'kenya:counties',
+                maxFeatures: 50,
+                srsname: 'EPSG:4326',
+                outputFormat: 'text/javascript',
+            },
+            dataType: 'jsonp',
+            jsonp: 'format_options',
+            jsonpCallback: 'callback:handleJson',
+        });
+
+        function states_color(p) {
+            if (p === "Republican") return "red";
+            if (p === "Democrat") return "blue";
+            return "grey";
+        }
+
+        function states_style(feature) {
+            return {
+                color: "black",
+                weight: 1,
+                fillColor: states_color(feature.properties.party),
+                fillOpacity: 0.7
+            };
+        }
+
+        // the ajax callback function
+        function handleJson(data) {
+            selectedArea = L.geoJson(data, {
+                style: myStyle,
+                onEachFeature: function onEachFeature(feature, layer) {
+                    var customOptions = {
+                        "maxWidth": "500px",
+                        "className": "customPop"
+                    };
+                    var popContent = "<div><b>" + "Code " + feature.properties.countycode + "</b></br>" + "Name "
+                        + feature.properties.countyname + "</div>";
+                    layer.bindPopup(popContent, customOptions);
+                    layer.on({
+                        mouseover: highlightFeature,
+                        mouseout: resetHighlight,
+                        click: zoomToFeature
+                    });
+                }
+            }).addTo(wfsLayer);
+            map.fitBounds(selectedArea.getBounds());
+        }
+
+
+        let url = "https:earthquake.usgs.gov/earthquakes/feed/v1.0/" + "summary/4.5_week.geojson";
+        // fetch(url)
+        //     .then(function(response) {
+        //         return response.json();
+        //     })
+        //     .then(function(data) {
+        //         L.geoJSON(data).addTo(map);
+        //     });
+
+        // re order map z index
+        map.on("overLays", function (e) {
+            wfsLayer.bringToBack();
+            population.bringToBack();
+            nairobiPlots.bringToFront();
+            imgoverlay.bringToBack();
+        });
+
+
+        // var cqlFilter = "countyname='Nakuru'";
         var defaultParameters = {
             service: 'wfs',
             version: '1.0.0',
             request: 'GetFeature',
-            typeName: typeName,
-            CQL_FILTER: cqlFilter,
+            typeName: 'kenya:counties',
+            // CQL_FILTER: cqlFilter,
+            // cql_filter=INTERSECTS(the_geom,%20POINT(-105.36369323730467%2040.10013461308659))
+            maxFeatures: 50,
             srsName: 'EPSG:4326',
             outputFormat: 'text/javascript',
         };
 
+        //query string URL that automatically adds a question mark at the end of the string
+        // this applies when you use default parameters
+        var wfs_layer_url2 = "http://localhost:8080/geoserver/kenya/ows";
         var parameters = L.Util.extend(defaultParameters);
         var URL = wfs_layer_url2 + L.Util.getParamString(parameters);
+        console.log(URL);
 
-        if (!queryValue) {
-            $("#alert_empty").fadeTo(2000, 500).slideUp(500, function () {
-                $(".alert").slideUp(500);
-                alert("Please enter A valid Input!");
-            });
-        } else {
-            // alert("please wait");
-            $.ajax("{% url 'wfs' %}", {
-            // $.ajax(URL, {
-                type: "GET",
-                data: { 'cql': JSON.stringify(queryValue)},
-                dataType: 'jsonp',
-                jsonpCallback: 'callback:searchJson',
-                jsonp: 'format_options'
-            });
-            return true;
+
+        // Geojson style file
+        var mySearchStyle = {
+            stroke: true,
+            fillColor: 'yellow',
+            fillOpacity: 0.5,
+            color: 'red',
+            weight: 2,
+            Opacity: 1.0,
+        };
+
+
+        // function that returns the searched layers
+        function searchWFS() {
+            if (wfsLayerSearch != null) {
+                map.removeLayer(wfsLayerSearch);
+            }
+            // get value from input inbox
+            queryValue = document.getElementById("search-value").value;
+
+            // cqlFilter = "countyname='" + queryValue + "'";
+            cqlFilter = "countyname='" + queryValue + "' or " + "countyname LIKE '" + queryValue + "%'";
+            // cqlFilter = "countyname LIKE'" + queryValue + "%'";
+            // console.log(cqlFilter);
+            // cql_filter=INTERSECTS(the_geom,%20POINT(-105.36369323730467%2040.10013461308659))
+
+            geoLayer = 'counties';
+            var typeName = "kenya:" + geoLayer;
+
+            var defaultParameters = {
+                service: 'wfs',
+                version: '1.0.0',
+                request: 'GetFeature',
+                typeName: typeName,
+                CQL_FILTER: cqlFilter,
+                srsName: 'EPSG:4326',
+                outputFormat: 'text/javascript',
+            };
+
+            var parameters = L.Util.extend(defaultParameters);
+            var URL = wfs_layer_url2 + L.Util.getParamString(parameters);
+
+            if (!queryValue) {
+                $("#alert_empty").fadeTo(2000, 500).slideUp(500, function () {
+                    $(".alert").slideUp(500);
+                    alert("Please enter A valid Input!");
+                });
+            } else {
+                // alert("please wait");
+                $.ajax("{% url 'wfs' %}", {
+                    // $.ajax(URL, {
+                    type: "GET",
+                    data: {'cql': JSON.stringify(queryValue)},
+                    dataType: 'jsonp',
+                    jsonpCallback: 'callback:searchJson',
+                    jsonp: 'format_options'
+                });
+                return true;
+            }
         }
-    }
 
-    // the ajax callback function
-    function searchJson(data) {
-        if (data.totalFeatures > 0) {
-            document.getElementById("wfsResults").innerHTML = data.totalFeatures + " Total Results";
+        // the ajax callback function
+        function searchJson(data) {
+            if (data.totalFeatures > 0) {
+                document.getElementById("wfsResults").innerHTML = data.totalFeatures + " Total Results";
 
-            wfsLayerSearch = L.geoJson(data, {
-                style: mySearchStyle,
-                onEachFeature: function onEachFeature(feature, layer) {
-                    layer.bindPopup("Code: " + feature.properties.countycode + "<br/>Name: " + feature.properties.countyname,
-                        {
-                            closeButton: false,
-                            offset: L.point(0, -10)
+                wfsLayerSearch = L.geoJson(data, {
+                    style: mySearchStyle,
+                    onEachFeature: function onEachFeature(feature, layer) {
+                        layer.bindPopup("Code: " + feature.properties.countycode + "<br/>Name: " + feature.properties.countyname,
+                            {
+                                closeButton: false,
+                                offset: L.point(0, -10)
+                            });
+                        layer.on('mouseover', function () {
+                            layer.openPopup();
                         });
-                    layer.on('mouseover', function () {
-                        layer.openPopup();
-                    });
-                    layer.on('mouseout', function () {
-                        layer.closePopup();
+                        layer.on('mouseout', function () {
+                            layer.closePopup();
+                        });
+                    }
+                }).addTo(map);
+                // }).addTo(wfsLayerSearch);
+                map.fitBounds(wfsLayerSearch.getBounds());
+            } else {
+                document.getElementById("wfsResults").innerHTML = "";
+                $("#alert_noResult").fadeTo(2000, 500).slideUp(500, function () {
+                    $(".alert").slideUp(500);
+                });
+            }
+        }
+
+
+        //function to clear up results from clear button
+        function clearResult() {
+            document.getElementById("search-value").value = "";
+            document.getElementById("wfsResults").innerHTML = "";
+
+            // Clear existing WFS Query Layer/Result
+            if (wfsLayerSearch != null) {
+                map.removeLayer(wfsLayerSearch);
+            }
+            // zoom to original extent
+            map.setView(centerBounds, 6);
+            return false;
+        }
+
+
+        //custom leaflet icon
+        var createIcon = function (labelText) {
+            if (!labelText) {
+                return L.divIcon({
+                    className: "textLabelClass",
+                });
+            }
+            return L.divIcon({
+                className: "textLabelClass",
+                html: labelText
+            });
+        };
+
+
+        //legend control function
+        function wmsLegendControl(layerName, layerTitle) {
+            var className = layerName.split(":")[1];
+            var url = `http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=${layerName}`;
+            var legend = `<p class="${className}" style='margion-top:10px; font-weight: bold'>${layerTitle}</p>`;
+            legend += `<p><img class="${className}" src=${url} /><br class=${className} /></p> `;
+            return legend;
+        }
+
+
+        L.Control.Watermark = L.Control.extend({
+            onAdd: function (map) {
+                var img = L.DomUtil.create('img');
+
+                img.src = 'https://www.epix.net.pl/wp-content/uploads/2017/03/gis-logo.png';
+                img.style.width = '200px';
+
+                return img;
+            },
+            onRemove: function (map) {
+                // Nothing to do here
+            }
+        });
+
+        L.control.watermark = function (opts) {
+            return new L.Control.Watermark(opts);
+        };
+
+        // var watermarkControl = L.control.watermark({position: 'bottomleft'}).addTo(map);
+
+
+        // Create Leaflet Control Object for Legend
+        var legend = L.control({position: "bottomright"});
+
+        // Description contents
+        var contents = "";
+        contents += '<div id="description"><p><b>Simple shapes in Leaflet</b></p><hr>';
+        contents += '<p>This map shows an example of adding shapes on a Leaflet map<p/>';
+        contents += '<p>The following shapes were added:</p><br/>';
+        contents += '<p><ul>';
+        contents += '<li>A marker</li>';
+        contents += '<li>A line</li>';
+        contents += '<li>A polygon</li>';
+        contents += '</ul></p>';
+        contents += '<p>The line layer has a <b>popup</b>. Click on the line to see it!</p><hr>';
+        contents += '<p>Created with the Leaflet library</p><br/>';
+        contents += '<img src="./image/map.jpg"></div>';
+
+
+        // Function that runs when legend is added to map
+        legend.onAdd = function (map) {
+
+            // Create Div Element and Populate it with HTML
+            div = L.DomUtil.create('div', 'legend');
+            div.innerHTML = contents;
+            div.innerHTML += '<input type="button" value="hide" id="hide">';
+
+            // Return the Legend div containing the HTML content
+            return div;
+
+        };
+
+        // Add Legend to Map
+        // legend.addTo(map);
+
+
+        //Handle Copy Lat/Lng to clipboard
+        $('#latlng').click(function (e) {
+            var $tempElement = $("<input>");
+            $("body").append($tempElement);
+            $tempElement.val($("#latlng").text()).select();
+            document.execCommand("Copy");
+            $tempElement.remove();
+            alert("Copied: " + $("#latlng").text());
+            $("#latlng").hide();
+        });
+
+
+        // 'Hide' button that toggles the legend
+        $("#hide").on("click", function () {
+            L.DomEvent.disableClickPropagation(this);
+            switch ($("#hide").val()) {
+                case "hide":
+                    $("#description").slideUp();
+                    $("#hide").val("show");
+                    break;
+                case "show":
+                    $("#description").slideDown();
+                    $("#hide").val("hide");
+                    break;
+            }
+        });
+
+        var dataurl = '{% url "allParcels" %}';
+
+        // $.ajax(dataurl,{
+        //     type: 'GET',
+        //     url: dataurl,
+        //     dataType: 'json',
+        //     jsonpCallback: 'callback:geoDAta'
+        // })
+
+
+        // the ajax callback function
+        function geoDAta(data) {
+            das = L.geoJson(data, {
+                style: myStyle,
+                onEachFeature: function onEachFeature(feature, layer) {
+                    var popContent = "<div><b>" + "Code " + feature.properties.lrnumber + "</b></br>" + "Name "
+                        + feature.properties.plotno + "</div>";
+                    layer.bindPopup(popContent);
+                    layer.on({
+                        mouseover: highlightFeature,
+                        mouseout: resetHighlight,
+                        click: zoomToFeature
                     });
                 }
             }).addTo(map);
-            // }).addTo(wfsLayerSearch);
-            map.fitBounds(wfsLayerSearch.getBounds());
-        } else {
-            document.getElementById("wfsResults").innerHTML = "";
-            $("#alert_noResult").fadeTo(2000, 500).slideUp(500, function () {
-                $(".alert").slideUp(500);
-            });
-        }
-    }
+        };
 
+        // map overlays
+        var overLays = {
+            // "Georeferenced": imgoverlay,
+            // "Nairobi": nairobiPlots,
+            // "County (WMS)": counties,
+            // "Population  (WMS)": population,
+            // "wfsLayer (WFS)": wfsLayer,
+            // "Search": wfsLayerSearch,
+            "Draw": editableLayers,
+            "DrawGeojson": drawgeojson,
+            "kenya": newgroup,
 
-    //function to clear up results from clear button
-    function clearResult() {
-        document.getElementById("search-value").value = "";
-        document.getElementById("wfsResults").innerHTML = "";
+        };
 
-        // Clear existing WFS Query Layer/Result
-        if (wfsLayerSearch != null) {
-            map.removeLayer(wfsLayerSearch);
-        }
-        // zoom to original extent
-        map.setView(centerBounds, 6);
-        return false;
-    }
-
-
-    //custom leaflet icon
-    var createIcon = function (labelText) {
-        if (!labelText) {
-            return L.divIcon({
-                className: "textLabelClass",
-            });
-        }
-        return L.divIcon({
-            className: "textLabelClass",
-            html: labelText
-        });
-    };
-
-
-    //legend control function
-    function wmsLegendControl(layerName, layerTitle) {
-        var className = layerName.split(":")[1];
-        var url = `http://localhost:8080/geoserver/wms?REQUEST=GetLegendGraphic&VERSION=1.0.0&FORMAT=image/png&LAYER=${layerName}`;
-        var legend = `<p class="${className}" style='margion-top:10px; font-weight: bold'>${layerTitle}</p>`;
-        legend += `<p><img class="${className}" src=${url} /><br class=${className} /></p> `;
-        return legend;
-    }
-
-
-    L.Control.Watermark = L.Control.extend({
-        onAdd: function (map) {
-            var img = L.DomUtil.create('img');
-
-            img.src = 'https://www.epix.net.pl/wp-content/uploads/2017/03/gis-logo.png';
-            img.style.width = '200px';
-
-            return img;
-        },
-        onRemove: function (map) {
-            // Nothing to do here
-        }
-    });
-
-    L.control.watermark = function (opts) {
-        return new L.Control.Watermark(opts);
-    };
-
-    // var watermarkControl = L.control.watermark({position: 'bottomleft'}).addTo(map);
-
-
-    // Create Leaflet Control Object for Legend
-    var legend = L.control({position: "bottomright"});
-
-    // Description contents
-    var contents = "";
-    contents += '<div id="description"><p><b>Simple shapes in Leaflet</b></p><hr>';
-    contents += '<p>This map shows an example of adding shapes on a Leaflet map<p/>';
-    contents += '<p>The following shapes were added:</p><br/>';
-    contents += '<p><ul>';
-    contents += '<li>A marker</li>';
-    contents += '<li>A line</li>';
-    contents += '<li>A polygon</li>';
-    contents += '</ul></p>';
-    contents += '<p>The line layer has a <b>popup</b>. Click on the line to see it!</p><hr>';
-    contents += '<p>Created with the Leaflet library</p><br/>';
-    contents += '<img src="./image/map.jpg"></div>';
-
-
-    // Function that runs when legend is added to map
-    legend.onAdd = function (map) {
-
-        // Create Div Element and Populate it with HTML
-        div = L.DomUtil.create('div', 'legend');
-        div.innerHTML = contents;
-        div.innerHTML += '<input type="button" value="hide" id="hide">';
-
-        // Return the Legend div containing the HTML content
-        return div;
-
-    };
-
-    // Add Legend to Map
-    // legend.addTo(map);
-
-
-    //Handle Copy Lat/Lng to clipboard
-    $('#latlng').click(function (e) {
-        var $tempElement = $("<input>");
-        $("body").append($tempElement);
-        $tempElement.val($("#latlng").text()).select();
-        document.execCommand("Copy");
-        $tempElement.remove();
-        alert("Copied: " + $("#latlng").text());
-        $("#latlng").hide();
-    });
-
-
-    // 'Hide' button that toggles the legend
-    $("#hide").on("click", function () {
-        L.DomEvent.disableClickPropagation(this);
-        switch ($("#hide").val()) {
-            case "hide":
-                $("#description").slideUp();
-                $("#hide").val("show");
-                break;
-            case "show":
-                $("#description").slideDown();
-                $("#hide").val("hide");
-                break;
-        }
-    });
-
-    var dataurl = '{% url "allParcels" %}';
-
-    // $.ajax(dataurl,{
-    //     type: 'GET',
-    //     url: dataurl,
-    //     dataType: 'json',
-    //     jsonpCallback: 'callback:geoDAta'
-    // })
-
-
-    // the ajax callback function
-    function geoDAta(data) {
-        das = L.geoJson(data, {
-            style: myStyle,
-            onEachFeature: function onEachFeature(feature, layer) {
-                var popContent = "<div><b>" + "Code " + feature.properties.lrnumber + "</b></br>" + "Name "
-                    + feature.properties.plotno + "</div>";
-                layer.bindPopup(popContent);
-                layer.on({
-                    mouseover: highlightFeature,
-                    mouseout: resetHighlight,
-                    click: zoomToFeature
-                });
-            }
-        }).addTo(map);
-    };
-
-    // map overlays
-    var overLays = {
-        // "Georeferenced": imgoverlay,
-        // "Nairobi": nairobiPlots,
-        // "County (WMS)": counties,
-        // "Population  (WMS)": population,
-        // "wfsLayer (WFS)": wfsLayer,
-        // "Search": wfsLayerSearch,
-        "Draw": editableLayers,
-        "DrawGeojson": drawgeojson,
-        "kenya": newgroup,
-
-    };
-
-    L.control.layers(basemaps, overLays, {collapsed: true, position: 'topright'}).addTo(map);
+        L.control.layers(basemaps, overLays, {collapsed: true, position: 'topright'}).addTo(map);
 
 
 </script>

@@ -30,10 +30,10 @@ africastalking.initialize(username, api_key)
 africastalking.initialize(username, api_key)
 sms = africastalking.SMS
 
+
 # import gdal, geopandas
 
 
-from django.contrib.auth.models import Group
 # group = Group.objects.get(name='groupname')
 # user.groups.add(group)
 #
@@ -79,7 +79,7 @@ class ActivateAccount(View):
 
         if user is not None and default_token_generator.check_token(user, token):
             user.is_active = True
-            user.save()
+            # user.save()
             # return redirect('login')
             login(request, user)
 
@@ -129,6 +129,23 @@ def registration_view(request):
         form = RegisterForm()
         context['registration_form'] = form
     return render(request, 'accounts/register.html', context)
+
+
+# def validate_username(request):
+#     username = request.GET.get('username', None)
+#     email = request.GET.get('email', None)
+#     data = {
+#         'is_taken': Account.objects.filter(username__iexact=username).exists(),
+#         # 'email_taken': Account.objects.filter(email__iexact=email).exists()
+#     }
+#
+#     if data['is_taken']:
+#         data['error_message'] = 'A user with this username already exists.'
+#
+#     # if data['email_taken']:
+#     #     data['error_message'] = 'A user with this email already exists.'
+#     #
+#     return JsonResponse(data)
 
 
 def profile_view(request, *args, **kwargs):
@@ -219,31 +236,31 @@ def login_view(request):
     return render(request, "accounts/login.html", context)
 
 
-
 # @login_required()
-# def user_deactivate(request, user_id):
-#     user = Account.objects.get(pk=user_id)
-#     user.is_active = False
-#     user.save()
-#     messages.success(request, "User account has been successfully deactivated!")
-#     return redirect('system_users')
+def user_deactivate(request, user_id):
+    user = Account.objects.get(pk=user_id)
+    user.is_active = False
+    user.save()
+    messages.success(request, "User account has been successfully deactivated!")
+    return redirect('system_users')
+
+
 #
 #
 # @login_required()
-# def user_activate(request, user_id):
-#     user = Account.objects.get(pk=user_id)
-#     user.is_active = True
-#     user.save()
-#     messages.success(request, "User account has been successfully activated!")
-#     return redirect('system_users')
-
+def user_activate(request, user_id):
+    user = Account.objects.get(pk=user_id)
+    user.is_active = True
+    user.save()
+    messages.success(request, "User account has been successfully activated!")
+    return redirect('system_users')
 
 
 def edit_account(request):
     if not request.user.is_authenticated:
         return redirect("login")
 
-    print(all_perms_on_this_modal)
+    # print(all_perms_on_this_modal)
     context = {}
     if request.POST:
         form = AccountUpdateForm(request.POST, instance=request.user)
@@ -325,46 +342,3 @@ def logout_view(request):
     messages.success(request, f'You {request.user.username} have been logged out!')
 
     return redirect('home')
-
-# Create your views here.
-# def registration_view(request):
-#     user = request.user
-#     if user.is_authenticated:
-#         return HttpResponse("You are already authenticated as " + str(user.email))
-#     context = {}
-#     if request.POST:
-#         form = RegisterForm(request.POST)
-#         if form.is_valid():
-#             form.save()
-#             first_name = form.cleaned_data.get('first_name')
-#             last_name = form.cleaned_data.get('last_name')
-#             email = form.cleaned_data.get('email')
-#             username = form.cleaned_data.get('username')
-#             password = form.cleaned_data.get('password1')
-#
-#             # authenticate the user if information is correct and valid
-#             account = authenticate(first_name=first_name, last_name=last_name, email=email,
-#                                    username=username, password=password)
-#
-#             messages.success(request, f"Hey {username.title}, You have successfully been Registered..")
-#
-#             subject = 'Runda LIS Registration.'
-#             message = f"""
-#             Hi {first_name} {last_name},Thank you for registering to our services.
-#             Please find the attached certificate of registration"""
-#
-#             send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False, )
-#
-#             if account:
-#                 login(request, account)
-#
-#             messages.success(request, "Hey, You have been registered please update your profile and address")
-#             return redirect('home')
-#
-#         else:
-#             context['registration_form'] = form
-#
-#     else:
-#         form = RegisterForm()
-#         context['registration_form'] = form
-#     return render(request, 'accounts/register.html', context)

@@ -1,5 +1,5 @@
-var lat = -1.22488;
-var lng = 36.827164;
+let lat = -1.22488;
+let lng = 36.827164;
 
 var wfsLayer = new L.featureGroup();
 var drawgeojson = new L.featureGroup();
@@ -22,16 +22,6 @@ var selectedArea = null;
 var area = null;
 
 // map.addLayer(editableLayers);
-
-
-// var MyCustomMarker = L.Icon.extend({
-//     options: {
-//         shadowUrl: null,
-//         iconAnchor: new L.Point(12, 12),
-//         iconSize: new L.Point(24, 24),
-//         iconUrl: 'image/logo.png'
-//     }
-// });
 
 
 var basemaps = {
@@ -117,12 +107,12 @@ var myStyle = {
     Opacity: 1.0,
 };
 
-
 //Map Options
 var mapOptions = {
     zoomControl: false,
     attributionControl: false,
     center: [lat, lng],
+    // center: [-1.22488, 36.827164],
     minZoom: 6.2,
     zoom: 6.2,
     layers: [basemaps.Dark],
@@ -132,12 +122,44 @@ var mapOptions = {
 //create the map object
 let map = L.map('map', mapOptions);
 
-// editableLayers.addTo(map);
-// layerEditable.addTo(map);
-
 
 // Get Map's Center
 var centerBounds = map.getBounds().getCenter();
+
+
+
+// var counties = L.tileLayer.wms("http://localhost:8080/geoserver/kenya/wms",
+//     {
+//         layers: 'kenya:counties',
+//         format: 'image/png',
+//         tiled: true,
+//         transparent: true,
+//         attribution: attribution
+//     }).addTo(map);
+//
+// var population = L.tileLayer.wms("http://localhost:8080/geoserver/kenya/wms",
+//     {
+//         layer: 'kenya:population',
+//         format: 'image/png',
+//         transparent: true,
+//         tiled: true,
+//         opacity: 0.6,
+//         zIndex: 100,
+//         attribution: attribution
+//     }).addTo(map);
+//
+// var nairobiPlots = L.L.tileLayer.wms("http://localhost:8080/geoserver/kenya/wms",
+//     {
+//         layer: 'kenya:nairobi',
+//         format: 'image/png',
+//         transparent: true,
+//         tiled: true,
+//         opacity: 0.6,
+//         zIndex: 100,
+//         attribution: attribution
+//     }).addTo(map);
+//
+
 
 
 // scale control layer
@@ -167,8 +189,7 @@ var sidebar = L.control
         container: "sidebar",
         position: "right"
     })
-  // .addTo(map);
-
+// .addTo(map);
 
 
 // function to open up the pop up on draw end
@@ -180,38 +201,14 @@ var popup = L.popup({
 
 // define custom marker
 var MyCustomMarker = L.Icon.extend({
-  options: {
-    shadowUrl: null,
-    iconAnchor: new L.Point(12, 12),
-    iconSize: new L.Point(24, 24),
-    iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6b/Information_icon4_orange.svg'
-  }
+    options: {
+        shadowUrl: null,
+        iconAnchor: new L.Point(12, 12),
+        iconSize: new L.Point(24, 24),
+        iconUrl: 'https://upload.wikimedia.org/wikipedia/commons/6/6b/Information_icon4_orange.svg'
+    }
 });
 
-// map.on(L.Draw.Event.CREATED, function (e) {
-//   console.clear();
-//   var type = e.layerType
-//   var layer = e.layer;
-//
-//
-//   // Do whatever else you need to. (save to db, add to map etc)
-//
-//   drawnItems.addLayer(layer);
-//
-//   console.log("Coordinates:");
-//
-//   if (type == "marker" || type == "circle" || type == "circlemarker"){
-//     console.log([layer.getLatLng().lat, layer.getLatLng().lng]);
-//   }
-//   else {
-//     var objects = layer.getLatLngs()[0];
-//     for (var i = 0; i < objects.length; i++){
-//       console.log([objects[i].lat,objects[i].lng]);
-//     }
-//   }
-//
-//
-// });
 
 var drawOptions = {
     position: "bottomleft",
@@ -273,18 +270,35 @@ var drawOptions = {
     }
 };
 
+// adding the draw custom controls to the map
 var drawControl = new L.Control.Draw(drawOptions);
 
 
+// adding the FR  to the Map
+imageBounds = [[-1.22155, 36.8222], [-1.2293, 36.8277]];
+var imageUrl = "{% static 'parcels/image/map.jpg'%}";
+var imgoverlay = L.imageOverlay(imageUrl, imageBounds, {opacity: 1, zIndex: 1});
+
+// toggle between full screen and normal screen
+var mapId = document.getElementById('map');
+
+function fullScreenView() {
+    if (document.fullscreenElement) {
+        document.exitFullscreen()
+    } else {
+        mapId.requestFullscreen();
+    }
+}
+
 
 var options = {
-  position: 'bottomleft',
-  drawMarker: true,
-  drawPolygon: true,
-  drawPolyline: true,
-  drawCircle: true,
-  editPolygon: true,
-  deleteLayer: true
+    position: 'bottomleft',
+    drawMarker: true,
+    drawPolygon: true,
+    drawPolyline: true,
+    drawCircle: true,
+    editPolygon: true,
+    deleteLayer: true
 };
 
 // map.pm.addControls(options);
