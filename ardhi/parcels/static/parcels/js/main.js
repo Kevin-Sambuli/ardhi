@@ -1,28 +1,4 @@
-let lat = -1.22488;
-let lng = 36.827164;
-
-var wfsLayer = new L.featureGroup();
-var drawgeojson = new L.featureGroup();
-var wfsLayerSearch = new L.featureGroup();
-var editableLayers = new L.FeatureGroup();
-var layerEditable = new L.FeatureGroup();
-
-
-// Geoserver settings
-var wms_Layer_url = "http://localhost:8080/geoserver/kenya/wms?";
-var wfs_layer_url = "http://localhost:8080/geoserver/kenya/ows?"; //add  trailing question when using ajax
-var getcaps = "http://localhost:8080/geoserver/kenya/wms?service=wms&version=1.3.0&request=GetCapabilities";
-var attribution = "Map by Kevin Sambuli Amuhaya";
-
-// initializing system variables
-var queryValue = null;
-var geoLayer = null;
-var cqlFilter = null;
-var selectedArea = null;
-var area = null;
-
-// map.addLayer(editableLayers);
-
+var map;
 
 var basemaps = {
     "OpenStreetMaps": L.tileLayer(
@@ -97,6 +73,48 @@ var basemaps = {
 };
 
 
+// Map Options
+var mapOptions = {
+    zoomControl: false,
+    attributionControl: false,
+    center: [-1.22488, 36.827164],
+    minZoom: 6.2,
+    zoom: 6.2,
+    layers: [basemaps.Dark],
+};
+
+
+
+//create the map object
+map = L.map('map', mapOptions);
+
+
+var wfsLayer = new L.featureGroup();
+var drawgeojson = new L.featureGroup();
+var wfsLayerSearch = new L.featureGroup();
+var editableLayers = new L.FeatureGroup();
+var layerEditable = new L.FeatureGroup();
+
+
+// Geoserver settings
+var wms_Layer_url = "http://localhost:8080/geoserver/kenya/wms?";
+var wfs_layer_url = "http://localhost:8080/geoserver/kenya/ows?"; //add  trailing question when using ajax
+var getcaps = "http://localhost:8080/geoserver/kenya/wms?service=wms&version=1.3.0&request=GetCapabilities";
+var attribution = "Map by Kevin Sambuli Amuhaya";
+
+// initializing system variables
+var queryValue = null;
+var geoLayer = null;
+var cqlFilter = null;
+var selectedArea = null;
+var area = null;
+
+// map.addLayer(editableLayers);
+
+
+
+
+
 // Geojson style file
 var myStyle = {
     stroke: true,
@@ -106,21 +124,6 @@ var myStyle = {
     weight: 1,
     Opacity: 1.0,
 };
-
-//Map Options
-var mapOptions = {
-    zoomControl: false,
-    attributionControl: false,
-    center: [lat, lng],
-    // center: [-1.22488, 36.827164],
-    minZoom: 6.2,
-    zoom: 6.2,
-    layers: [basemaps.Dark],
-};
-
-
-//create the map object
-let map = L.map('map', mapOptions);
 
 
 // Get Map's Center
@@ -148,7 +151,7 @@ var centerBounds = map.getBounds().getCenter();
 //         attribution: attribution
 //     }).addTo(map);
 //
-// var nairobiPlots = L.L.tileLayer.wms("http://localhost:8080/geoserver/kenya/wms",
+// var nairobiPlots = L.tileLayer.wms("http://localhost:8080/geoserver/kenya/wms",
 //     {
 //         layer: 'kenya:nairobi',
 //         format: 'image/png',
@@ -158,7 +161,7 @@ var centerBounds = map.getBounds().getCenter();
 //         zIndex: 100,
 //         attribution: attribution
 //     }).addTo(map);
-//
+
 
 
 
@@ -275,9 +278,9 @@ var drawControl = new L.Control.Draw(drawOptions);
 
 
 // adding the FR  to the Map
-imageBounds = [[-1.22155, 36.8222], [-1.2293, 36.8277]];
-var imageUrl = "{% static 'parcels/image/map.jpg'%}";
-var imgoverlay = L.imageOverlay(imageUrl, imageBounds, {opacity: 1, zIndex: 1});
+// imageBounds = [[-1.22155, 36.8222], [-1.2293, 36.8277]];
+// var imageUrl = "{% static 'parcels/image/map.jpg'%}";
+// var imgoverlay = L.imageOverlay(imageUrl, imageBounds, {opacity: 1, zIndex: 1});
 
 // toggle between full screen and normal screen
 var mapId = document.getElementById('map');
@@ -300,6 +303,8 @@ var options = {
     editPolygon: true,
     deleteLayer: true
 };
+
+// L.control.layers(basemaps, overLays, {collapsed: true, position: 'topright'}).addTo(map);
 
 // map.pm.addControls(options);
 

@@ -39,7 +39,6 @@ body {
     height: 3px;
     border-left: 0;
     background: rgba(0, 0, 0, 0.1);
-    right: 0px;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -99,8 +98,8 @@ body {
 }
 
 #toolbar li:hover {
-    color: yellowgreen;
-    /*color: #666;*/
+    /*color: yellowgreen;*/
+    color: #666;
 }
 
 
@@ -113,7 +112,7 @@ body {
     padding: 6px;
     border-radius: 20px;
     background-color: red;
-    /*font-family: 'Helvetica Neue';*/
+    font-family: 'Helvetica Neue';
     box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.5);
     cursor: pointer;
     font-size: 12px;
@@ -265,22 +264,6 @@ body {
     border-radius: 50px;
     font-size: 1em;
 }
-
-/*.leaflet-control-scale-line {*/
-/*    line-height: 1.1;*/
-/*    font-size: 11px;*/
-/*    white-space: nowrap;*/
-/*    box-sizing: border-box;*/
-/*    border-width: 4px 4px 4px;*/
-/*    border-style: none solid solid;*/
-/*    border-color: rgb(119, 119, 119) rgb(119, 119, 119) rgb(119, 119, 119);*/
-/*    border-image: initial;*/
-/*    border-top: none;*/
-/*    padding: 2px 5px 1px;*/
-/*    overflow: hidden;*/
-/*    background: rgba(255, 255, 255, 0.5);*/
-/*    !*background: blue;*!*/
-/*}*/
 
 .left_sidebar {
     width: 100%;

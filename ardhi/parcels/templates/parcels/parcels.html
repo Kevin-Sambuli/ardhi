@@ -29,6 +29,9 @@
             // Download GeoJSON data with Ajax
             fetch(dataurl)
                 .then(function (resp) {
+                    if (!resp.ok) {
+                          throw new Error(`HTTP error: ${resp.status}`);
+                        }
                     return resp.json();
                 })
                 .then(function (data)
@@ -49,7 +52,7 @@
                                 ).openPopup();
                             },
                         }).addTo(map);
-                });
+                }); //.catch((error) => console.log(error));
         });
     </script>
 

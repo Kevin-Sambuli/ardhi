@@ -1,1 +1,0 @@
-web: gunicorn ardhi.wsgi --log-file -

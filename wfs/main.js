@@ -1,15 +1,16 @@
-// $(document).ready(function () {
-//     $("input[type=text]").val("");
-//     $(".alert").hide();
-//     $("#search-value").on("keydown", function (e) {
-//         //if user presses Enter Key (keycode 13) on keyboard
-//         if( e.keyCode == 13 ) {
-//             e.preventDefault();
-//             searchWFS();
-//         }
-//     });
-// });
+$(document).ready(function () {
+    $("input[type=text]").val("");
+    $(".alert").hide();
+    $("#search-value").on("keydown", function (e) {
+        //if user presses Enter Key (keycode 13) on keyboard
+        if( e.keyCode == 13 ) {
+            e.preventDefault();
+            searchWFS();
+        }
+    });
+});
 
+//the click event opens up the toolbar window
 $('#toolbar .hamburger').on('click', function() {
   $(this).parent().toggleClass('open');
 });
@@ -228,13 +229,13 @@ $('#imgOpacity').on('change', function (){
 //     }).addTo(map);
 
 // //Leaflet measure
-// L.control.measure({
-//         // position: 'topleft',
-//         primaryLengthUnit: 'kilometers',
-//         secondaryLengthUnit: 'meter',
-//         primaryAreaUnit: 'sqmeters',
-//         secondaryAreaUnit: undefined
-//     }).addTo(map);
+L.control.measure({
+        position: 'bottomleft',
+        primaryLengthUnit: 'kilometers',
+        secondaryLengthUnit: 'meter',
+        primaryAreaUnit: 'sqmeters',
+        secondaryAreaUnit: undefined
+    }) //.addTo(map);
 
 
 
@@ -279,15 +280,19 @@ document.getElementById('export').onclick = function(e) {
          onEachFeature: onEachFeature,
          style:mySearchStyle,
     }).addTo(drawgeojson);
-    drawgeojson.addTo(map); //adding the drawn geojson to the map
-    map.fitBounds(drawgeojson.getBounds()); // fitting the map to the bounds of the drawn geojson
+
+    //adding the drawn geojson to the map
+    drawgeojson.addTo(map);
+
+    // fitting the map to the bounds of the drawn geojson
+    map.fitBounds(drawgeojson.getBounds());
 
     // Stringify the GeoJson
-    // var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
+    var convertedData = 'text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(data));
 
     // Create export
-//     document.getElementById('export').setAttribute('href', 'data:' + convertedData);
-//     document.getElementById('export').setAttribute('download','data.geojson');
+    document.getElementById('export').setAttribute('href', 'data:' + convertedData);
+    document.getElementById('export').setAttribute('download','data.geojson');
 
      // make POST ajax call
     //     $.ajax({
@@ -481,7 +486,6 @@ document.getElementById('delete').onclick = function(e) {
 }
 
 
-
 map.addEventListener("draw:editstart", function(e) {
     editableLayers.closePopup();
 });
@@ -644,6 +648,31 @@ $.ajax(wfs_layer_url,{
 // console.log(map.getSize().x);
 // console.log(map.getSize().y);
 
+// a funcion that populates the atrributes table with required data from the geoserver
+function generateList(data, geometry) {
+  const ul = document.querySelector('.list');
+    const li = document.createElement('li');
+    const div = document.createElement('div');
+    const a = document.createElement('a');
+    const p = document.createElement('p');
+
+    a.addEventListener('click', () => {
+        flyToStore(geometry);
+    });
+
+    div.classList.add('shop-item');
+    a.innerText = data.properties.countyname;
+    a.href = '#';
+    p.innerText = "This is " + data.properties.countyname + " County "+ " Code " +  data.properties.countycode;
+
+    div.appendChild(a);
+    div.appendChild(p);
+    li.appendChild(div);
+    ul.appendChild(li);
+  };
+
+
+
 
 // the ajax callback function
 function handleJson(data) {
@@ -662,9 +691,30 @@ function handleJson(data) {
 			mouseout: resetHighlight,
 			click: zoomToFeature
 		});
+          var geometry =  turf.centroid(feature).geometry
+
+        //  calling the function that populates the attributes table
+        generateList(feature, geometry);
       }
     }).addTo(wfsLayer);
   map.fitBounds(selectedArea.getBounds());
+}
+
+
+
+function flyToStore(geometry) {
+    const lat = geometry.coordinates[1];
+    const lng = geometry.coordinates[0];
+    map.flyTo([lat, lng], 8, {
+        duration: 3
+    });
+    setTimeout(() => {
+        // L.Marker([lat, lng]).addTo(map);
+        L.popup({closeButton: false, offset: L.point(lat, lng)})
+        .setLatLng([lat, lng])
+        .setContent("This is it")
+        .openOn(map);
+    }, 3000);
 }
 
 // re order map z index

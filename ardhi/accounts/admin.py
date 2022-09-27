@@ -1,10 +1,11 @@
 from .models import Account, Profile, Landowner, Manager, Agent, Surveyor
 from django.utils.translation import gettext_lazy as _
 from .forms import RegisterForm, AccountUpdateForm
+from django.contrib.auth.models import Permission
 from django.contrib.auth.admin import UserAdmin
 from django.contrib import admin
 
-# admin.site.register(Account)
+admin.site.register(Permission)
 admin.site.register(Landowner)
 admin.site.register(Agent)
 admin.site.register(Surveyor)

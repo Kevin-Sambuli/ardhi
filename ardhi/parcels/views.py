@@ -257,7 +257,16 @@ def render_pdf_view(request):
 def uploadShape(request):
     context = {}
     if request.method == 'POST':
-        pass
+        # export PGPASSWORD = mydatabasepassword
+
+        # shp2pgsql -D -I -s 4326 -W "utf-8" plots2.shp plot | psql -d Ardhi -U postgres -h localhost -p 5432
+
+        # The D flag tells the program to generate “dump format” which is much faster to load than the default “insert format”.
+
+        # The I flag tells the program to create a spatial index on the table after loading is complete.
+
+        # The s flag tells the program what the “spatial reference identifier (SRID)” of the data is.
+
         # name = request.POST['firstname']
         print('processing data')
 
@@ -269,7 +278,7 @@ def drawShape(request):
         and geojson to decode polygon string
     """
     context = {}
-    response_data ={}
+    response_data = {}
 
     parcels = serialize('geojson', Parcels.objects.all())
     context['parcels'] = parcels
@@ -301,8 +310,8 @@ def drawShape(request):
 
         response_data['plot'] = plot
         response_data['parcel'] = parcel
-
-        return JsonResponse(response_data)
+        #
+        # return JsonResponse(response_data)
 
         # context['wfs'] = json.dumps(wfs)
     return render(request, 'parcels/webmap.html', context)
@@ -311,11 +320,17 @@ def drawShape(request):
 def getWFS(request):
     if request.is_ajax and request.method == 'GET':
         queryValue = request.GET.get("cql")
-        wfs = wfsRequest(queryValue='G')
+        wfs = wfsRequest(queryValue='S')
         # wfs = wfsRequest(queryValue=queryValue)
 
     return JsonResponse(wfs)
 
+
+def getWMS(request):
+    if request.method == 'GET':
+        print("wms")
+
+    # return JsonResponse(wms)
 
 
 def search_parcels(request):
